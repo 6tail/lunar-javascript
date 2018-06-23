@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>lunar</title>
+  </head>
+  <body>
+    <script src="lunar.js"></script>
+    <script>
+      //当前日期生成农历对象
+      var date = Lunar.fromDate(new Date());
+      document.write(date.toFullString());
+      document.write('<br>');
+      //转阳历
+      document.write(date.getSolar().toFullString());
+      document.write('<br><br>');
+
+      //指定日期生成农历对象
+      date = Lunar.fromYmd(1986,4,21);
+      document.write(date.toFullString());
+      document.write('<br>');
+      //转阳历
+      document.write(date.getSolar().toFullString());
+    </script>
+  </body>
+</html>
