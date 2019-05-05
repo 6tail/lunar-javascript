@@ -4,7 +4,7 @@
       return _fromYmd(date.getFullYear(),date.getMonth()+1,date.getDate());
     };
     var _fromYmd = function(y,m,d){
-      var solar = {
+      return {
         _p:{
           year:y,
           month:m,
@@ -88,7 +88,6 @@
           return Lunar.fromDate(this._p.calendar);
         }
       };
-      return solar;
     };
     return {
       fromYmd:function(y,m,d){return _fromYmd(y,m,d);},
@@ -118,12 +117,12 @@
         lunarM = 11;
         lunarD = 25;
       }
-      var diff = 0;
-      for(var i=startY;i<y;i++){
+      var diff = 0,i;
+      for(i=startY;i<y;i++){
         diff += 365;
         if(SolarUtil.isLeapYear(i)) diff += 1;
       }
-      for(var i=startM;i<m;i++){
+      for(i=startM;i<m;i++){
         diff += SolarUtil.getDaysOfMonth(y,i);
       }
       diff += d-startD;
@@ -132,7 +131,7 @@
       while(lunarD>lastDate){
         lunarD -= lastDate;
         lunarM = LunarUtil.nextMonth(lunarY,lunarM);
-        if(lunarM==1) lunarY++;
+        if(lunarM===1) lunarY++;
         lastDate = LunarUtil.getDaysOfMonth(lunarY,lunarM);
       }
       return _fromYmd(lunarY,lunarM,lunarD,solar);
@@ -154,8 +153,8 @@
           while(true){
             diff += LunarUtil.getDaysOfMonth(y,m);
             m = LunarUtil.nextMonth(y,m);
-            if(m==1) y++;
-            if(y==this._p.year&&m==this._p.month){
+            if(m===1) y++;
+            if(y===this._p.year&&m===this._p.month){
               diff += this._p.day;
               break;
             }
@@ -204,10 +203,10 @@
             index++;
           }
           var term = LunarUtil.JIE_MAP[solarMonth-1][4*index+ry%4];
-          if(ry==121&&solarMonth==4) term = 5;
-          if(ry==132&&solarMonth==4) term = 5;
-          if(ry==194&&solarMonth==6) term = 6;
-          if(solarDay==term) s = LunarUtil.JIE[solarMonth-1];
+          if(ry===121&&solarMonth===4) term = 5;
+          if(ry===132&&solarMonth===4) term = 5;
+          if(ry===194&&solarMonth===6) term = 6;
+          if(solarDay===term) s = LunarUtil.JIE[solarMonth-1];
           return s;
         },
         getQi:function(){
@@ -221,13 +220,13 @@
             index++;
           }
           var term = LunarUtil.QI_MAP[solarMonth-1][4*index+ry%4];
-          if(ry==171&&solarMonth==3) term = 21;
-          if(ry==181&&solarMonth==5) term = 21;
-          if(solarDay==term) s = LunarUtil.QI[solarMonth-1];
+          if(ry===171&&solarMonth===3) term = 21;
+          if(ry===181&&solarMonth===5) term = 21;
+          if(solarDay===term) s = LunarUtil.QI[solarMonth-1];
           return s;
         },
         getXiu:function(){
-          return LunarUtil.XIU[this._p.day-1][this._p.month-1];
+          return LunarUtil.XIU[this._p.day-1][Math.abs(this._p.month)-1];
         },
         getZheng:function(){
           return LunarUtil.ZHENG[this.getXiu()];
@@ -282,7 +281,7 @@
       return _fromYmd(date.getFullYear(),date.getMonth()+1,date.getDate(),start);
     };
     var _fromYmd = function(y,m,d,start){
-      var solarWeek = {
+      return {
         _p:{
           year:y,
           month:m,
@@ -304,7 +303,7 @@
         },
         /**
          * 获取当前日期是在当月第几周
-         * @return 周序号，从1开始
+         * @return number 周序号，从1开始
          */
         getIndex:function(){
           var firstDate = new Date(this._p.year+'/'+this._p.month+'/1');
@@ -315,26 +314,27 @@
          * 周推移
          * @param weeks 推移的周数，负数为倒推
          * @param separateMonth 是否按月单独计算
-         * @return 推移后的阳历周
+         * @return object 推移后的阳历周
          */
         next:function(weeks,separateMonth){
-          if(0==weeks){
+          if(0===weeks){
             return _fromYmd(this._p.year,this._p.month,this._p.day,this._p.start);
           }
+          var date;
           if(separateMonth){
             var n = weeks;
-            var date = new Date(this._p.year+'/'+this._p.month+'/'+this._p.day);
+            date = new Date(this._p.year+'/'+this._p.month+'/'+this._p.day);
             var week = _fromDate(date,this._p.start);
             var month = this._p.month;
             var plus = n>0;
-            while(0!=n){
+            while(0!==n){
               date.setDate(date.getDate()+(plus?7:-7));
               week = _fromDate(date,this._p.start);
               var weekMonth = week.getMonth();
-              if(month!=weekMonth){
+              if(month!==weekMonth){
                 var index = week.getIndex();
                 if(plus){
-                  if(1==index){
+                  if(1===index){
                     var firstDay = week.getFirstDay();
                     week = _fromYmd(firstDay.getYear(),firstDay.getMonth(),firstDay.getDay(),this._p.start);
                     weekMonth = week.getMonth();
@@ -344,9 +344,8 @@
                   }
                 }else{
                   var size = SolarUtil.getWeeksOfMonth(week.getYear(),week.getMonth(),this._p.start);
-                  if(size==index){
-                    var firstDay = week.getFirstDay();
-                    var lastDay = firstDay.next(6);
+                  if(size===index){
+                    var lastDay = week.getFirstDay().next(6);
                     week = _fromYmd(lastDay.getYear(),lastDay.getMonth(),lastDay.getDay(),this._p.start);
                     weekMonth = week.getMonth();
                   }else{
@@ -360,14 +359,14 @@
             }
             return week;
           }else{
-            var date = new Date(this._p.year+'/'+this._p.month+'/'+this._p.day);
+            date = new Date(this._p.year+'/'+this._p.month+'/'+this._p.day);
             date.setDate(date.getDate()+weeks*7);
             return _fromDate(date,this._p.start);
           }
         },
         /**
          * 获取本周第一天的阳历日期（可能跨月）
-         * @return 本周第一天的阳历日期
+         * @return object 本周第一天的阳历日期
          */
         getFirstDay:function(){
           var date = new Date(this._p.year+'/'+this._p.month+'/'+this._p.day);
@@ -381,13 +380,13 @@
         },
         /**
          * 获取本周第一天的阳历日期（仅限当月）
-         * @return 本周第一天的阳历日期
+         * @return object 本周第一天的阳历日期
          */
         getFirstDayInMonth:function(){
           var days = this.getDays();
           for(var i = 0;i<days.length;i++){
             var day = days[i];
-            if(this._p.month==day.getMonth()){
+            if(this._p.month===day.getMonth()){
               return day;
             }
           }
@@ -395,7 +394,7 @@
         },
         /**
          * 获取本周的阳历日期列表（可能跨月）
-         * @return 本周的阳历日期列表
+         * @return Array 本周的阳历日期列表
          */
         getDays:function(){
           var firstDay = this.getFirstDay();
@@ -408,14 +407,14 @@
         },
         /**
          * 获取本周的阳历日期列表（仅限当月）
-         * @return 本周的阳历日期列表（仅限当月）
+         * @return Array 本周的阳历日期列表（仅限当月）
          */
         getDaysInMonth:function(){
           var days = this.getDays();
           var l = [];
           for(var i = 0;i<days.length;i++){
             var day = days[i];
-            if(this._p.month!=day.getMonth()){
+            if(this._p.month!==day.getMonth()){
               continue;
             }
             l.push(day);
@@ -429,7 +428,6 @@
           return this.getYear()+'年'+this.getMonth()+'月第'+this.getIndex()+'周';
         }
       };
-      return solarWeek;
     };
     return {
       /**
@@ -438,14 +436,14 @@
        * @param m 月份
        * @param d 日期
        * @param start 星期几作为一周的开始，1234560分别代表星期一至星期天
-       * @return 阳历周
+       * @return object 阳历周
        */
       fromYmd:function(y,m,d,start){return _fromYmd(y,m,d,start);},
       /**
        * 指定日期生成当天所在的阳历周
        * @param date 日期
        * @param start 星期几作为一周的开始，1234560分别代表星期一至星期天
-       * @return 阳历周
+       * @return object 阳历周
        */
       fromDate:function(date,start){return _fromDate(date,start);}
     };
@@ -455,7 +453,7 @@
       return _fromYm(date.getFullYear(),date.getMonth()+1);
     };
     var _fromYm = function(y,m){
-      var solarMonth = {
+      return {
         _p:{
           year:y,
           month:m,
@@ -497,7 +495,6 @@
           return this.getYear()+'年'+this.getMonth()+'月';
         }
       };
-      return solarMonth;
     };
     return {
       fromYm:function(y,m){return _fromYm(y,m);},
@@ -509,7 +506,7 @@
       return _fromYm(date.getFullYear(),date.getMonth()+1);
     };
     var _fromYm = function(y,m){
-      var solarSeason = {
+      return {
         _p:{
           year:y,
           month:m,
@@ -523,7 +520,7 @@
         },
         /**
          * 获取当月是第几季度
-         * @return 季度序号，从1开始
+         * @return number 季度序号，从1开始
          */
         getIndex:function(){
           return Math.ceil(this._p.month/3);
@@ -531,10 +528,10 @@
         /**
          * 季度推移
          * @param seasons 推移的季度数，负数为倒推
-         * @return 推移后的季度
+         * @return object 推移后的季度
          */
         next:function(seasons){
-          if(0==seasons){
+          if(0===seasons){
             return _fromYm(this._p.year,this._p.month);
           }
           var date = new Date(this._p.year+'/'+this._p.month+'/1');
@@ -543,7 +540,7 @@
         },
         /**
          * 获取本季度的月份
-         * @return 本季度的月份列表
+         * @return Array 本季度的月份列表
          */
         getMonths:function(){
           var l = [];
@@ -560,7 +557,6 @@
           return this.getYear()+'年'+this.getIndex()+'季度';
         }
       };
-      return solarSeason;
     };
     return {
       fromYm:function(y,m){return _fromYm(y,m);},
@@ -572,7 +568,7 @@
       return _fromYm(date.getFullYear(),date.getMonth()+1);
     };
     var _fromYm = function(y,m){
-      var solarHalfYear = {
+      return {
         _p:{
           year:y,
           month:m,
@@ -586,7 +582,7 @@
         },
         /**
          * 获取当月是第几半年
-         * @return 半年序号，从1开始
+         * @return number 半年序号，从1开始
          */
         getIndex:function(){
           return Math.ceil(this._p.month/6);
@@ -594,10 +590,10 @@
         /**
          * 半年推移
          * @param halfYears 推移的半年数，负数为倒推
-         * @return 推移后的半年
+         * @return object 推移后的半年
          */
         next:function(halfYears){
-          if(0==halfYears){
+          if(0===halfYears){
             return _fromYm(this._p.year,this._p.month);
           }
           var date = new Date(this._p.year+'/'+this._p.month+'/1');
@@ -606,7 +602,7 @@
         },
         /**
          * 获取本半年的月份
-         * @return 本半年的月份列表
+         * @return Array 本半年的月份列表
          */
         getMonths:function(){
           var l = [];
@@ -623,7 +619,6 @@
           return this.getYear()+'年'+['上','下'][this.getIndex()-1]+'半年';
         }
       };
-      return solarHalfYear;
     };
     return {
       fromYm:function(y,m){return _fromYm(y,m);},
@@ -635,7 +630,7 @@
       return _fromYear(date.getFullYear());
     };
     var _fromYear = function(y){
-      var solarYear = {
+      return {
         _p:{
           year:y,
           calendar:new Date(y+'/1/1')
@@ -664,7 +659,6 @@
           return this.getYear()+'年';
         }
       };
-      return solarYear;
     };
     return {
       fromYear:function(y){return _fromYear(y);},
@@ -674,9 +668,9 @@
   var SolarUtil = (function(){
     var _isLeapYear = function(year){
       var leap = false;
-      if(year%4==0) leap = true;
-      if(year%100==0) leap = false;
-      if(year%400==0) leap = true;
+      if(year%4===0) leap = true;
+      if(year%100===0) leap = false;
+      if(year%400===0) leap = true;
       return leap;
     };
     return {
@@ -692,7 +686,7 @@
       getDaysOfMonth:function(year,month){
         var m = month-1;
         var d = this.DAYS_OF_MONTH[m];
-        if(m==1&&this.isLeapYear(year)){
+        if(m===1&&this.isLeapYear(year)){
           d++;
         }
         return d;
@@ -767,11 +761,11 @@
           var index = y-this.BASE_YEAR+this.BASE_INDEX;
           var v = this.LUNAR_MONTH[2*index+1];
           v = (v>>4)&0x0F;
-          if(v==m){
+          if(v===m){
             n = -m;
           }
         }
-        if(n==13) n = 1;
+        if(n===13) n = 1;
         return n;
       },
       getDaysOfMonth:function(year,month){
@@ -780,24 +774,24 @@
         if(1<=month&&month<=8){
           v = this.LUNAR_MONTH[2*index];
           l = month-1;
-          if(((v>>l)&0x01)==1){
+          if(((v>>l)&0x01)===1){
             d = 29;
           }
         }else if(9<=month&&month<=12){
           v = this.LUNAR_MONTH[2*index+1];
           l = month-9;
-          if(((v>>l)&0x01)==1){
+          if(((v>>l)&0x01)===1){
             d = 29;
           }
         }else{
           v = this.LUNAR_MONTH[2*index+1];
           v = (v>>4)&0x0F;
-          if(v!=Math.abs(month)){
+          if(v!==Math.abs(month)){
             d = 0;
           }else{
             d = 29;
             for(var i = 0;i<this.LEAP_MONTH_YEAR.length;i++){
-              if(this.LEAP_MONTH_YEAR[i]==index){
+              if(this.LEAP_MONTH_YEAR[i]===index){
                 d = 30;
                 break;
               }
