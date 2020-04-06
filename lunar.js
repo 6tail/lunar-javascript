@@ -1,15 +1,17 @@
 (function(W){
   var Solar = (function(){
     var _fromDate = function(date){
-      return _fromYmd(date.getFullYear(),date.getMonth()+1,date.getDate());
+      return _fromYmdHm(date.getFullYear(),date.getMonth()+1,date.getDate(),date.getHours(),date.getMinutes());
     };
-    var _fromYmd = function(y,m,d){
+    var _fromYmdHm = function(y,m,d,hour,minute){
       return {
         _p:{
           year:y,
           month:m,
           day:d,
-          calendar:new Date(y+'/'+m+'/'+d)
+          hour:hour,
+          minute:minute,
+          calendar:new Date(y+'/'+m+'/'+d+' '+hour+':'+minute)
         },
         getYear:function(){
           return this._p.year;
@@ -19,6 +21,12 @@
         },
         getDay:function(){
           return this._p.day;
+        },
+        getHour:function(){
+          return this._p.hour;
+        },
+        getMinute:function(){
+          return this._p.minute;
         },
         getWeek:function(){
           return this._p.calendar.getDay();
@@ -80,7 +88,11 @@
           return [this._p.year,(this._p.month<10?'0':'')+this._p.month,(this._p.day<10?'0':'')+this._p.day].join('-');
         },
         toFullString:function(){
+          var hour = (this._p.hour<10?'0':'')+this._p.hour;
+          var minute = (this._p.minute<10?'0':'')+this._p.minute;
           var s = this.toString();
+          s += ' '+hour;
+          s += ':'+minute;
           if(this.isLeapYear()){
             s += ' 闰年';
           }
@@ -103,7 +115,8 @@
       };
     };
     return {
-      fromYmd:function(y,m,d){return _fromYmd(y,m,d);},
+      fromYmd:function(y,m,d){return _fromYmdHm(y,m,d,0,0);},
+      fromYmdHm:function(y,m,d,hour,minute){return _fromYmdHm(y,m,d,hour,minute);},
       fromDate:function(date){return _fromDate(date);}
     };
   })();
@@ -113,6 +126,8 @@
       var y = solar.getYear();
       var m = solar.getMonth();
       var d = solar.getDay();
+      var hour = date.getHours();
+      var minute = date.getMinutes();
       var startY,startM,startD;
       var lunarY,lunarM,lunarD;
       if(y<2000){
@@ -147,9 +162,9 @@
         if(lunarM===1) lunarY++;
         lastDate = LunarUtil.getDaysOfMonth(lunarY,lunarM);
       }
-      return _fromYmd(lunarY,lunarM,lunarD,solar);
+      return _fromYmdHm(lunarY,lunarM,lunarD,hour,minute,solar);
     };
-    var _fromYmd = function(y,m,d,solar){
+    var _fromYmdHm = function(y,m,d,hour,minute,solar){
       var dayOffset = LunarUtil.computeAddDays(y,m,d);
       var addDays = (dayOffset + LunarUtil.BASE_DAY_GANZHI_INDEX)%60;
       var dayGanIndex = addDays%10;
@@ -159,6 +174,8 @@
           year:y,
           month:m,
           day:d,
+          hour:hour,
+          minute:minute,
           dayOffset:dayOffset,
           dayGanIndex:dayGanIndex,
           dayZhiIndex:dayZhiIndex,
@@ -179,7 +196,7 @@
               break;
             }
           }
-          var date = new Date(SolarUtil.BASE_YEAR+'/'+SolarUtil.BASE_MONTH+'/'+SolarUtil.BASE_DAY);
+          var date = new Date(SolarUtil.BASE_YEAR+'/'+SolarUtil.BASE_MONTH+'/'+SolarUtil.BASE_DAY+' '+this._p.hour+':'+this._p.minute);
           date.setDate(date.getDate()+diff);
           return Solar.fromDate(date);
         },
@@ -229,6 +246,29 @@
         getDayInGanZhi:function(){
           return this.getDayGan()+this.getDayZhi();
         },
+        getTimeGan:function(){
+          var zhi = this.getTimeZhi();
+          for(var i=1,j=LunarUtil.ZHI.length;i<j;i++){
+            if(LunarUtil.ZHI[i]===zhi){
+              return LunarUtil.GAN[1+(i-1)%10];
+            }
+          }
+          return null;
+        },
+        getTimeZhi:function(){
+          var hour = (this._p.hour<10?'0':'')+this._p.hour;
+          var minute = (this._p.minute<10?'0':'')+this._p.minute;
+          return LunarUtil.convertTime(hour+':'+minute);
+        },
+        getTimeInGanZhi:function(){
+          var zhi = this.getTimeZhi();
+          for(var i=1,j=LunarUtil.ZHI.length;i<j;i++){
+            if(LunarUtil.ZHI[i]===zhi){
+              return LunarUtil.GAN[1+(i-1)%10]+zhi;
+            }
+          }
+          return zhi;
+        },
         getShengxiao:function(){
           return LunarUtil.SHENGXIAO[(this._p.year-4)%12+1];
         },
@@ -246,6 +286,15 @@
         },
         getDayShengXiao:function(){
           var zhi = this.getDayZhi();
+          for(var i=0,j=LunarUtil.ZHI.length;i<j;i++){
+            if(LunarUtil.ZHI[i]===zhi){
+              return LunarUtil.SHENGXIAO[i];
+            }
+          }
+          return '';
+        },
+        getTimeShengXiao:function(){
+          var zhi = this.getTimeZhi();
           for(var i=0,j=LunarUtil.ZHI.length;i<j;i++){
             if(LunarUtil.ZHI[i]===zhi){
               return LunarUtil.SHENGXIAO[i];
@@ -386,6 +435,12 @@
         getXiu:function(){
           return LunarUtil.XIU[this.getDayZhi()+this.getWeek()];
         },
+        getXiuLuck:function(){
+          return LunarUtil.XIU_LUCK[this.getXiu()];
+        },
+        getXiuSong:function(){
+          return LunarUtil.XIU_SONG[this.getXiu()];
+        },
         getZheng:function(){
           return LunarUtil.ZHENG[this.getXiu()];
         },
@@ -425,6 +480,7 @@
           s += ' '+this.getYearInGanZhi()+'('+this.getYearShengXiao()+')年';
           s += ' '+this.getMonthInGanZhi()+'('+this.getMonthShengXiao()+')月';
           s += ' '+this.getDayInGanZhi()+'('+this.getDayShengXiao()+')日';
+          s += ' '+this.getTimeZhi()+'时';
           s += ' 纳音['+this.getYearNaYin()+' '+this.getMonthNaYin()+' '+this.getDayNaYin()+']';
           var festivals = this.getFestivals();
           var i,j;
@@ -456,7 +512,8 @@
       return lunar;
     };
     return {
-      fromYmd:function(y,m,d){return _fromYmd(y,m,d);},
+      fromYmdHm:function(y,m,d,hour,minute){return _fromYmdHm(y,m,d,hour,minute);},
+      fromYmd:function(y,m,d){return _fromYmdHm(y,m,d,0,0);},
       fromDate:function(date){return _fromDate(date);}
     };
   })();
@@ -916,6 +973,8 @@
       QI_YEAR:[[13,45,81,113,149,185,201],[21,57,93,125,161,193,201],[21,56,88,120,152,188,200,201],[21,49,81,116,144,176,200,201],[17,49,77,112,140,168,200,201],[28,60,88,116,148,180,200,201],[25,53,84,112,144,172,200,201],[29,57,89,120,148,180,200,201],[17,45,73,108,140,168,200,201],[28,60,92,124,160,192,200,201],[16,44,80,112,148,180,200,201],[17,53,88,120,156,188,200,201]],
       QI_MAP:[[21,21,21,21,21,20,21,21,21,20,20,21,21,20,20,20,20,20,20,20,20,19,20,20,20,19,19,20],[20,19,19,20,20,19,19,19,19,19,19,19,19,18,19,19,19,18,18,19,19,18,18,18,18,18,18,18],[21,21,21,22,21,21,21,21,20,21,21,21,20,20,21,21,20,20,20,21,20,20,20,20,19,20,20,20,20],[20,21,21,21,20,20,21,21,20,20,20,21,20,20,20,20,19,20,20,20,19,19,20,20,19,19,19,20,20],[21,22,22,22,21,21,22,22,21,21,21,22,21,21,21,21,20,21,21,21,20,20,21,21,20,20,20,21,21],[22,22,22,22,21,22,22,22,21,21,22,22,21,21,21,22,21,21,21,21,20,21,21,21,20,20,21,21,21],[23,23,24,24,23,23,23,24,23,23,23,23,22,23,23,23,22,22,23,23,22,22,22,23,22,22,22,22,23],[23,24,24,24,23,23,24,24,23,23,23,24,23,23,23,23,22,23,23,23,22,22,23,23,22,22,22,23,23],[23,24,24,24,23,23,24,24,23,23,23,24,23,23,23,23,22,23,23,23,22,22,23,23,22,22,22,23,23],[24,24,24,24,23,24,24,24,23,23,24,24,23,23,23,24,23,23,23,23,22,23,23,23,22,22,23,23,23],[23,23,23,23,22,23,23,23,22,22,23,23,22,22,22,23,22,22,22,22,21,22,22,22,21,21,22,22,22],[22,22,23,23,22,22,22,23,22,22,22,22,21,22,22,22,21,21,22,22,21,21,21,22,21,21,21,21,22]],
       XIU:{'申1':'毕','申2':'翌','申3':'箕','申4':'奎','申5':'鬼','申6':'氐','申0':'虚','子1':'毕','子2':'翌','子3':'箕','子4':'奎','子5':'鬼','子6':'氐','子0':'虚','辰1':'毕','辰2':'翌','辰3':'箕','辰4':'奎','辰5':'鬼','辰6':'氐','辰0':'虚','巳1':'危','巳2':'觜','巳3':'轸','巳4':'斗','巳5':'娄','巳6':'柳','巳0':'房','酉1':'危','酉2':'觜','酉3':'轸','酉4':'斗','酉5':'娄','酉6':'柳','酉0':'房','丑1':'危','丑2':'觜','丑3':'轸','丑4':'斗','丑5':'娄','丑6':'柳','丑0':'房','寅1':'心','寅2':'室','寅3':'参','寅4':'角','寅5':'牛','寅6':'胃','寅0':'星','午1':'心','午2':'室','午3':'参','午4':'角','午5':'牛','午6':'胃','午0':'星','戌1':'心','戌2':'室','戌3':'参','戌4':'角','戌5':'牛','戌6':'胃','戌0':'星','亥1':'张','亥2':'尾','亥3':'壁','亥4':'井','亥5':'亢','亥6':'女','亥0':'昴','卯1':'张','卯2':'尾','卯3':'壁','卯4':'井','卯5':'亢','卯6':'女','卯0':'昴','未1':'张','未2':'尾','未3':'壁','未4':'井','未5':'亢','未6':'女','未0':'昴'},
+      XIU_LUCK:{'角':'吉','亢':'凶','氐':'凶','房':'吉','心':'凶','尾':'吉','箕':'吉','斗':'吉','牛':'凶','女':'凶','虚':'凶','危':'凶','室':'吉','壁':'吉','奎':'凶','娄':'吉','胃':'吉','昴':'凶','毕':'吉','觜':'凶','参':'吉','井':'吉','鬼':'凶','柳':'凶','星':'凶','张':'吉','翼':'凶','轸':'吉'},
+      XIU_SONG:{'角':'角星造作主荣昌，外进田财及女郎，嫁娶婚姻出贵子，文人及第见君王，惟有埋葬不可用，三年之后主瘟疫，起工修筑坟基地，堂前立见主人凶。','亢':'亢星造作长房当，十日之中主有殃，田地消磨官失职，接运定是虎狼伤，嫁娶婚姻用此日，儿孙新妇守空房，埋葬若还用此日，当时害祸主重伤。','氐':'氐星造作主灾凶，费尽田园仓库空，埋葬不可用此日，悬绳吊颈祸重重，若是婚姻离别散，夜招浪子入房中，行船必定遭沉没，更生聋哑子孙穷。','房':'房星造作田园进，钱财牛马遍山岗，更招外处田庄宅，荣华富贵福禄康，埋葬若然用此日，高官进职拜君王，嫁娶嫦娥至月殿，三年抱子至朝堂。','心':'心星造作大为凶，更遭刑讼狱囚中，忤逆官非宅产退，埋葬卒暴死相从，婚姻若是用此日，子死儿亡泪满胸，三年之内连遭祸，事事教君没始终。','尾':'尾星造作主天恩，富贵荣华福禄增，招财进宝兴家宅，和合婚姻贵子孙，埋葬若能依此日，男清女正子孙兴，开门放水招田宅，代代公侯远播名。','箕':'箕星造作主高强，岁岁年年大吉昌，埋葬修坟大吉利，田蚕牛马遍山岗，开门放水招田宅，箧满金银谷满仓，福荫高官加禄位，六亲丰禄乐安康。','斗':'斗星造作主招财，文武官员位鼎台，田宅家财千万进，坟堂修筑贵富来，开门放水招牛马，旺蚕男女主和谐，遇此吉宿来照护，时支福庆永无灾。','牛':'牛星造作主灾危，九横三灾不可推，家宅不安人口退，田蚕不利主人衰，嫁娶婚姻皆自损，金银财谷渐无之，若是开门并放水，牛猪羊马亦伤悲。','女':'女星造作损婆娘，兄弟相嫌似虎狼，埋葬生灾逢鬼怪，颠邪疾病主瘟惶，为事遭官财失散，泻利留连不可当，开门放水用此日，全家财散主离乡。','虚':'虚星造作主灾殃，男女孤眠不一双，内乱风声无礼节，儿孙媳妇伴人床，开门放水遭灾祸，虎咬蛇伤又卒亡，三三五五连年病，家破人亡不可当。','危':'危星不可造高楼，自遭刑吊见血光，三年孩子遭水厄，后生出外永不还，埋葬若还逢此日，周年百日取高堂，三年两载一悲伤，开门放水到官堂。','室':'室星修造进田牛，儿孙代代近王侯，家贵荣华天上至，寿如彭祖八千秋，开门放水招财帛，和合婚姻生贵儿，埋葬若能依此日，门庭兴旺福无休。','壁':'壁星造作主增财，丝蚕大熟福滔天，奴婢自来人口进，开门放水出英贤，埋葬招财官品进，家中诸事乐陶然，婚姻吉利主贵子，早播名誉著祖鞭。','奎':'奎星造作得祯祥，家内荣和大吉昌，若是埋葬阴卒死，当年定主两三伤，看看军令刑伤到，重重官事主瘟惶，开门放水遭灾祸，三年两次损儿郎。','娄':'娄星修造起门庭，财旺家和事事兴，外进钱财百日进，一家兄弟播高名，婚姻进益生贵子，玉帛金银箱满盈，放水开门皆吉利，男荣女贵寿康宁。','胃':'胃星造作事如何，家贵荣华喜气多，埋葬贵临官禄位，夫妇齐眉永保康，婚姻遇此家富贵，三灾九祸不逢他，从此门前多吉庆，儿孙代代拜金阶。','昴':'昴星造作进田牛，埋葬官灾不得休，重丧二日三人死，尽卖田园不记增，开门放水招灾祸，三岁孩儿白了头，婚姻不可逢此日，死别生离是可愁。','毕':'毕星造作主光前，买得田园有余钱，埋葬此日添官职，田蚕大熟永丰年，开门放水多吉庆，合家人口得安然，婚姻若得逢此日，生得孩儿福寿全。','觜':'觜星造作有徒刑，三年必定主伶丁，埋葬卒死多因此，取定寅年使杀人，三丧不止皆由此，一人药毒二人身，家门田地皆退败，仓库金银化作尘。','参':'参星造作旺人家，文星照耀大光华，只因造作田财旺，埋葬招疾哭黄沙，开门放水加官职，房房子孙见田加，婚姻许遁遭刑克，男女朝开幕落花。','井':'井星造作旺蚕田，金榜题名第一光，埋葬须防惊卒死，狂颠风疾入黄泉，开门放水招财帛，牛马猪羊旺莫言，贵人田塘来入宅，儿孙兴旺有余钱。','鬼':'鬼星起造卒人亡，堂前不见主人郎，埋葬此日官禄至，儿孙代代近君王，开门放水须伤死，嫁娶夫妻不久长，修土筑墙伤产女，手扶双女泪汪汪。','柳':'柳星造作主遭官，昼夜偷闭不暂安，埋葬瘟惶多疾病，田园退尽守冬寒，开门放水遭聋瞎，腰驼背曲似弓弯，更有棒刑宜谨慎，妇人随客走盘桓。','星':'星宿日好造新房，进职加官近帝王，不可埋葬并放水，凶星临位女人亡，生离死别无心恋，要自归休别嫁郎，孔子九曲殊难度，放水开门天命伤。','张':'张星日好造龙轩，年年并见进庄田，埋葬不久升官职，代代为官近帝前，开门放水招财帛，婚姻和合福绵绵，田蚕人满仓库满，百般顺意自安然。','翼':'翼星不利架高堂，三年二载见瘟惶，埋葬若还逢此日，子孙必定走他乡，婚姻此日不宜利，归家定是不相当，开门放水家须破，少女恋花贪外郎。','轸':'轸星临水造龙宫，代代为官受皇封，富贵荣华增寿禄，库满仓盈自昌隆，埋葬文昌来照助，宅舍安宁不见凶，更有为官沾帝宠，婚姻龙子入龙宫。'},
       ZHENG:{'角':'木','井':'木','奎':'木','斗':'木','亢':'金','鬼':'金','娄':'金','牛':'金','氐':'土','柳':'土','胃':'土','女':'土','房':'日','星':'日','昴':'日','虚':'日','心':'月','张':'月','毕':'月','危':'月','尾':'火','翼':'火','觜':'火','室':'火','箕':'水','轸':'水','参':'水','壁':'水'      },
       ANIMAL:{'角':'蛟','斗':'獬','奎':'狼','井':'犴','亢':'龙','牛':'牛','娄':'狗','鬼':'羊','女':'蝠','氐':'貉','胃':'彘','柳':'獐','房':'兔','虚':'鼠','昴':'鸡','星':'马','心':'狐','危':'燕','毕':'乌','张':'鹿','尾':'虎','室':'猪','觜':'猴','翼':'蛇','箕':'豹','壁':'獝','参':'猿','轸':'蚓'      },
       GONG:{'角':'东','井':'南','奎':'西','斗':'北','亢':'东','鬼':'南','娄':'西','牛':'北','氐':'南','柳':'南','胃':'西','女':'北','房':'东','星':'南','昴':'西','虚':'北','心':'东','张':'南','毕':'西','危':'北','尾':'东','翼':'南','觜':'西','室':'北','箕':'东','轸':'南','参':'西','壁':'北'      },
@@ -992,6 +1051,22 @@
           }
         }
         return d;
+      },
+      convertTime:function(hm){
+        if(!hm){
+          return null;
+        }
+        if(hm.length>5){
+          hm = hm.substring(0,5);
+        }
+        var x = 2;
+        for(var i=1;i<22;i+=2){
+          if(hm>=((i<10?"0":"")+i+":00")&&hm<=((i+1<10?"0":"")+(i+1)+":59")){
+            return this.ZHI[x];
+          }
+          x++;
+        }
+        return this.ZHI[1];
       }
     };
   })();
