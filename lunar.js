@@ -225,13 +225,21 @@
           return this.getYearGan()+this.getYearZhi();
         },
         getMonthGan:function(){
-          var m = Math.abs(this._p.month)-1;
+          var m = Math.abs(this._p.month);
+          var leapMonth = LunarUtil.getLeapMonth(this._p.year);
+          if(0===leapMonth||m<leapMonth||this._p.month===leapMonth){
+            m-=1;
+          }
           var yearGanIndex = (this._p.year-4)%10;
           var offset = (yearGanIndex%5+1)*2;
           return LunarUtil.GAN[(m+offset)%10+1];
         },
         getMonthZhi:function(){
-          var m = Math.abs(this._p.month)-1;
+          var m = Math.abs(this._p.month);
+          var leapMonth = LunarUtil.getLeapMonth(this._p.year);
+          if(0===leapMonth||m<leapMonth||this._p.month===leapMonth){
+            m-=1;
+          }
           return LunarUtil.ZHI[(m+LunarUtil.BASE_MONTH_ZHI_INDEX)%12+1];
         },
         getMonthInGanZhi:function(){
@@ -544,6 +552,29 @@
             l.push(LunarUtil.SHI_SHEN_ZHI[dayGan+zhi+LunarUtil.ZHI_HIDE_GAN[zhi][0]]);
           }
           return l;
+        },
+        getShiErShen:function(){
+          var monthZhi = this.getMonthZhi();
+          var dayZhi = this.getDayZhi();
+          var indexMonthZhi = 0;
+          var indexDayZhi = 0;
+          for(var i=0,j=LunarUtil.ZHI.length;i<j;i++){
+            var zhi = LunarUtil.ZHI[i];
+            if(zhi===monthZhi){
+              indexMonthZhi = i;
+            }
+            if(zhi===dayZhi){
+              indexDayZhi = i;
+            }
+            if(indexMonthZhi>0&&indexDayZhi>0){
+              break;
+            }
+          }
+          var add = indexDayZhi-indexMonthZhi;
+          if(add<0){
+            add = 12+add;
+          }
+          return LunarUtil.SHI_ER_SHEN[1+add];
         },
         getSolar:function(){
           return this._p.solar;
@@ -1033,6 +1064,7 @@
       POSITION_FU:['','巽','巽','震','震','坎','离','坤','坤','乾','兑'],
       POSITION_CAI:['','艮','艮','坤','坤','坎','坎','震','震','离','离'],
       ZHI:['','子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'],
+      SHI_ER_SHEN:['','建','除','满','平','定','执','破','危','成','收','开','闭'],
       PENGZU_GAN:['','甲不开仓财物耗散','乙不栽植千株不长','丙不修灶必见灾殃','丁不剃头头必生疮','戊不受田田主不祥','己不破券二比并亡','庚不经络织机虚张','辛不合酱主人不尝','壬不泱水更难提防','癸不词讼理弱敌强'],
       PENGZU_ZHI:['','子不问卜自惹祸殃','丑不冠带主不还乡','寅不祭祀神鬼不尝','卯不穿井水泉不香','辰不哭泣必主重丧','巳不远行财物伏藏','午不苫盖屋主更张','未不服药毒气入肠','申不安床鬼祟入房','酉不会客醉坐颠狂','戌不吃犬作怪上床','亥不嫁娶不利新郎'],
       NUMBER:['零','壹','贰','叁','肆','伍','陆','柒','捌','玖'],
@@ -1088,6 +1120,12 @@
         }
         return diff;
       },
+      getLeapMonth:function(year){
+        var index = year-this.BASE_YEAR+this.BASE_INDEX;
+        var v = this.LUNAR_MONTH[2*index+1];
+        v = (v>>4)&0x0F;
+        return v;
+      },
       nextMonth:function(y,m){
         var n = Math.abs(m)+1;
         if(m>0){
@@ -1142,7 +1180,7 @@
         }
         var x = 2;
         for(var i=1;i<22;i+=2){
-          if(hm>=((i<10?"0":"")+i+":00")&&hm<=((i+1<10?"0":"")+(i+1)+":59")){
+          if(hm>=((i<10?'0':'')+i+':00')&&hm<=((i+1<10?'0':'')+(i+1)+':59')){
             return this.ZHI[x];
           }
           x++;
