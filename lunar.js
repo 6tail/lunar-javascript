@@ -553,7 +553,7 @@
           }
           return l;
         },
-        getShiErShen:function(){
+        getZhiXing:function(){
           var monthZhi = this.getMonthZhi();
           var dayZhi = this.getDayZhi();
           var indexMonthZhi = 0;
@@ -574,7 +574,26 @@
           if(add<0){
             add = 12+add;
           }
-          return LunarUtil.SHI_ER_SHEN[1+add];
+          return LunarUtil.ZHI_XING[1+add];
+        },
+        getDayTianShen:function(){
+          var monthZhi = this.getMonthZhi();
+          var dayZhi = this.getDayZhi();
+          var offset = LunarUtil.MONTH_ZHI_TIAN_SHEN_OFFSET[monthZhi];
+          var dayIndex = 0;
+          for(var i=0,j=LunarUtil.ZHI.length;i<j;i++){
+            if(LunarUtil.ZHI[i]===dayZhi){
+              dayIndex = i;
+              break;
+            }
+          }
+          return LunarUtil.TIAN_SHEN[1+(dayIndex-1+offset)%12];
+        },
+        getDayTianShenType:function(){
+          return LunarUtil.TIAN_SHEN_TYPE[this.getDayTianShen()];
+        },
+        getDayTianShenLuck:function(){
+          return LunarUtil.TIAN_SHEN_TYPE_LUCK[this.getDayTianShenType()];
         },
         getSolar:function(){
           return this._p.solar;
@@ -1064,7 +1083,11 @@
       POSITION_FU:['','巽','巽','震','震','坎','离','坤','坤','乾','兑'],
       POSITION_CAI:['','艮','艮','坤','坤','坎','坎','震','震','离','离'],
       ZHI:['','子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'],
-      SHI_ER_SHEN:['','建','除','满','平','定','执','破','危','成','收','开','闭'],
+      ZHI_XING:['','建','除','满','平','定','执','破','危','成','收','开','闭'],
+      TIAN_SHEN:['','青龙','明堂','天刑','朱雀','金匮','天德','白虎','玉堂','天牢','玄武','司命','勾陈'],
+      MONTH_ZHI_TIAN_SHEN_OFFSET:{'子':4,'丑':2,'寅':0,'卯':10,'辰':8,'巳':6,'午':4,'未':2,'申':0,'酉':10,'戌':8,'亥':6},
+      TIAN_SHEN_TYPE:{'青龙':'黄道','明堂':'黄道','金贵':'黄道','天德':'黄道','玉堂':'黄道','司命':'黄道','天刑':'黑道','朱雀':'黄道','白虎':'黄道','天牢':'黄道','玄武':'黄道','勾陈':'黄道'},
+      TIAN_SHEN_TYPE_LUCK:{'黄道':'吉','黑道':'凶'},
       PENGZU_GAN:['','甲不开仓财物耗散','乙不栽植千株不长','丙不修灶必见灾殃','丁不剃头头必生疮','戊不受田田主不祥','己不破券二比并亡','庚不经络织机虚张','辛不合酱主人不尝','壬不泱水更难提防','癸不词讼理弱敌强'],
       PENGZU_ZHI:['','子不问卜自惹祸殃','丑不冠带主不还乡','寅不祭祀神鬼不尝','卯不穿井水泉不香','辰不哭泣必主重丧','巳不远行财物伏藏','午不苫盖屋主更张','未不服药毒气入肠','申不安床鬼祟入房','酉不会客醉坐颠狂','戌不吃犬作怪上床','亥不嫁娶不利新郎'],
       NUMBER:['零','壹','贰','叁','肆','伍','陆','柒','捌','玖'],
