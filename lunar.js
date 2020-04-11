@@ -164,11 +164,42 @@
       }
       return _fromYmdHm(lunarY,lunarM,lunarD,hour,minute,solar);
     };
-    var _fromYmdHm = function(y,m,d,hour,minute,solar){
-      var dayOffset = LunarUtil.computeAddDays(y,m,d);
+    var _compute = function(year,month,day,hour,minute){
+      var yearGanIndex = (year-4)%10;
+      var yearZhiIndex = (year-4)%12;
+
+      var m = Math.abs(month);
+      var leapMonth = LunarUtil.getLeapMonth(year);
+      if(0===leapMonth||m<leapMonth||month===leapMonth){
+        m-=1;
+      }
+      var monthGanIndex = (m+(yearGanIndex%5+1)*2)%10;
+      var monthZhiIndex = (m+LunarUtil.BASE_MONTH_ZHI_INDEX)%12;
+
+      var dayOffset = LunarUtil.computeAddDays(year,month,day);
       var addDays = (dayOffset + LunarUtil.BASE_DAY_GANZHI_INDEX)%60;
       var dayGanIndex = addDays%10;
       var dayZhiIndex = addDays%12;
+
+      var timeZhiIndex = LunarUtil.getTimeZhiIndex((hour<10?"0":"")+hour+":"+(minute<10?"0":"")+minute);
+      var timeGanIndex = timeZhiIndex%10;
+
+      var weekIndex = (dayOffset+LunarUtil.BASE_WEEK_INDEX)%7;
+      return {
+        yearGanIndex:yearGanIndex,
+        yearZhiIndex:yearZhiIndex,
+        monthGanIndex:monthGanIndex,
+        monthZhiIndex:monthZhiIndex,
+        dayOffset:dayOffset,
+        dayGanIndex:dayGanIndex,
+        dayZhiIndex:dayZhiIndex,
+        timeGanIndex:timeGanIndex,
+        timeZhiIndex:timeZhiIndex,
+        weekIndex:weekIndex
+      };
+    };
+    var _fromYmdHm = function(y,m,d,hour,minute,solar){
+      var gz = _compute(y,m,d,hour,minute);
       var lunar = {
         _p:{
           year:y,
@@ -176,9 +207,16 @@
           day:d,
           hour:hour,
           minute:minute,
-          dayOffset:dayOffset,
-          dayGanIndex:dayGanIndex,
-          dayZhiIndex:dayZhiIndex,
+          timeGanIndex:gz.timeGanIndex,
+          timeZhiIndex:gz.timeZhiIndex,
+          dayOffset:gz.dayOffset,
+          dayGanIndex:gz.dayGanIndex,
+          dayZhiIndex:gz.dayZhiIndex,
+          monthGanIndex:gz.monthGanIndex,
+          monthZhiIndex:gz.monthZhiIndex,
+          yearGanIndex:gz.yearGanIndex,
+          yearZhiIndex:gz.yearZhiIndex,
+          weekIndex:gz.weekIndex,
           solar:null
         },
         _toSolar:function(){
@@ -210,37 +248,25 @@
           return this._p.day;
         },
         getGan:function(){
-          return LunarUtil.GAN[(this._p.year-4)%10+1];
+          return this.getYearGan();
         },
         getZhi:function(){
-          return LunarUtil.ZHI[(this._p.year-4)%12+1];
+          return this.getYearZhi();
         },
         getYearGan:function(){
-          return LunarUtil.GAN[(this._p.year-4)%10+1];
+          return LunarUtil.GAN[this._p.yearGanIndex+1];
         },
         getYearZhi:function(){
-          return LunarUtil.ZHI[(this._p.year-4)%12+1];
+          return LunarUtil.ZHI[this._p.yearZhiIndex+1];
         },
         getYearInGanZhi:function(){
           return this.getYearGan()+this.getYearZhi();
         },
         getMonthGan:function(){
-          var m = Math.abs(this._p.month);
-          var leapMonth = LunarUtil.getLeapMonth(this._p.year);
-          if(0===leapMonth||m<leapMonth||this._p.month===leapMonth){
-            m-=1;
-          }
-          var yearGanIndex = (this._p.year-4)%10;
-          var offset = (yearGanIndex%5+1)*2;
-          return LunarUtil.GAN[(m+offset)%10+1];
+          return LunarUtil.GAN[this._p.monthGanIndex+1];
         },
         getMonthZhi:function(){
-          var m = Math.abs(this._p.month);
-          var leapMonth = LunarUtil.getLeapMonth(this._p.year);
-          if(0===leapMonth||m<leapMonth||this._p.month===leapMonth){
-            m-=1;
-          }
-          return LunarUtil.ZHI[(m+LunarUtil.BASE_MONTH_ZHI_INDEX)%12+1];
+          return LunarUtil.ZHI[this._p.monthZhiIndex+1];
         },
         getMonthInGanZhi:function(){
           return this.getMonthGan()+this.getMonthZhi();
@@ -255,60 +281,28 @@
           return this.getDayGan()+this.getDayZhi();
         },
         getTimeGan:function(){
-          var zhi = this.getTimeZhi();
-          for(var i=1,j=LunarUtil.ZHI.length;i<j;i++){
-            if(LunarUtil.ZHI[i]===zhi){
-              return LunarUtil.GAN[1+(i-1)%10];
-            }
-          }
-          return null;
+          return LunarUtil.GAN[this._p.timeGanIndex+1];
         },
         getTimeZhi:function(){
-          var hour = (this._p.hour<10?'0':'')+this._p.hour;
-          var minute = (this._p.minute<10?'0':'')+this._p.minute;
-          return LunarUtil.convertTime(hour+':'+minute);
+          return LunarUtil.ZHI[this._p.timeZhiIndex+1];
         },
         getTimeInGanZhi:function(){
-          var zhi = this.getTimeZhi();
-          for(var i=1,j=LunarUtil.ZHI.length;i<j;i++){
-            if(LunarUtil.ZHI[i]===zhi){
-              return LunarUtil.GAN[1+(i-1)%10]+zhi;
-            }
-          }
-          return zhi;
+          return this.getTimeGan()+this.getTimeZhi();
         },
         getShengxiao:function(){
-          return LunarUtil.SHENGXIAO[(this._p.year-4)%12+1];
+          return this.getYearShengXiao();
         },
         getYearShengXiao:function(){
-          return LunarUtil.SHENGXIAO[(this._p.year-4)%12+1];
+          return LunarUtil.SHENGXIAO[this._p.yearZhiIndex+1];
         },
         getMonthShengXiao:function(){
-          var zhi = this.getMonthZhi();
-          for(var i=0,j=LunarUtil.ZHI.length;i<j;i++){
-            if(LunarUtil.ZHI[i]===zhi){
-              return LunarUtil.SHENGXIAO[i];
-            }
-          }
-          return '';
+          return LunarUtil.SHENGXIAO[this._p.monthZhiIndex+1];
         },
         getDayShengXiao:function(){
-          var zhi = this.getDayZhi();
-          for(var i=0,j=LunarUtil.ZHI.length;i<j;i++){
-            if(LunarUtil.ZHI[i]===zhi){
-              return LunarUtil.SHENGXIAO[i];
-            }
-          }
-          return '';
+          return LunarUtil.SHENGXIAO[this._p.dayZhiIndex+1];
         },
         getTimeShengXiao:function(){
-          var zhi = this.getTimeZhi();
-          for(var i=0,j=LunarUtil.ZHI.length;i<j;i++){
-            if(LunarUtil.ZHI[i]===zhi){
-              return LunarUtil.SHENGXIAO[i];
-            }
-          }
-          return '';
+          return LunarUtil.SHENGXIAO[this._p.timeZhiIndex+1];
         },
         getYearInChinese:function(){
           var y = (this._p.year+'');
@@ -320,11 +314,7 @@
         },
         getMonthInChinese:function(){
           var month = this._p.month;
-          if(month>0){
-            return LunarUtil.MONTH[month];
-          }else{
-            return '闰'+LunarUtil.MONTH[-month];
-          }
+          return (month<0?'闰':'')+LunarUtil.MONTH[Math.abs(month)];
         },
         getDayInChinese:function(){
           return LunarUtil.DAY[this._p.day];
@@ -415,10 +405,18 @@
             index++;
           }
           var term = LunarUtil.JIE_MAP[solarMonth-1][4*index+ry%4];
-          if(ry===121&&solarMonth===4) term = 5;
-          if(ry===132&&solarMonth===4) term = 5;
-          if(ry===194&&solarMonth===6) term = 6;
-          if(solarDay===term) s = LunarUtil.JIE[solarMonth-1];
+          if(ry===121&&solarMonth===4){
+            term = 5;
+          }
+          if(ry===132&&solarMonth===4){
+            term = 5;
+          }
+          if(ry===194&&solarMonth===6){
+            term = 6;
+          }
+          if(solarDay===term){
+            s = LunarUtil.JIE[solarMonth-1];
+          }
           return s;
         },
         getQi:function(){
@@ -432,13 +430,19 @@
             index++;
           }
           var term = LunarUtil.QI_MAP[solarMonth-1][4*index+ry%4];
-          if(ry===171&&solarMonth===3) term = 21;
-          if(ry===181&&solarMonth===5) term = 21;
-          if(solarDay===term) s = LunarUtil.QI[solarMonth-1];
+          if(ry===171&&solarMonth===3){
+            term = 21;
+          }
+          if(ry===181&&solarMonth===5){
+            term = 21;
+          }
+          if(solarDay===term){
+            s = LunarUtil.QI[solarMonth-1];
+          }
           return s;
         },
         getWeek:function(){
-          return (this._p.dayOffset+LunarUtil.BASE_WEEK_INDEX)%7;
+          return this._p.weekIndex;
         },
         getWeekInChinese:function(){
           return SolarUtil.WEEK[this.getWeek()];
@@ -481,27 +485,7 @@
           return l;
         },
         getBaZi:function(){
-          var dayGan = this.getDayGan();
-          var dayGanIndex = 1;
-          var i,j;
-          for(i=0,j=LunarUtil.GAN.length;i<j;i++){
-            if(LunarUtil.GAN[i]===dayGan){
-              dayGanIndex = i;
-              break;
-            }
-          }
-          dayGanIndex--;
-          dayGanIndex%=5;
-          var timeZhi = this.getTimeZhi();
-          var timeZhiIndex = 1;
-          for(i=0,j=LunarUtil.ZHI.length;i<j;i++){
-            if(LunarUtil.ZHI[i]===timeZhi){
-              timeZhiIndex = i;
-              break;
-            }
-          }
-          timeZhiIndex--;
-          var timeGan = LunarUtil.GAN[(dayGanIndex*12+timeZhiIndex)%10+1];
+          var timeGan = LunarUtil.GAN[(this._p.dayGanIndex%5*12+this._p.timeZhiIndex)%10+1];
           var l = [];
           l.push(this.getYearInGanZhi());
           l.push(this.getMonthInGanZhi());
@@ -554,40 +538,16 @@
           return l;
         },
         getZhiXing:function(){
-          var monthZhi = this.getMonthZhi();
-          var dayZhi = this.getDayZhi();
-          var indexMonthZhi = 0;
-          var indexDayZhi = 0;
-          for(var i=0,j=LunarUtil.ZHI.length;i<j;i++){
-            var zhi = LunarUtil.ZHI[i];
-            if(zhi===monthZhi){
-              indexMonthZhi = i;
-            }
-            if(zhi===dayZhi){
-              indexDayZhi = i;
-            }
-            if(indexMonthZhi>0&&indexDayZhi>0){
-              break;
-            }
+          var offset = this._p.dayZhiIndex-this._p.monthZhiIndex;
+          if(offset<0){
+            offset += 12;
           }
-          var add = indexDayZhi-indexMonthZhi;
-          if(add<0){
-            add = 12+add;
-          }
-          return LunarUtil.ZHI_XING[1+add];
+          return LunarUtil.ZHI_XING[offset+1];
         },
         getDayTianShen:function(){
           var monthZhi = this.getMonthZhi();
-          var dayZhi = this.getDayZhi();
           var offset = LunarUtil.MONTH_ZHI_TIAN_SHEN_OFFSET[monthZhi];
-          var dayIndex = 0;
-          for(var i=0,j=LunarUtil.ZHI.length;i<j;i++){
-            if(LunarUtil.ZHI[i]===dayZhi){
-              dayIndex = i;
-              break;
-            }
-          }
-          return LunarUtil.TIAN_SHEN[1+(dayIndex-1+offset)%12];
+          return LunarUtil.TIAN_SHEN[(this._p.dayZhiIndex+offset)%12+1];
         },
         getDayTianShenType:function(){
           return LunarUtil.TIAN_SHEN_TYPE[this.getDayTianShen()];
@@ -596,17 +556,18 @@
           return LunarUtil.TIAN_SHEN_TYPE_LUCK[this.getDayTianShenType()];
         },
         getDayPositionTai:function(){
-          var ten = this._p.dayGanIndex-this._p.dayZhiIndex;
-          if(ten<0){
-            ten = ten+12;
+          var offset = this._p.dayGanIndex-this._p.dayZhiIndex;
+          if(offset<0){
+            offset += 12;
           }
-          return LunarUtil.POSITION_TAI_DAY[ten*5+this._p.dayGanIndex];
+          return LunarUtil.POSITION_TAI_DAY[offset*5+this._p.dayGanIndex];
         },
         getMonthPositionTai:function(){
-          if(this._p.month<0){
+          var m = this._p.month;
+          if(m<0){
             return '';
           }
-          return LunarUtil.POSITION_TAI_MONTH[this._p.month-1];
+          return LunarUtil.POSITION_TAI_MONTH[m-1];
         },
         getSolar:function(){
           return this._p.solar;
@@ -1209,21 +1170,24 @@
         }
         return d;
       },
-      convertTime:function(hm){
+      getTimeZhiIndex:function(hm){
         if(!hm){
-          return null;
+          return 0;
         }
         if(hm.length>5){
           hm = hm.substring(0,5);
         }
-        var x = 2;
+        var x = 1;
         for(var i=1;i<22;i+=2){
           if(hm>=((i<10?'0':'')+i+':00')&&hm<=((i+1<10?'0':'')+(i+1)+':59')){
-            return this.ZHI[x];
+            return x;
           }
           x++;
         }
-        return this.ZHI[1];
+        return 0;
+      },
+      convertTime:function(hm){
+        return this.ZHI[this.getTimeZhiIndex(hm)+1];
       }
     };
   })();
