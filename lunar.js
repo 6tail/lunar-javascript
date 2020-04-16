@@ -105,7 +105,7 @@
           return s;
         },
         next:function(days){
-          var date = new Date(this._p.year+'/'+this._p.month+'/'+this._p.day);
+          var date = new Date(this._p.year+'/'+this._p.month+'/'+this._p.day+' '+hour+':'+minute);
           date.setDate(date.getDate()+days);
           return _fromDate(date);
         },
