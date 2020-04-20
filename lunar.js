@@ -1,9 +1,45 @@
 (function(W){
   var Solar = (function(){
-    var _fromDate = function(date){
-      return _fromYmdHm(date.getFullYear(),date.getMonth()+1,date.getDate(),date.getHours(),date.getMinutes());
+    var _int2=function(v){
+      v = Math.floor(v);
+      return v<0?v+1:v;
     };
-    var _fromYmdHm = function(y,m,d,hour,minute){
+    var _fromDate = function(date){
+      return _fromYmdHms(date.getFullYear(),date.getMonth()+1,date.getDate(),date.getHours(),date.getMinutes(),date.getSeconds());
+    };
+    var _fromJulianDay = function(julianDay){
+      var jd = julianDay + 0.5;
+      var a = _int2(jd);
+      var f = jd - a;
+      var d;
+      if (a > 2299161) {
+        d = _int2((a - 1867216.25) / 36524.25);
+        a += 1 + d - _int2(d / 4);
+      }
+      a += 1524;
+      var year = _int2((a - 122.1) / 365.25);
+      d = a - _int2(365.25 * year);
+      var month = _int2(d / 30.6001);
+      var day = _int2(d - _int2(month * 30.6001));
+      year -= 4716;
+      month--;
+      if (month > 12) {
+        month -= 12;
+      }
+      if (month <= 2) {
+        year++;
+      }
+      f *= 24;
+      var hour = _int2(f);
+      f -= hour;
+      f *= 60;
+      var minute = _int2(f);
+      f -= minute;
+      f *= 60;
+      var second = _int2(f);
+      return _fromYmdHms(year,month,day,hour,minute,second);
+    };
+    var _fromYmdHms = function(y,m,d,hour,minute,second){
       return {
         _p:{
           year:y,
@@ -11,7 +47,8 @@
           day:d,
           hour:hour,
           minute:minute,
-          calendar:new Date(y+'/'+m+'/'+d+' '+hour+':'+minute)
+          second:second,
+          calendar:new Date(y+'/'+m+'/'+d+' '+hour+':'+minute+':'+second)
         },
         getYear:function(){
           return this._p.year;
@@ -27,6 +64,9 @@
         },
         getMinute:function(){
           return this._p.minute;
+        },
+        getSecond:function(){
+          return this._p.second;
         },
         getWeek:function(){
           return this._p.calendar.getDay();
@@ -84,15 +124,17 @@
         getXingZuo:function(){
           return this.getXingzuo();
         },
-        toString:function(){
+        toYmd:function(){
           return [this._p.year,(this._p.month<10?'0':'')+this._p.month,(this._p.day<10?'0':'')+this._p.day].join('-');
         },
+        toYmdHms:function(){
+          return this.toYmd()+' '+[(this._p.hour<10?'0':'')+this._p.hour,(this._p.minute<10?'0':'')+this._p.minute,(this._p.second<10?'0':'')+this._p.second].join(':');
+        },
+        toString:function(){
+          return this.toYmd();
+        },
         toFullString:function(){
-          var hour = (this._p.hour<10?'0':'')+this._p.hour;
-          var minute = (this._p.minute<10?'0':'')+this._p.minute;
-          var s = this.toString();
-          s += ' '+hour;
-          s += ':'+minute;
+          var s = this.toYmdHms();
           if(this.isLeapYear()){
             s += ' 闰年';
           }
@@ -105,7 +147,7 @@
           return s;
         },
         next:function(days){
-          var date = new Date(this._p.year+'/'+this._p.month+'/'+this._p.day+' '+hour+':'+minute);
+          var date = new Date(this._p.year+'/'+this._p.month+'/'+this._p.day+' '+this._p.hour+':'+this._p.minute+':'+this._p.second);
           date.setDate(date.getDate()+days);
           return _fromDate(date);
         },
@@ -115,12 +157,31 @@
       };
     };
     return {
-      fromYmd:function(y,m,d){return _fromYmdHm(y,m,d,0,0);},
-      fromYmdHm:function(y,m,d,hour,minute){return _fromYmdHm(y,m,d,hour,minute);},
-      fromDate:function(date){return _fromDate(date);}
+      J2000:2451545,
+      fromYmd:function(y,m,d){return _fromYmdHms(y,m,d,0,0,0);},
+      fromYmdHms:function(y,m,d,hour,minute,second){return _fromYmdHms(y,m,d,hour,minute,second);},
+      fromDate:function(date){return _fromDate(date);},
+      fromJulianDay:function(julianDay){return _fromJulianDay(julianDay);}
     };
   })();
   var Lunar = (function(){
+    var RAD_PER_DEGREE = Math.PI / 180;
+    var DEGREE_PER_RAD = 180 / Math.PI;
+    var SECOND_PER_RAD = 180 * 3600 / Math.PI;
+    var JIE_QI = ['冬至','小寒','大寒','立春','雨水','惊蛰','春分','清明','谷雨','立夏','小满','芒种','夏至','小暑','大暑','立秋','处暑','白露','秋分','寒露','霜降','立冬','小雪','大雪'];
+    var E10 = [1.75347045673, 0.00000000000, 0.0000000000, 0.03341656456, 4.66925680417, 6283.0758499914, 0.00034894275, 4.62610241759, 12566.1516999828, 0.00003417571, 2.82886579606, 3.5231183490, 0.00003497056, 2.74411800971, 5753.3848848968, 0.00003135896, 3.62767041758, 77713.7714681205, 0.00002676218, 4.41808351397, 7860.4193924392, 0.00002342687, 6.13516237631, 3930.2096962196, 0.00001273166, 2.03709655772, 529.6909650946, 0.00001324292, 0.74246356352, 11506.7697697936, 0.00000901855, 2.04505443513, 26.2983197998, 0.00001199167, 1.10962944315, 1577.3435424478, 0.00000857223, 3.50849156957, 398.1490034082, 0.00000779786, 1.17882652114, 5223.6939198022, 0.00000990250, 5.23268129594, 5884.9268465832, 0.00000753141, 2.53339053818, 5507.5532386674, 0.00000505264, 4.58292563052, 18849.2275499742, 0.00000492379, 4.20506639861, 775.5226113240, 0.00000356655, 2.91954116867, 0.0673103028, 0.00000284125, 1.89869034186, 796.2980068164, 0.00000242810, 0.34481140906, 5486.7778431750, 0.00000317087, 5.84901952218, 11790.6290886588, 0.00000271039, 0.31488607649, 10977.0788046990, 0.00000206160, 4.80646606059, 2544.3144198834, 0.00000205385, 1.86947813692, 5573.1428014331, 0.00000202261, 2.45767795458, 6069.7767545534, 0.00000126184, 1.08302630210, 20.7753954924, 0.00000155516, 0.83306073807, 213.2990954380, 0.00000115132, 0.64544911683, 0.9803210682, 0.00000102851, 0.63599846727, 4694.0029547076, 0.00000101724, 4.26679821365, 7.1135470008, 0.00000099206, 6.20992940258, 2146.1654164752, 0.00000132212, 3.41118275555, 2942.4634232916, 0.00000097607, 0.68101272270, 155.4203994342, 0.00000085128, 1.29870743025, 6275.9623029906, 0.00000074651, 1.75508916159, 5088.6288397668, 0.00000101895, 0.97569221824, 15720.8387848784, 0.00000084711, 3.67080093025, 71430.6956181291, 0.00000073547, 4.67926565481, 801.8209311238, 0.00000073874, 3.50319443167, 3154.6870848956, 0.00000078756, 3.03698313141, 12036.4607348882, 0.00000079637, 1.80791330700, 17260.1546546904, 0.00000085803, 5.98322631256, 161000.6857376741, 0.00000056963, 2.78430398043, 6286.5989683404, 0.00000061148, 1.81839811024, 7084.8967811152, 0.00000069627, 0.83297596966, 9437.7629348870, 0.00000056116, 4.38694880779, 14143.4952424306, 0.00000062449, 3.97763880587, 8827.3902698748, 0.00000051145, 0.28306864501, 5856.4776591154, 0.00000055577, 3.47006009062, 6279.5527316424, 0.00000041036, 5.36817351402, 8429.2412664666, 0.00000051605, 1.33282746983, 1748.0164130670, 0.00000051992, 0.18914945834, 12139.5535091068, 0.00000049000, 0.48735065033, 1194.4470102246, 0.00000039200, 6.16832995016, 10447.3878396044, 0.00000035566, 1.77597314691, 6812.7668150860, 0.00000036770, 6.04133859347, 10213.2855462110, 0.00000036596, 2.56955238628, 1059.3819301892, 0.00000033291, 0.59309499459, 17789.8456197850, 0.00000035954, 1.70876111898, 2352.8661537718];
+    var E11 = [6283.31966747491, 0.00000000000, 0.0000000000, 0.00206058863, 2.67823455584, 6283.0758499914, 0.00004303430, 2.63512650414, 12566.1516999828, 0.00000425264, 1.59046980729, 3.5231183490, 0.00000108977, 2.96618001993, 1577.3435424478, 0.00000093478, 2.59212835365, 18849.2275499742, 0.00000119261, 5.79557487799, 26.2983197998, 0.00000072122, 1.13846158196, 529.6909650946, 0.00000067768, 1.87472304791, 398.1490034082, 0.00000067327, 4.40918235168, 5507.5532386674, 0.00000059027, 2.88797038460, 5223.6939198022, 0.00000055976, 2.17471680261, 155.4203994342, 0.00000045407, 0.39803079805, 796.2980068164, 0.00000036369, 0.46624739835, 775.5226113240, 0.00000028958, 2.64707383882, 7.1135470008, 0.00000019097, 1.84628332577, 5486.7778431750, 0.00000020844, 5.34138275149, 0.9803210682, 0.00000018508, 4.96855124577, 213.2990954380, 0.00000016233, 0.03216483047, 2544.3144198834, 0.00000017293, 2.99116864949, 6275.9623029906];
+    var E12 = [0.00052918870, 0.00000000000, 0.0000000000, 0.00008719837, 1.07209665242, 6283.0758499914, 0.00000309125, 0.86728818832, 12566.1516999828, 0.00000027339, 0.05297871691, 3.5231183490, 0.00000016334, 5.18826691036, 26.2983197998, 0.00000015752, 3.68457889430, 155.4203994342, 0.00000009541, 0.75742297675, 18849.2275499742, 0.00000008937, 2.05705419118, 77713.7714681205, 0.00000006952, 0.82673305410, 775.5226113240, 0.00000005064, 4.66284525271, 1577.3435424478];
+    var E13 = [0.00000289226, 5.84384198723, 6283.0758499914, 0.00000034955, 0.00000000000, 0.0000000000, 0.00000016819, 5.48766912348, 12566.1516999828];
+    var E14 = [0.00000114084, 3.14159265359, 0.0000000000, 0.00000007717, 4.13446589358, 6283.0758499914, 0.00000000765, 3.83803776214, 12566.1516999828];
+    var E15 = [0.00000000878, 3.14159265359, 0.0000000000];
+    var E20 = [0.00000279620, 3.19870156017, 84334.6615813083, 0.00000101643, 5.42248619256, 5507.5532386674, 0.00000080445, 3.88013204458, 5223.6939198022, 0.00000043806, 3.70444689758, 2352.8661537718, 0.00000031933, 4.00026369781, 1577.3435424478, 0.00000022724, 3.98473831560, 1047.7473117547, 0.00000016392, 3.56456119782, 5856.4776591154, 0.00000018141, 4.98367470263, 6283.0758499914, 0.00000014443, 3.70275614914, 9437.7629348870, 0.00000014304, 3.41117857525, 10213.2855462110];
+    var E21 = [0.00000009030, 3.89729061890, 5507.5532386674, 0.00000006177, 1.73038850355, 5223.6939198022];
+    var GXC_E = [0.016708634, -0.000042037, -0.0000001267];
+    var GXC_P = [102.93735 / DEGREE_PER_RAD, 1.71946 / DEGREE_PER_RAD, 0.00046 / DEGREE_PER_RAD];
+    var GXC_L = [280.4664567 / DEGREE_PER_RAD, 36000.76982779 / DEGREE_PER_RAD, 0.0003032028 / DEGREE_PER_RAD, 1 / 49931000 / DEGREE_PER_RAD, -1 / 153000000 / DEGREE_PER_RAD];
+    var GXC_K = 20.49552 / SECOND_PER_RAD;
+    var ZD = [2.1824391966, -33.757045954, 0.0000362262, 3.7340E-08, -2.8793E-10, -171996, -1742, 92025, 89, 3.5069406862, 1256.663930738, 0.0000105845, 6.9813E-10, -2.2815E-10, -13187, -16, 5736, -31, 1.3375032491, 16799.418221925, -0.0000511866, 6.4626E-08, -5.3543E-10, -2274, -2, 977, -5, 4.3648783932, -67.514091907, 0.0000724525, 7.4681E-08, -5.7586E-10, 2062, 2, -895, 5, 0.0431251803, -628.301955171, 0.0000026820, 6.5935E-10, 5.5705E-11, -1426, 34, 54, -1, 2.3555557435, 8328.691425719, 0.0001545547, 2.5033E-07, -1.1863E-09, 712, 1, -7, 0, 3.4638155059, 1884.965885909, 0.0000079025, 3.8785E-11, -2.8386E-10, -517, 12, 224, -6, 5.4382493597, 16833.175267879, -0.0000874129, 2.7285E-08, -2.4750E-10, -386, -4, 200, 0, 3.6930589926, 25128.109647645, 0.0001033681, 3.1496E-07, -1.7218E-09, -301, 0, 129, -1, 3.5500658664, 628.361975567, 0.0000132664, 1.3575E-09, -1.7245E-10, 217, -5, -95, 3];
     var _fromDate = function(date){
       var solar = Solar.fromDate(date);
       var y = solar.getYear();
@@ -128,6 +189,7 @@
       var d = solar.getDay();
       var hour = date.getHours();
       var minute = date.getMinutes();
+      var second = date.getSeconds();
       var startY,startM,startD;
       var lunarY,lunarM,lunarD;
       if(y<2000){
@@ -162,51 +224,247 @@
         if(lunarM===1) lunarY++;
         lastDate = LunarUtil.getDaysOfMonth(lunarY,lunarM);
       }
-      return _fromYmdHm(lunarY,lunarM,lunarD,hour,minute,solar);
+      return _fromYmdHms(lunarY,lunarM,lunarD,hour,minute,second,solar);
     };
-    var _compute = function(year,month,day,hour,minute){
-      var yearGanIndex = (year-4)%10;
-      var yearZhiIndex = (year-4)%12;
-
-      var m = Math.abs(month);
-      var leapMonth = LunarUtil.getLeapMonth(year);
-      if(0===leapMonth||m<leapMonth||month===leapMonth){
-        m-=1;
+    var _mrad = function(rad) {
+      var pi2 = 2 * Math.PI;
+      rad = rad % pi2;
+      return rad<0?rad+pi2:rad;
+    };
+    var _gxc = function(t, pos) {
+      var t1 = t / 36525;
+      var t2 = t1 * t1;
+      var t3 = t2 * t1;
+      var t4 = t3 * t1;
+      var l = GXC_L[0] + GXC_L[1] * t1 + GXC_L[2] * t2 + GXC_L[3] * t3 + GXC_L[4] * t4;
+      var p = GXC_P[0] + GXC_P[1] * t1 + GXC_P[2] * t2;
+      var e = GXC_E[0] + GXC_E[1] * t1 + GXC_E[2] * t2;
+      var dl = l - pos[0], dp = p - pos[0];
+      pos[0] -= GXC_K * (Math.cos(dl) - e * Math.cos(dp)) / Math.cos(pos[1]);
+      pos[1] -= GXC_K * Math.sin(pos[1]) * (Math.sin(dl) - e * Math.sin(dp));
+      pos[0] = _mrad(pos[0]);
+    };
+    var _enn = function(f,ennt) {
+      var v = 0;
+      for(var i=0,j=f.length;i<j;i+=3){
+        v += f[i] * Math.cos(f[i + 1] + ennt * f[i + 2]);
       }
-      var monthGanIndex = (m+(yearGanIndex%5+1)*2)%10;
-      var monthZhiIndex = (m+LunarUtil.BASE_MONTH_ZHI_INDEX)%12;
-
-      var dayOffset = LunarUtil.computeAddDays(year,month,day);
-      var addDays = (dayOffset + LunarUtil.BASE_DAY_GANZHI_INDEX)%60;
-      var dayGanIndex = addDays%10;
-      var dayZhiIndex = addDays%12;
-
-      var timeZhiIndex = LunarUtil.getTimeZhiIndex((hour<10?"0":"")+hour+":"+(minute<10?"0":"")+minute);
-      var timeGanIndex = timeZhiIndex%10;
-
-      var weekIndex = (dayOffset+LunarUtil.BASE_WEEK_INDEX)%7;
-      return {
-        yearGanIndex:yearGanIndex,
-        yearZhiIndex:yearZhiIndex,
-        monthGanIndex:monthGanIndex,
-        monthZhiIndex:monthZhiIndex,
-        dayOffset:dayOffset,
-        dayGanIndex:dayGanIndex,
-        dayZhiIndex:dayZhiIndex,
-        timeGanIndex:timeGanIndex,
-        timeZhiIndex:timeZhiIndex,
-        weekIndex:weekIndex
-      };
+      return v;
     };
-    var _fromYmdHm = function(y,m,d,hour,minute,solar){
-      var gz = _compute(y,m,d,hour,minute);
-      var lunar = {
+    var _calEarth = function(t) {
+      var t1 = t / 365250;
+      var r = [];
+      var t2 = t1 * t1, t3 = t2 * t1, t4 = t3 * t1, t5 = t4 * t1;
+      r[0] = _mrad(_enn(E10,t1) + _enn(E11,t1) * t1 + _enn(E12,t1) * t2 + _enn(E13,t1) * t3 + _enn(E14,t1) * t4 + _enn(E15,t1) * t5);
+      r[1] = _enn(E20,t1) + _enn(E21,t1) * t1;
+      return r;
+    };
+    var _hjzd = function(t){
+      var lon = 0;
+      var t1 = t / 36525;
+      var c, t2 = t1 * t1, t3 = t2 * t1, t4 = t3 * t1;
+      for (var i = 0,j=ZD.length; i < j; i += 9) {
+        c = ZD[i] + ZD[i + 1] * t1 + ZD[i + 2] * t2 + ZD[i + 3] * t3 + ZD[i + 4] * t4;
+        lon += (ZD[i + 5] + ZD[i + 6] * t1 / 10) * Math.sin(c);
+      }
+      lon /= SECOND_PER_RAD * 10000;
+      return lon;
+    };
+    var _calRad = function(t, rad) {
+      var pos = _calEarth(t);
+      pos[0] += Math.PI;
+      pos[1] = -pos[1];
+      _gxc(t, pos);
+      pos[0] += _hjzd(t);
+      return _mrad(rad - pos[0]);
+    };
+    var _calJieQi = function(t1, degree) {
+      var t2 = t1, t = 0, v;
+      t2 += 360;
+      var rad = degree * RAD_PER_DEGREE;
+      var v1 = _calRad(t1, rad);
+      var v2 = _calRad(t2, rad);
+      if (v1 < v2) {
+        v2 -= 2 * Math.PI;
+      }
+      var k = 1, k2;
+      for (var i = 0; i < 10; i++) {
+        k2 = (v2 - v1) / (t2 - t1);
+        if (Math.abs(k2) > 1e-15) {
+          k = k2;
+        }
+        t = t1 - v1 / k;
+        v = _calRad(t, rad);
+        if (v > 1) {
+          v -= 2 * Math.PI;
+        }
+        if (Math.abs(v) < 1e-8) {
+          break;
+        }
+        t1 = t2;
+        v1 = v2;
+        t2 = t;
+        v2 = v;
+      }
+      return t;
+    };
+    var _computeJieQi = function(o,solar) {
+      o['jieQiList'] = [];
+      o['jieQi'] = {};
+      var jd = 365.2422 * (solar.getYear()-2001);
+      for (var i = 0,j=JIE_QI.length; i < j; i++) {
+        var t = _calJieQi(jd+i*15.2, i*15-90) + Solar.J2000 + 8 / 24;
+        var key = JIE_QI[i];
+        o['jieQiList'].push(key);
+        o['jieQi'][key] = Solar.fromJulianDay(t);
+      }
+    };
+    var _computeYear = function(o,solar,year){
+      var yearGanIndex = (year+LunarUtil.BASE_YEAR_GANZHI_INDEX)%10;
+      var yearZhiIndex = (year+LunarUtil.BASE_YEAR_GANZHI_INDEX)%12;
+
+      //以立春作为新一年的开始的干支纪年
+      var g = yearGanIndex;
+      var z = yearZhiIndex;
+
+      //精确的干支纪年，以立春交接时刻为准
+      var gExact = yearGanIndex;
+      var zExact = yearZhiIndex;
+
+      if(year===solar.getYear()){
+        //获取立春的阳历时刻
+        var liChun = o['jieQi']['立春'];
+        //立春日期判断
+        if(solar.toYmd()<liChun.toYmd()) {
+          g--;
+          if(g<0){
+            g += 10;
+          }
+          z--;
+          if(z<0){
+            z += 12;
+          }
+        }
+        //立春交接时刻判断
+        if(solar.toYmdHms()<liChun.toYmdHms()) {
+          gExact--;
+          if(gExact<0){
+            gExact += 10;
+          }
+          zExact--;
+          if(zExact<0){
+            zExact += 12;
+          }
+        }
+      }
+      o['yearGanIndex'] = yearGanIndex;
+      o['yearZhiIndex'] = yearZhiIndex;
+      o['yearGanIndexByLiChun'] = g;
+      o['yearZhiIndexByLiChun'] = z;
+
+      o['yearGanIndexExact'] = gExact;
+      o['yearZhiIndexExact'] = zExact;
+    };
+    var _computeMonth = function(o,solar){
+      var start = null,i,j,jie;
+      var end;
+      var gOffset = ((o.yearGanIndexByLiChun%5+1)*2)%10;
+      var gOffsetExact = ((o.yearGanIndexExact%5+1)*2)%10;
+
+      //序号：大雪到小寒之间-2，小寒到立春之间-1，立春之后0
+      var index = -2;
+      for(i=0,j=LunarUtil.JIE.length;i<j;i++){
+        jie = LunarUtil.JIE[i];
+        end = o.jieQi[jie];
+        var ymd = solar.toYmd();
+        var symd = null==start?ymd:start.toYmd();
+        var eymd = end.toYmd();
+        if(ymd>=symd&&ymd<eymd){
+          break;
+        }
+        start = end;
+        index++;
+      }
+      if(index<0){
+        index += 12;
+      }
+
+      o['monthGanIndex'] = (index+gOffset)%10;
+      o['monthZhiIndex'] = (index+LunarUtil.BASE_MONTH_ZHI_INDEX)%12;
+
+      //序号：大雪到小寒之间-2，小寒到立春之间-1，立春之后0
+      var indexExact = -2;
+      for(i=0,j=LunarUtil.JIE.length;i<j;i++){
+        jie = LunarUtil.JIE[i];
+        end = o.jieQi[jie];
+        var time = solar.toYmdHms();
+        var stime = null==start?time:start.toYmdHms();
+        var etime = end.toYmdHms();
+        if(time>=stime&&time<etime){
+          break;
+        }
+        start = end;
+        indexExact++;
+      }
+      if(indexExact<0){
+        indexExact += 12;
+      }
+      o['monthGanIndexExact'] = (indexExact+gOffsetExact)%10;
+      o['monthZhiIndexExact'] = (indexExact+LunarUtil.BASE_MONTH_ZHI_INDEX)%12;
+    };
+    var _computeDay = function(o){
+      var addDays = (o.dayOffset + LunarUtil.BASE_DAY_GANZHI_INDEX)%60;
+      o['dayGanIndex'] = addDays%10;
+      o['dayZhiIndex'] = addDays%12;
+    };
+    var _computeTime = function(o,hour,minute){
+      var timeZhiIndex = LunarUtil.getTimeZhiIndex((hour<10?"0":"")+hour+":"+(minute<10?"0":"")+minute);
+      o['timeGanIndex'] = timeZhiIndex%10;
+      o['timeZhiIndex'] = timeZhiIndex;
+    };
+    var _computeWeek = function(o){
+      o['weekIndex'] = (o.dayOffset+LunarUtil.BASE_WEEK_INDEX)%7;
+    };
+    var _compute = function(year,month,day,hour,minute,second,solar){
+      var dayOffset = LunarUtil.computeAddDays(year,month,day);
+      var o = {dayOffset:dayOffset};
+      _computeJieQi(o,solar);
+      _computeYear(o,solar,year);
+      _computeMonth(o,solar);
+      _computeDay(o);
+      _computeTime(o,hour,minute);
+      _computeWeek(o);
+      return o;
+    };
+    var _fromYmdHms = function(year,month,day,hour,minute,second,solar){
+      var _solar = solar?solar:(function(){
+        var y = LunarUtil.BASE_YEAR;
+        var m = LunarUtil.BASE_MONTH;
+        var d = LunarUtil.BASE_DAY;
+        var diff = LunarUtil.getDaysOfMonth(y,m)-d;
+        m = LunarUtil.nextMonth(y,m);
+        while(true){
+          diff += LunarUtil.getDaysOfMonth(y,m);
+          m = LunarUtil.nextMonth(y,m);
+          if(m===1) y++;
+          if(y===year&&m===month){
+            diff += day;
+            break;
+          }
+        }
+        var date = new Date(SolarUtil.BASE_YEAR+'/'+SolarUtil.BASE_MONTH+'/'+SolarUtil.BASE_DAY+' '+hour+':'+minute+':'+second);
+        date.setDate(date.getDate()+diff);
+        return Solar.fromDate(date);
+      })();
+      var gz = _compute(year,month,day,hour,minute,second,_solar);
+      return {
         _p:{
-          year:y,
-          month:m,
-          day:d,
+          year:year,
+          month:month,
+          day:day,
           hour:hour,
           minute:minute,
+          second:second,
           timeGanIndex:gz.timeGanIndex,
           timeZhiIndex:gz.timeZhiIndex,
           dayOffset:gz.dayOffset,
@@ -214,29 +472,18 @@
           dayZhiIndex:gz.dayZhiIndex,
           monthGanIndex:gz.monthGanIndex,
           monthZhiIndex:gz.monthZhiIndex,
+          monthGanIndexExact:gz.monthGanIndexExact,
+          monthZhiIndexExact:gz.monthZhiIndexExact,
           yearGanIndex:gz.yearGanIndex,
           yearZhiIndex:gz.yearZhiIndex,
+          yearGanIndexByLiChun:gz.yearGanIndexByLiChun,
+          yearZhiIndexByLiChun:gz.yearZhiIndexByLiChun,
+          yearGanIndexExact:gz.yearGanIndexExact,
+          yearZhiIndexExact:gz.yearZhiIndexExact,
           weekIndex:gz.weekIndex,
-          solar:null
-        },
-        _toSolar:function(){
-          var y = LunarUtil.BASE_YEAR;
-          var m = LunarUtil.BASE_MONTH;
-          var d = LunarUtil.BASE_DAY;
-          var diff = LunarUtil.getDaysOfMonth(y,m)-d;
-          m = LunarUtil.nextMonth(y,m);
-          while(true){
-            diff += LunarUtil.getDaysOfMonth(y,m);
-            m = LunarUtil.nextMonth(y,m);
-            if(m===1) y++;
-            if(y===this._p.year&&m===this._p.month){
-              diff += this._p.day;
-              break;
-            }
-          }
-          var date = new Date(SolarUtil.BASE_YEAR+'/'+SolarUtil.BASE_MONTH+'/'+SolarUtil.BASE_DAY+' '+this._p.hour+':'+this._p.minute);
-          date.setDate(date.getDate()+diff);
-          return Solar.fromDate(date);
+          jieQi:gz.jieQi,
+          jieQiList:gz.jieQiList,
+          solar:_solar
         },
         getYear:function(){
           return this._p.year;
@@ -247,6 +494,15 @@
         getDay:function(){
           return this._p.day;
         },
+        getHour:function(){
+          return this._p.hour;
+        },
+        getMinute:function(){
+          return this._p.minute;
+        },
+        getSecond:function(){
+          return this._p.second;
+        },
         getGan:function(){
           return this.getYearGan();
         },
@@ -256,20 +512,47 @@
         getYearGan:function(){
           return LunarUtil.GAN[this._p.yearGanIndex+1];
         },
+        getYearGanByLiChun:function(){
+          return LunarUtil.GAN[this._p.yearGanIndexByLiChun+1];
+        },
+        getYearGanExact:function(){
+          return LunarUtil.GAN[this._p.yearGanIndexExact+1];
+        },
         getYearZhi:function(){
           return LunarUtil.ZHI[this._p.yearZhiIndex+1];
+        },
+        getYearZhiByLiChun:function(){
+          return LunarUtil.ZHI[this._p.yearZhiIndexByLiChun+1];
+        },
+        getYearZhiExact:function(){
+          return LunarUtil.ZHI[this._p.yearZhiIndexExact+1];
         },
         getYearInGanZhi:function(){
           return this.getYearGan()+this.getYearZhi();
         },
+        getYearInGanZhiByLiChun:function(){
+          return this.getYearGanByLiChun()+this.getYearZhiByLiChun();
+        },
+        getYearInGanZhiExact:function(){
+          return this.getYearGanExact()+this.getYearZhiExact();
+        },
         getMonthGan:function(){
           return LunarUtil.GAN[this._p.monthGanIndex+1];
+        },
+        getMonthGanExact:function(){
+          return LunarUtil.GAN[this._p.monthGanIndexExact+1];
         },
         getMonthZhi:function(){
           return LunarUtil.ZHI[this._p.monthZhiIndex+1];
         },
+        getMonthZhiExact:function(){
+          return LunarUtil.ZHI[this._p.monthZhiIndexExact+1];
+        },
         getMonthInGanZhi:function(){
           return this.getMonthGan()+this.getMonthZhi();
+        },
+        getMonthInGanZhiExact:function(){
+          return this.getMonthGanExact()+this.getMonthZhiExact();
         },
         getDayGan:function(){
           return LunarUtil.GAN[this._p.dayGanIndex+1];
@@ -295,8 +578,17 @@
         getYearShengXiao:function(){
           return LunarUtil.SHENGXIAO[this._p.yearZhiIndex+1];
         },
+        getYearShengXiaoByLiChun:function(){
+          return LunarUtil.SHENGXIAO[this._p.yearZhiIndexByLiChun+1];
+        },
+        getYearShengXiaoExact:function(){
+          return LunarUtil.SHENGXIAO[this._p.yearZhiIndexExact+1];
+        },
         getMonthShengXiao:function(){
           return LunarUtil.SHENGXIAO[this._p.monthZhiIndex+1];
+        },
+        getMonthShengXiaoExact:function(){
+          return LunarUtil.SHENGXIAO[this._p.monthZhiIndexExact+1];
         },
         getDayShengXiao:function(){
           return LunarUtil.SHENGXIAO[this._p.dayZhiIndex+1];
@@ -395,51 +687,24 @@
           return LunarUtil.SEASON[Math.abs(this._p.month)];
         },
         getJie:function(){
-          var s = '',solar = this._p.solar;
-          var solarYear = solar.getYear();
-          var solarMonth = solar.getMonth();
-          var solarDay = solar.getDay();
-          var index = 0;
-          var ry = solarYear-SolarUtil.BASE_YEAR+1;
-          while(ry>=LunarUtil.JIE_YEAR[solarMonth-1][index]){
-            index++;
+          for(var i=0,j=LunarUtil.JIE.length;i<j;i++){
+            var jie = LunarUtil.JIE[i];
+            var d = this._p.jieQi[jie];
+            if(d.getYear()===this._p.solar.getYear()&&d.getMonth()===this._p.solar.getMonth()&&d.getDay()===this._p.solar.getDay()){
+              return jie;
+            }
           }
-          var term = LunarUtil.JIE_MAP[solarMonth-1][4*index+ry%4];
-          if(ry===121&&solarMonth===4){
-            term = 5;
-          }
-          if(ry===132&&solarMonth===4){
-            term = 5;
-          }
-          if(ry===194&&solarMonth===6){
-            term = 6;
-          }
-          if(solarDay===term){
-            s = LunarUtil.JIE[solarMonth-1];
-          }
-          return s;
+          return '';
         },
         getQi:function(){
-          var s = '',solar = this._p.solar;
-          var solarYear = solar.getYear();
-          var solarMonth = solar.getMonth();
-          var solarDay = solar.getDay();
-          var index = 0;
-          var ry = solarYear-SolarUtil.BASE_YEAR+1;
-          while(ry>=LunarUtil.QI_YEAR[solarMonth-1][index]){
-            index++;
+          for(var i=0,j=LunarUtil.QI.length;i<j;i++){
+            var qi = LunarUtil.QI[i];
+            var d = this._p.jieQi[qi];
+            if(d.getYear()===this._p.solar.getYear()&&d.getMonth()===this._p.solar.getMonth()&&d.getDay()===this._p.solar.getDay()){
+              return qi;
+            }
           }
-          var term = LunarUtil.QI_MAP[solarMonth-1][4*index+ry%4];
-          if(ry===171&&solarMonth===3){
-            term = 21;
-          }
-          if(ry===181&&solarMonth===5){
-            term = 21;
-          }
-          if(solarDay===term){
-            s = LunarUtil.QI[solarMonth-1];
-          }
-          return s;
+          return '';
         },
         getWeek:function(){
           return this._p.weekIndex;
@@ -487,8 +752,8 @@
         getBaZi:function(){
           var timeGan = LunarUtil.GAN[(this._p.dayGanIndex%5*12+this._p.timeZhiIndex)%10+1];
           var l = [];
-          l.push(this.getYearInGanZhi());
-          l.push(this.getMonthInGanZhi());
+          l.push(this.getYearInGanZhiExact());
+          l.push(this.getMonthInGanZhiExact());
           l.push(this.getDayInGanZhi());
           l.push(timeGan+this.getTimeZhi());
           return l;
@@ -522,7 +787,7 @@
           var l = [];
           l.push(LunarUtil.SHI_SHEN_GAN[dayGan+yearGan]);
           l.push(LunarUtil.SHI_SHEN_GAN[dayGan+monthGan]);
-          l.push("日主");
+          l.push('日主');
           l.push(LunarUtil.SHI_SHEN_GAN[dayGan+timeGan]);
           return l;
         },
@@ -572,6 +837,12 @@
         getSolar:function(){
           return this._p.solar;
         },
+        getJieQiTable:function(){
+          return this._p.jieQi;
+        },
+        getJieQiList:function(){
+          return this._p.jieQiList;
+        },
         toString:function(){
           return this.getYearInChinese()+'年'+this.getMonthInChinese()+'月'+this.getDayInChinese();
         },
@@ -608,12 +879,10 @@
           return s;
         }
       };
-      lunar._p.solar = solar?solar:lunar._toSolar();
-      return lunar;
     };
     return {
-      fromYmdHm:function(y,m,d,hour,minute){return _fromYmdHm(y,m,d,hour,minute);},
-      fromYmd:function(y,m,d){return _fromYmdHm(y,m,d,0,0);},
+      fromYmdHms:function(y,m,d,hour,minute,second){return _fromYmdHms(y,m,d,hour,minute,second);},
+      fromYmd:function(y,m,d){return _fromYmdHms(y,m,d,0,0,0);},
       fromDate:function(date){return _fromDate(date);}
     };
   })();
@@ -1047,6 +1316,7 @@
       BASE_MONTH:11,
       BASE_DAY:11,
       BASE_INDEX:0,
+      BASE_YEAR_GANZHI_INDEX:-4,
       BASE_DAY_GANZHI_INDEX:15,
       BASE_MONTH_ZHI_INDEX:2,
       BASE_WEEK_INDEX:2,
@@ -1060,6 +1330,7 @@
       POSITION_TAI_MONTH:['占房床','占户窗','占门堂','占厨灶','占身床','占床仓','占碓磨','占厕户','占门房','占房床','占炉灶','占房床'],
       ZHI:['','子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'],
       ZHI_XING:['','建','除','满','平','定','执','破','危','成','收','开','闭'],
+      JIA_ZI:['甲子','乙丑','丙寅','丁卯','戊辰','己巳','庚午','辛未','壬申','癸酉','甲戌','乙亥','丙子','丁丑','戊寅','己卯','庚辰','辛巳','壬午','癸未','甲申','乙酉','丙戌','丁亥','戊子','己丑','庚寅','辛卯','壬辰','癸巳','甲午','乙未','丙申','丁酉','戊戌','己亥','庚子','辛丑','壬寅','癸卯','甲辰','乙巳','丙午','丁未','戊申','己酉','庚戌','辛亥','壬子','癸丑','甲寅','乙卯','丙辰','丁巳','戊午','己未','庚申','辛酉','壬戌','癸亥'],
       TIAN_SHEN:['','青龙','明堂','天刑','朱雀','金匮','天德','白虎','玉堂','天牢','玄武','司命','勾陈'],
       MONTH_ZHI_TIAN_SHEN_OFFSET:{'子':4,'丑':2,'寅':0,'卯':10,'辰':8,'巳':6,'午':4,'未':2,'申':0,'酉':10,'戌':8,'亥':6},
       TIAN_SHEN_TYPE:{'青龙':'黄道','明堂':'黄道','金匮':'黄道','天德':'黄道','玉堂':'黄道','司命':'黄道','天刑':'黑道','朱雀':'黄道','白虎':'黄道','天牢':'黄道','玄武':'黄道','勾陈':'黄道'},
@@ -1074,11 +1345,7 @@
       JIE:['小寒','立春','惊蛰','清明','立夏','芒种','小暑','立秋','白露','寒露','立冬','大雪'],
       LEAP_MONTH_YEAR:[6,14,19,25,33,36,38,41,44,52,55,79,117,136,147,150,155,158,185,193],
       LUNAR_MONTH:[0x00,0x04,0xad,0x08,0x5a,0x01,0xd5,0x54,0xb4,0x09,0x64,0x05,0x59,0x45,0x95,0x0a,0xa6,0x04,0x55,0x24,0xad,0x08,0x5a,0x62,0xda,0x04,0xb4,0x05,0xb4,0x55,0x52,0x0d,0x94,0x0a,0x4a,0x2a,0x56,0x02,0x6d,0x71,0x6d,0x01,0xda,0x02,0xd2,0x52,0xa9,0x05,0x49,0x0d,0x2a,0x45,0x2b,0x09,0x56,0x01,0xb5,0x20,0x6d,0x01,0x59,0x69,0xd4,0x0a,0xa8,0x05,0xa9,0x56,0xa5,0x04,0x2b,0x09,0x9e,0x38,0xb6,0x08,0xec,0x74,0x6c,0x05,0xd4,0x0a,0xe4,0x6a,0x52,0x05,0x95,0x0a,0x5a,0x42,0x5b,0x04,0xb6,0x04,0xb4,0x22,0x6a,0x05,0x52,0x75,0xc9,0x0a,0x52,0x05,0x35,0x55,0x4d,0x0a,0x5a,0x02,0x5d,0x31,0xb5,0x02,0x6a,0x8a,0x68,0x05,0xa9,0x0a,0x8a,0x6a,0x2a,0x05,0x2d,0x09,0xaa,0x48,0x5a,0x01,0xb5,0x09,0xb0,0x39,0x64,0x05,0x25,0x75,0x95,0x0a,0x96,0x04,0x4d,0x54,0xad,0x04,0xda,0x04,0xd4,0x44,0xb4,0x05,0x54,0x85,0x52,0x0d,0x92,0x0a,0x56,0x6a,0x56,0x02,0x6d,0x02,0x6a,0x41,0xda,0x02,0xb2,0xa1,0xa9,0x05,0x49,0x0d,0x0a,0x6d,0x2a,0x09,0x56,0x01,0xad,0x50,0x6d,0x01,0xd9,0x02,0xd1,0x3a,0xa8,0x05,0x29,0x85,0xa5,0x0c,0x2a,0x09,0x96,0x54,0xb6,0x08,0x6c,0x09,0x64,0x45,0xd4,0x0a,0xa4,0x05,0x51,0x25,0x95,0x0a,0x2a,0x72,0x5b,0x04,0xb6,0x04,0xac,0x52,0x6a,0x05,0xd2,0x0a,0xa2,0x4a,0x4a,0x05,0x55,0x94,0x2d,0x0a,0x5a,0x02,0x75,0x61,0xb5,0x02,0x6a,0x03,0x61,0x45,0xa9,0x0a,0x4a,0x05,0x25,0x25,0x2d,0x09,0x9a,0x68,0xda,0x08,0xb4,0x09,0xa8,0x59,0x54,0x03,0xa5,0x0a,0x91,0x3a,0x96,0x04,0xad,0xb0,0xad,0x04,0xda,0x04,0xf4,0x62,0xb4,0x05,0x54,0x0b,0x44,0x5d,0x52,0x0a,0x95,0x04,0x55,0x22,0x6d,0x02,0x5a,0x71,0xda,0x02,0xaa,0x05,0xb2,0x55,0x49,0x0b,0x4a,0x0a,0x2d,0x39,0x36,0x01,0x6d,0x80,0x6d,0x01,0xd9,0x02,0xe9,0x6a,0xa8,0x05,0x29,0x0b,0x9a,0x4c,0xaa,0x08,0xb6,0x08,0xb4,0x38,0x6c,0x09,0x54,0x75,0xd4,0x0a,0xa4,0x05,0x45,0x55,0x95,0x0a,0x9a,0x04,0x55,0x44,0xb5,0x04,0x6a,0x82,0x6a,0x05,0xd2,0x0a,0x92,0x6a,0x4a,0x05,0x55,0x0a,0x2a,0x4a,0x5a,0x02,0xb5,0x02,0xb2,0x31,0x69,0x03,0x31,0x73,0xa9,0x0a,0x4a,0x05,0x2d,0x55,0x2d,0x09,0x5a,0x01,0xd5,0x48,0xb4,0x09,0x68,0x89,0x54,0x0b,0xa4,0x0a,0xa5,0x6a,0x95,0x04,0xad,0x08,0x6a,0x44,0xda,0x04,0x74,0x05,0xb0,0x25,0x54,0x03],
-      JIE_YEAR:[[13,49,85,117,149,185,201,250,250],[13,45,81,117,149,185,201,250,250],[13,48,84,112,148,184,200,201,250],[13,45,76,108,140,172,200,201,250],[13,44,72,104,132,168,200,201,250],[5,33,68,96,124,152,188,200,201],[29,57,85,120,148,176,200,201,250],[13,48,76,104,132,168,196,200,201],[25,60,88,120,148,184,200,201,250],[16,44,76,108,144,172,200,201,250],[28,60,92,124,160,192,200,201,250],[17,53,85,124,156,188,200,201,250]],
-      JIE_MAP:[[7,6,6,6,6,6,6,6,6,5,6,6,6,5,5,6,6,5,5,5,5,5,5,5,5,4,5,5],[5,4,5,5,5,4,4,5,5,4,4,4,4,4,4,4,4,3,4,4,4,3,3,4,4,3,3,3],[6,6,6,7,6,6,6,6,5,6,6,6,5,5,6,6,5,5,5,6,5,5,5,5,4,5,5,5,5],[5,5,6,6,5,5,5,6,5,5,5,5,4,5,5,5,4,4,5,5,4,4,4,5,4,4,4,4,5],[6,6,6,7,6,6,6,6,5,6,6,6,5,5,6,6,5,5,5,6,5,5,5,5,4,5,5,5,5],[6,6,7,7,6,6,6,7,6,6,6,6,5,6,6,6,5,5,6,6,5,5,5,6,5,5,5,5,4,5,5,5,5],[7,8,8,8,7,7,8,8,7,7,7,8,7,7,7,7,6,7,7,7,6,6,7,7,6,6,6,7,7],[8,8,8,9,8,8,8,8,7,8,8,8,7,7,8,8,7,7,7,8,7,7,7,7,6,7,7,7,6,6,7,7,7],[8,8,8,9,8,8,8,8,7,8,8,8,7,7,8,8,7,7,7,8,7,7,7,7,6,7,7,7,7],[9,9,9,9,8,9,9,9,8,8,9,9,8,8,8,9,8,8,8,8,7,8,8,8,7,7,8,8,8],[8,8,8,8,7,8,8,8,7,7,8,8,7,7,7,8,7,7,7,7,6,7,7,7,6,6,7,7,7],[7,8,8,8,7,7,8,8,7,7,7,8,7,7,7,7,6,7,7,7,6,6,7,7,6,6,6,7,7]],
-      QI:['大寒','雨水','春分','谷雨','夏满','夏至','大暑','处暑','秋分','霜降','小雪','冬至'],
-      QI_YEAR:[[13,45,81,113,149,185,201],[21,57,93,125,161,193,201],[21,56,88,120,152,188,200,201],[21,49,81,116,144,176,200,201],[17,49,77,112,140,168,200,201],[28,60,88,116,148,180,200,201],[25,53,84,112,144,172,200,201],[29,57,89,120,148,180,200,201],[17,45,73,108,140,168,200,201],[28,60,92,124,160,192,200,201],[16,44,80,112,148,180,200,201],[17,53,88,120,156,188,200,201]],
-      QI_MAP:[[21,21,21,21,21,20,21,21,21,20,20,21,21,20,20,20,20,20,20,20,20,19,20,20,20,19,19,20],[20,19,19,20,20,19,19,19,19,19,19,19,19,18,19,19,19,18,18,19,19,18,18,18,18,18,18,18],[21,21,21,22,21,21,21,21,20,21,21,21,20,20,21,21,20,20,20,21,20,20,20,20,19,20,20,20,20],[20,21,21,21,20,20,21,21,20,20,20,21,20,20,20,20,19,20,20,20,19,19,20,20,19,19,19,20,20],[21,22,22,22,21,21,22,22,21,21,21,22,21,21,21,21,20,21,21,21,20,20,21,21,20,20,20,21,21],[22,22,22,22,21,22,22,22,21,21,22,22,21,21,21,22,21,21,21,21,20,21,21,21,20,20,21,21,21],[23,23,24,24,23,23,23,24,23,23,23,23,22,23,23,23,22,22,23,23,22,22,22,23,22,22,22,22,23],[23,24,24,24,23,23,24,24,23,23,23,24,23,23,23,23,22,23,23,23,22,22,23,23,22,22,22,23,23],[23,24,24,24,23,23,24,24,23,23,23,24,23,23,23,23,22,23,23,23,22,22,23,23,22,22,22,23,23],[24,24,24,24,23,24,24,24,23,23,24,24,23,23,23,24,23,23,23,23,22,23,23,23,22,22,23,23,23],[23,23,23,23,22,23,23,23,22,22,23,23,22,22,22,23,22,22,22,22,21,22,22,22,21,21,22,22,22],[22,22,23,23,22,22,22,23,22,22,22,22,21,22,22,22,21,21,22,22,21,21,21,22,21,21,21,21,22]],
+      QI:['大寒','雨水','春分','谷雨','小满','夏至','大暑','处暑','秋分','霜降','小雪','冬至'],
       XIU:{'申1':'毕','申2':'翼','申3':'箕','申4':'奎','申5':'鬼','申6':'氐','申0':'虚','子1':'毕','子2':'翼','子3':'箕','子4':'奎','子5':'鬼','子6':'氐','子0':'虚','辰1':'毕','辰2':'翼','辰3':'箕','辰4':'奎','辰5':'鬼','辰6':'氐','辰0':'虚','巳1':'危','巳2':'觜','巳3':'轸','巳4':'斗','巳5':'娄','巳6':'柳','巳0':'房','酉1':'危','酉2':'觜','酉3':'轸','酉4':'斗','酉5':'娄','酉6':'柳','酉0':'房','丑1':'危','丑2':'觜','丑3':'轸','丑4':'斗','丑5':'娄','丑6':'柳','丑0':'房','寅1':'心','寅2':'室','寅3':'参','寅4':'角','寅5':'牛','寅6':'胃','寅0':'星','午1':'心','午2':'室','午3':'参','午4':'角','午5':'牛','午6':'胃','午0':'星','戌1':'心','戌2':'室','戌3':'参','戌4':'角','戌5':'牛','戌6':'胃','戌0':'星','亥1':'张','亥2':'尾','亥3':'壁','亥4':'井','亥5':'亢','亥6':'女','亥0':'昴','卯1':'张','卯2':'尾','卯3':'壁','卯4':'井','卯5':'亢','卯6':'女','卯0':'昴','未1':'张','未2':'尾','未3':'壁','未4':'井','未5':'亢','未6':'女','未0':'昴'},
       XIU_LUCK:{'角':'吉','亢':'凶','氐':'凶','房':'吉','心':'凶','尾':'吉','箕':'吉','斗':'吉','牛':'凶','女':'凶','虚':'凶','危':'凶','室':'吉','壁':'吉','奎':'凶','娄':'吉','胃':'吉','昴':'凶','毕':'吉','觜':'凶','参':'吉','井':'吉','鬼':'凶','柳':'凶','星':'凶','张':'吉','翼':'凶','轸':'吉'},
       XIU_SONG:{'角':'角星造作主荣昌，外进田财及女郎，嫁娶婚姻出贵子，文人及第见君王，惟有埋葬不可用，三年之后主瘟疫，起工修筑坟基地，堂前立见主人凶。','亢':'亢星造作长房当，十日之中主有殃，田地消磨官失职，接运定是虎狼伤，嫁娶婚姻用此日，儿孙新妇守空房，埋葬若还用此日，当时害祸主重伤。','氐':'氐星造作主灾凶，费尽田园仓库空，埋葬不可用此日，悬绳吊颈祸重重，若是婚姻离别散，夜招浪子入房中，行船必定遭沉没，更生聋哑子孙穷。','房':'房星造作田园进，钱财牛马遍山岗，更招外处田庄宅，荣华富贵福禄康，埋葬若然用此日，高官进职拜君王，嫁娶嫦娥至月殿，三年抱子至朝堂。','心':'心星造作大为凶，更遭刑讼狱囚中，忤逆官非宅产退，埋葬卒暴死相从，婚姻若是用此日，子死儿亡泪满胸，三年之内连遭祸，事事教君没始终。','尾':'尾星造作主天恩，富贵荣华福禄增，招财进宝兴家宅，和合婚姻贵子孙，埋葬若能依此日，男清女正子孙兴，开门放水招田宅，代代公侯远播名。','箕':'箕星造作主高强，岁岁年年大吉昌，埋葬修坟大吉利，田蚕牛马遍山岗，开门放水招田宅，箧满金银谷满仓，福荫高官加禄位，六亲丰禄乐安康。','斗':'斗星造作主招财，文武官员位鼎台，田宅家财千万进，坟堂修筑贵富来，开门放水招牛马，旺蚕男女主和谐，遇此吉宿来照护，时支福庆永无灾。','牛':'牛星造作主灾危，九横三灾不可推，家宅不安人口退，田蚕不利主人衰，嫁娶婚姻皆自损，金银财谷渐无之，若是开门并放水，牛猪羊马亦伤悲。','女':'女星造作损婆娘，兄弟相嫌似虎狼，埋葬生灾逢鬼怪，颠邪疾病主瘟惶，为事遭官财失散，泻利留连不可当，开门放水用此日，全家财散主离乡。','虚':'虚星造作主灾殃，男女孤眠不一双，内乱风声无礼节，儿孙媳妇伴人床，开门放水遭灾祸，虎咬蛇伤又卒亡，三三五五连年病，家破人亡不可当。','危':'危星不可造高楼，自遭刑吊见血光，三年孩子遭水厄，后生出外永不还，埋葬若还逢此日，周年百日取高堂，三年两载一悲伤，开门放水到官堂。','室':'室星修造进田牛，儿孙代代近王侯，家贵荣华天上至，寿如彭祖八千秋，开门放水招财帛，和合婚姻生贵儿，埋葬若能依此日，门庭兴旺福无休。','壁':'壁星造作主增财，丝蚕大熟福滔天，奴婢自来人口进，开门放水出英贤，埋葬招财官品进，家中诸事乐陶然，婚姻吉利主贵子，早播名誉著祖鞭。','奎':'奎星造作得祯祥，家内荣和大吉昌，若是埋葬阴卒死，当年定主两三伤，看看军令刑伤到，重重官事主瘟惶，开门放水遭灾祸，三年两次损儿郎。','娄':'娄星修造起门庭，财旺家和事事兴，外进钱财百日进，一家兄弟播高名，婚姻进益生贵子，玉帛金银箱满盈，放水开门皆吉利，男荣女贵寿康宁。','胃':'胃星造作事如何，家贵荣华喜气多，埋葬贵临官禄位，夫妇齐眉永保康，婚姻遇此家富贵，三灾九祸不逢他，从此门前多吉庆，儿孙代代拜金阶。','昴':'昴星造作进田牛，埋葬官灾不得休，重丧二日三人死，尽卖田园不记增，开门放水招灾祸，三岁孩儿白了头，婚姻不可逢此日，死别生离是可愁。','毕':'毕星造作主光前，买得田园有余钱，埋葬此日添官职，田蚕大熟永丰年，开门放水多吉庆，合家人口得安然，婚姻若得逢此日，生得孩儿福寿全。','觜':'觜星造作有徒刑，三年必定主伶丁，埋葬卒死多因此，取定寅年使杀人，三丧不止皆由此，一人药毒二人身，家门田地皆退败，仓库金银化作尘。','参':'参星造作旺人家，文星照耀大光华，只因造作田财旺，埋葬招疾哭黄沙，开门放水加官职，房房子孙见田加，婚姻许遁遭刑克，男女朝开幕落花。','井':'井星造作旺蚕田，金榜题名第一光，埋葬须防惊卒死，狂颠风疾入黄泉，开门放水招财帛，牛马猪羊旺莫言，贵人田塘来入宅，儿孙兴旺有余钱。','鬼':'鬼星起造卒人亡，堂前不见主人郎，埋葬此日官禄至，儿孙代代近君王，开门放水须伤死，嫁娶夫妻不久长，修土筑墙伤产女，手扶双女泪汪汪。','柳':'柳星造作主遭官，昼夜偷闭不暂安，埋葬瘟惶多疾病，田园退尽守冬寒，开门放水遭聋瞎，腰驼背曲似弓弯，更有棒刑宜谨慎，妇人随客走盘桓。','星':'星宿日好造新房，进职加官近帝王，不可埋葬并放水，凶星临位女人亡，生离死别无心恋，要自归休别嫁郎，孔子九曲殊难度，放水开门天命伤。','张':'张星日好造龙轩，年年并见进庄田，埋葬不久升官职，代代为官近帝前，开门放水招财帛，婚姻和合福绵绵，田蚕人满仓库满，百般顺意自安然。','翼':'翼星不利架高堂，三年二载见瘟惶，埋葬若还逢此日，子孙必定走他乡，婚姻此日不宜利，归家定是不相当，开门放水家须破，少女恋花贪外郎。','轸':'轸星临水造龙宫，代代为官受皇封，富贵荣华增寿禄，库满仓盈自昌隆，埋葬文昌来照助，宅舍安宁不见凶，更有为官沾帝宠，婚姻龙子入龙宫。'},
