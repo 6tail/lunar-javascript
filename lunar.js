@@ -153,6 +153,23 @@
         },
         getLunar:function(){
           return Lunar.fromDate(this._p.calendar);
+        },
+        getJulianDay:function(){
+          var y = this._p.year;
+          var m = this._p.month;
+          var n = 0;
+          if (m <= 2) {
+            m += 12;
+            y--;
+          }
+          if (this._p.year * 372 + this._p.month * 31 + this._p.day >= 588829) {
+            n = _int2(y / 100);
+            n = 2 - n + _int2(n / 4);
+          }
+          n += _int2(365.2500001 * (y + 4716));
+          n += _int2(30.6 * (m + 1)) + this._p.day;
+          n += ((this._p.second / 60 + this._p.minute) / 60 + this._p.hour) / 24 - 1524.5;
+          return n;
         }
       };
     };
