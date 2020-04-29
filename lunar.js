@@ -1500,7 +1500,7 @@
           day:_ymd(day),
           name:name,
           work:work,
-          target:_ymd(target),
+          target:_ymd(target)
         },
         getDay:function(){
           return this._p.day;
