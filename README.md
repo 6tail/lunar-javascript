@@ -6,6 +6,8 @@ lunar是一款无第三方依赖的公历(阳历)和农历(阴历、老黄历)�
 
 ## 示例
 
+### 普通页面
+
 ```html
 <!DOCTYPE html>
 <html>
@@ -22,6 +24,33 @@ lunar是一款无第三方依赖的公历(阳历)和农历(阴历、老黄历)�
   </body>
 </html>
 ```
+
+### npm
+
+    npm init
+    npm install lunar-javascript
+     
+    //test.js
+    const {Solar} = require('lunar-javascript')
+    //const {Solar, Lunar, HolidayUtil} = require('lunar-javascript')
+     
+    let solar = Solar.fromYmd(1986,5,29);
+    console.log(solar.toFullString());
+    console.log(solar.getLunar().toFullString());
+     
+    node test.js
+
+### Node.js
+
+    //test.js
+    const {Solar} = require('./lunar.js')
+    //const {Solar, Lunar, HolidayUtil} = require('./lunar.js')
+     
+    let solar = Solar.fromYmd(1986,5,29);
+    console.log(solar.toFullString());
+    console.log(solar.getLunar().toFullString());
+     
+    node test.js
 
 输出结果：
 

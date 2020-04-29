@@ -1,4 +1,15 @@
-(function(W){
+;(function(root,factory){
+  if (typeof define==='function'&&define.amd){
+    define(factory);
+  }else if(typeof module!='undefined'&&module.exports){
+    module.exports = factory();
+  }else{
+    var o = factory();
+    for(var i in o){
+      root[i] = o[i];
+    }
+  }
+})(this,function(){
   var Solar = (function(){
     var _int2=function(v){
       v = Math.floor(v);
@@ -1639,14 +1650,16 @@
       getHolidaysByTarget:function(){return _getHolidaysByTarget(arguments);}
     };
   })();
-  W.SolarUtil = SolarUtil;
-  W.LunarUtil = LunarUtil;
-  W.Solar = Solar;
-  W.Lunar = Lunar;
-  W.SolarWeek = SolarWeek;
-  W.SolarMonth = SolarMonth;
-  W.SolarSeason = SolarSeason;
-  W.SolarHalfYear = SolarHalfYear;
-  W.SolarYear = SolarYear;
-  W.HolidayUtil = HolidayUtil;
-})(window);
+  return {
+    SolarUtil:SolarUtil,
+    LunarUtil:LunarUtil,
+    Solar:Solar,
+    Lunar:Lunar,
+    SolarWeek:SolarWeek,
+    SolarMonth:SolarMonth,
+    SolarSeason:SolarSeason,
+    SolarHalfYear:SolarHalfYear,
+    SolarYear:SolarYear,
+    HolidayUtil:HolidayUtil
+  };
+});
