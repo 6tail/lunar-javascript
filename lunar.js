@@ -946,6 +946,9 @@
         getIndex:function(){
           var firstDate = new Date(this._p.year+'/'+this._p.month+'/1');
           var firstDayWeek = firstDate.getDay();
+          if(firstDayWeek===0){
+            firstDayWeek = 7;
+          }
           return Math.ceil((this._p.day+firstDayWeek-this._p.start)/7);
         },
         /**
