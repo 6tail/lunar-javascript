@@ -440,15 +440,32 @@
       o['monthGanIndexExact'] = (indexExact+gOffsetExact)%10;
       o['monthZhiIndexExact'] = (indexExact+LunarUtil.BASE_MONTH_ZHI_INDEX)%12;
     };
-    var _computeDay = function(o){
+    var _computeDay = function(o,hour,minute){
       var addDays = (o.dayOffset + LunarUtil.BASE_DAY_GANZHI_INDEX)%60;
-      o['dayGanIndex'] = addDays%10;
-      o['dayZhiIndex'] = addDays%12;
+      var dayGanIndex = addDays%10;
+      var dayZhiIndex = addDays%12;
+      o['dayGanIndex'] = dayGanIndex;
+      o['dayZhiIndex'] = dayZhiIndex;
+      var dayGanExact = dayGanIndex;
+      var dayZhiExact = dayZhiIndex;
+      var hm = (hour<10?'0':'')+hour+':'+(minute<10?'0':'')+minute;
+      if(hm>='23:00'&&hm<='23:59'){
+        dayGanExact++;
+        if(dayGanExact>=10){
+          dayGanExact -= 10;
+        }
+        dayZhiExact++;
+        if(dayZhiExact>=12){
+          dayZhiExact -= 12;
+        }
+      }
+      o['dayGanIndexExact'] = dayGanExact;
+      o['dayZhiIndexExact'] = dayZhiExact;
     };
     var _computeTime = function(o,hour,minute){
       var timeZhiIndex = LunarUtil.getTimeZhiIndex((hour<10?'0':'')+hour+':'+(minute<10?'0':'')+minute);
-      o['timeGanIndex'] = timeZhiIndex%10;
       o['timeZhiIndex'] = timeZhiIndex;
+      o['timeGanIndex'] = (o['dayGanIndexExact']%5*2+timeZhiIndex)%10;
     };
     var _computeWeek = function(o){
       o['weekIndex'] = (o.dayOffset+LunarUtil.BASE_WEEK_INDEX)%7;
@@ -459,7 +476,7 @@
       _computeJieQi(o,solar);
       _computeYear(o,solar,year);
       _computeMonth(o,solar);
-      _computeDay(o);
+      _computeDay(o,hour,minute);
       _computeTime(o,hour,minute);
       _computeWeek(o);
       return o;
@@ -498,6 +515,8 @@
           dayOffset:gz.dayOffset,
           dayGanIndex:gz.dayGanIndex,
           dayZhiIndex:gz.dayZhiIndex,
+          dayGanIndexExact:gz.dayGanIndexExact,
+          dayZhiIndexExact:gz.dayZhiIndexExact,
           monthGanIndex:gz.monthGanIndex,
           monthZhiIndex:gz.monthZhiIndex,
           monthGanIndexExact:gz.monthGanIndexExact,
@@ -585,11 +604,20 @@
         getDayGan:function(){
           return LunarUtil.GAN[this._p.dayGanIndex+1];
         },
+        getDayGanExact:function(){
+          return LunarUtil.GAN[this._p.dayGanIndexExact+1];
+        },
         getDayZhi:function(){
           return LunarUtil.ZHI[this._p.dayZhiIndex+1];
         },
+        getDayZhiExact:function(){
+          return LunarUtil.ZHI[this._p.dayZhiIndexExact+1];
+        },
         getDayInGanZhi:function(){
           return this.getDayGan()+this.getDayZhi();
+        },
+        getDayInGanZhiExact:function(){
+          return this.getDayGanExact()+this.getDayZhiExact();
         },
         getTimeGan:function(){
           return LunarUtil.GAN[this._p.timeGanIndex+1];
@@ -778,12 +806,11 @@
           return l;
         },
         getBaZi:function(){
-          var timeGan = LunarUtil.GAN[(this._p.dayGanIndex%5*12+this._p.timeZhiIndex)%10+1];
           var l = [];
           l.push(this.getYearInGanZhiExact());
           l.push(this.getMonthInGanZhiExact());
-          l.push(this.getDayInGanZhi());
-          l.push(timeGan+this.getTimeZhi());
+          l.push(this.getDayInGanZhiExact());
+          l.push(this.getTimeInGanZhi());
           return l;
         },
         getBaZiWuXing:function(){
