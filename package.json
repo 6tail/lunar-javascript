@@ -1,6 +1,6 @@
 {
   "name": "lunar-javascript",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "lunar is a calendar library for Solar and Chinese Lunar.",
   "main": "index.js",
   "scripts": {
@@ -23,6 +23,8 @@
     "节日",
     "彭祖百忌",
     "每日宜忌",
+    "吉神宜趋",
+    "凶煞宜忌",
     "喜神",
     "福神",
     "财神",
