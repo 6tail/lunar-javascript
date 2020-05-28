@@ -1626,6 +1626,9 @@
           }
           index = right.indexOf(day+'=');
         }
+        if(l.length<1){
+          l.push('无');
+        }
         return l;
       },
       getDayJi:function(monthGanZhi,dayGanZhi){
@@ -1660,6 +1663,9 @@
           }
           index = right.indexOf(day+'=');
         }
+        if(l.length<1){
+          l.push('无');
+        }
         return l;
       },
       getDayJiShen:function(lunarMonth,dayGanZhi){
@@ -1677,6 +1683,9 @@
             var m = js.substr(i, 2);
             l.push(this.SHEN_SHA[parseInt(m, 16)]);
           }
+        }
+        if(l.length<1){
+          l.push('无');
         }
         return l;
       },
@@ -1696,6 +1705,9 @@
             l.push(this.SHEN_SHA[parseInt(m, 16)]);
           }
         }
+        if(l.length<1){
+          l.push('无');
+        }
         return l;
       },
       getTimeYi:function(dayGanZhi,timeGanZhi){
@@ -1714,6 +1726,9 @@
             l.push(this.YI_JI[parseInt(m, 16)]);
           }
         }
+        if(l.length<1){
+          l.push('无');
+        }
         return l;
       },
       getTimeJi:function(dayGanZhi,timeGanZhi){
@@ -1731,6 +1746,9 @@
             var m = js.substr(i, 2);
             l.push(this.YI_JI[parseInt(m, 16)]);
           }
+        }
+        if(l.length<1){
+          l.push('无');
         }
         return l;
       }
