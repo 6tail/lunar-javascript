@@ -908,14 +908,25 @@
         },
         getDayTianShen:function(){
           var monthZhi = this.getMonthZhi();
-          var offset = LunarUtil.MONTH_ZHI_TIAN_SHEN_OFFSET[monthZhi];
+          var offset = LunarUtil.ZHI_TIAN_SHEN_OFFSET[monthZhi];
           return LunarUtil.TIAN_SHEN[(this._p.dayZhiIndex+offset)%12+1];
+        },
+        getTimeTianShen:function(){
+          var dayZhi = this.getDayZhiExact();
+          var offset = LunarUtil.ZHI_TIAN_SHEN_OFFSET[dayZhi];
+          return LunarUtil.TIAN_SHEN[(this._p.timeZhiIndex+offset)%12+1];
         },
         getDayTianShenType:function(){
           return LunarUtil.TIAN_SHEN_TYPE[this.getDayTianShen()];
         },
+        getTimeTianShenType:function(){
+          return LunarUtil.TIAN_SHEN_TYPE[this.getTimeTianShen()];
+        },
         getDayTianShenLuck:function(){
           return LunarUtil.TIAN_SHEN_TYPE_LUCK[this.getDayTianShenType()];
+        },
+        getTimeTianShenLuck:function(){
+          return LunarUtil.TIAN_SHEN_TYPE_LUCK[this.getTimeTianShenType()];
         },
         getDayPositionTai:function(){
           var offset = this._p.dayGanIndex-this._p.dayZhiIndex;
@@ -1450,8 +1461,8 @@
       ZHI_XING:['','建','除','满','平','定','执','破','危','成','收','开','闭'],
       JIA_ZI:['甲子','乙丑','丙寅','丁卯','戊辰','己巳','庚午','辛未','壬申','癸酉','甲戌','乙亥','丙子','丁丑','戊寅','己卯','庚辰','辛巳','壬午','癸未','甲申','乙酉','丙戌','丁亥','戊子','己丑','庚寅','辛卯','壬辰','癸巳','甲午','乙未','丙申','丁酉','戊戌','己亥','庚子','辛丑','壬寅','癸卯','甲辰','乙巳','丙午','丁未','戊申','己酉','庚戌','辛亥','壬子','癸丑','甲寅','乙卯','丙辰','丁巳','戊午','己未','庚申','辛酉','壬戌','癸亥'],
       TIAN_SHEN:['','青龙','明堂','天刑','朱雀','金匮','天德','白虎','玉堂','天牢','玄武','司命','勾陈'],
-      MONTH_ZHI_TIAN_SHEN_OFFSET:{'子':4,'丑':2,'寅':0,'卯':10,'辰':8,'巳':6,'午':4,'未':2,'申':0,'酉':10,'戌':8,'亥':6},
-      TIAN_SHEN_TYPE:{'青龙':'黄道','明堂':'黄道','金匮':'黄道','天德':'黄道','玉堂':'黄道','司命':'黄道','天刑':'黑道','朱雀':'黄道','白虎':'黄道','天牢':'黄道','玄武':'黄道','勾陈':'黄道'},
+      ZHI_TIAN_SHEN_OFFSET:{'子':4,'丑':2,'寅':0,'卯':10,'辰':8,'巳':6,'午':4,'未':2,'申':0,'酉':10,'戌':8,'亥':6},
+      TIAN_SHEN_TYPE:{'青龙':'黄道','明堂':'黄道','金匮':'黄道','天德':'黄道','玉堂':'黄道','司命':'黄道','天刑':'黑道','朱雀':'黑道','白虎':'黑道','天牢':'黑道','玄武':'黑道','勾陈':'黑道'},
       TIAN_SHEN_TYPE_LUCK:{'黄道':'吉','黑道':'凶'},
       PENGZU_GAN:['','甲不开仓财物耗散','乙不栽植千株不长','丙不修灶必见灾殃','丁不剃头头必生疮','戊不受田田主不祥','己不破券二比并亡','庚不经络织机虚张','辛不合酱主人不尝','壬不泱水更难提防','癸不词讼理弱敌强'],
       PENGZU_ZHI:['','子不问卜自惹祸殃','丑不冠带主不还乡','寅不祭祀神鬼不尝','卯不穿井水泉不香','辰不哭泣必主重丧','巳不远行财物伏藏','午不苫盖屋主更张','未不服药毒气入肠','申不安床鬼祟入房','酉不会客醉坐颠狂','戌不吃犬作怪上床','亥不嫁娶不利新郎'],
