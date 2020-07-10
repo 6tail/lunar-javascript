@@ -960,6 +960,90 @@
         getTimeJi:function(){
           return LunarUtil.getTimeJi(this.getDayInGanZhiExact(),this.getTimeInGanZhi());
         },
+        getYueXiang:function(){
+          return LunarUtil.YUE_XIANG[this._p.day];
+        },
+        getYearNineStar:function(){
+          var index = LunarUtil.BASE_YEAR_JIU_XING_INDEX-(this._p.year-LunarUtil.BASE_YEAR)%9;
+          if(index<0){
+            index += 9;
+          }
+          return NineStar.fromIndex(index);
+        },
+        getMonthNineStar:function(){
+          var start = 2;
+          var yearZhi = this.getYearZhi();
+          if ('子午卯酉'.indexOf(yearZhi)>-1) {
+            start = 8;
+          } else if ('辰戌丑未'.indexOf(yearZhi)>-1) {
+            start = 5;
+          }
+          // 寅月起，所以需要-2
+          var monthIndex = this._p.monthZhiIndex-2;
+          var index = start-monthIndex-1;
+          if(index<0){
+            index += 9;
+          }
+          return NineStar.fromIndex(index);
+        },
+        getDayNineStar:function(){
+          //顺逆
+          var solarYmd = this._p.solar.toYmd();
+          var yuShui = this._p.jieQi['雨水'].toYmd();
+          var guYu = this._p.jieQi['谷雨'].toYmd();
+          var xiaZhi = this._p.jieQi['夏至'].toYmd();
+          var chuShu = this._p.jieQi['处暑'].toYmd();
+          var shuangJiang = this._p.jieQi['霜降'].toYmd();
+
+          var start = 6;
+          var asc = false;
+          if(solarYmd>=this._p.jieQi['冬至'].toYmd()&& solarYmd<yuShui){
+            asc = true;
+            start = 1;
+          } else if(solarYmd>=yuShui && solarYmd<guYu){
+            asc = true;
+            start = 7;
+          } else if(solarYmd>=guYu && solarYmd<xiaZhi){
+            asc = true;
+            start = 4;
+          } else if(solarYmd>=xiaZhi && solarYmd<chuShu){
+            start = 9;
+          } else if(solarYmd>=chuShu && solarYmd<shuangJiang){
+            start = 3;
+          }
+          var ganZhiIndex = LunarUtil.getJiaZiIndex(this.getDayInGanZhi())%9;
+          var index = asc?start+ganZhiIndex-1:start-ganZhiIndex-1;
+          if(index>8){
+            index -= 9;
+          }
+          if(index<0){
+            index += 9;
+          }
+          return NineStar.fromIndex(index);
+        },
+        getTimeNineStar:function(){
+          //顺逆
+          var solarYmd = this._p.solar.toYmd();
+          var asc = false;
+          if(solarYmd>=this._p.jieQi['冬至'].toYmd() && solarYmd<this._p.jieQi['夏至'].toYmd()){
+            asc = true;
+          }
+          var start = asc?7:3;
+          var dayZhi = this.getDayZhi();
+          if ('子午卯酉'.indexOf(dayZhi)>-1) {
+            start = asc?1:9;
+          } else if ('辰戌丑未'.indexOf(dayZhi)>-1) {
+            start = asc?4:6;
+          }
+          var index = asc?start+this._p.timeZhiIndex-1:start-this._p.timeZhiIndex-1;
+          if(index>8){
+            index -= 9;
+          }
+          if(index<0){
+            index += 9;
+          }
+          return NineStar.fromIndex(index);
+        },
         getSolar:function(){
           return this._p.solar;
         },
@@ -1445,6 +1529,7 @@
       BASE_MONTH:11,
       BASE_DAY:11,
       BASE_INDEX:0,
+      BASE_YEAR_JIU_XING_INDEX:0,
       BASE_YEAR_GANZHI_INDEX:-4,
       BASE_DAY_GANZHI_INDEX:15,
       BASE_MONTH_ZHI_INDEX:2,
@@ -1471,6 +1556,7 @@
       SEASON:['','孟春','仲春','季春','孟夏','仲夏','季夏','孟秋','仲秋','季秋','孟冬','仲冬','季冬'],
       SHENGXIAO:['','鼠','牛','虎','兔','龙','蛇','马','羊','猴','鸡','狗','猪'],
       DAY:['','初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'],
+      YUE_XIANG:['','朔','既朔','蛾眉新','蛾眉新','蛾眉','夕月','上弦','上弦','九夜','宵','宵','宵','渐盈凸','小望','望','既望','立待','居待','寝待','更待','渐亏凸','下弦','下弦','有明','有明','蛾眉残','蛾眉残','残','晓','晦'],
       JIE:['小寒','立春','惊蛰','清明','立夏','芒种','小暑','立秋','白露','寒露','立冬','大雪'],
       LEAP_MONTH_YEAR:[6,14,19,25,33,36,38,41,44,52,55,79,117,136,147,150,155,158,185,193],
       LUNAR_MONTH:[0x00,0x04,0xad,0x08,0x5a,0x01,0xd5,0x54,0xb4,0x09,0x64,0x05,0x59,0x45,0x95,0x0a,0xa6,0x04,0x55,0x24,0xad,0x08,0x5a,0x62,0xda,0x04,0xb4,0x05,0xb4,0x55,0x52,0x0d,0x94,0x0a,0x4a,0x2a,0x56,0x02,0x6d,0x71,0x6d,0x01,0xda,0x02,0xd2,0x52,0xa9,0x05,0x49,0x0d,0x2a,0x45,0x2b,0x09,0x56,0x01,0xb5,0x20,0x6d,0x01,0x59,0x69,0xd4,0x0a,0xa8,0x05,0xa9,0x56,0xa5,0x04,0x2b,0x09,0x9e,0x38,0xb6,0x08,0xec,0x74,0x6c,0x05,0xd4,0x0a,0xe4,0x6a,0x52,0x05,0x95,0x0a,0x5a,0x42,0x5b,0x04,0xb6,0x04,0xb4,0x22,0x6a,0x05,0x52,0x75,0xc9,0x0a,0x52,0x05,0x35,0x55,0x4d,0x0a,0x5a,0x02,0x5d,0x31,0xb5,0x02,0x6a,0x8a,0x68,0x05,0xa9,0x0a,0x8a,0x6a,0x2a,0x05,0x2d,0x09,0xaa,0x48,0x5a,0x01,0xb5,0x09,0xb0,0x39,0x64,0x05,0x25,0x75,0x95,0x0a,0x96,0x04,0x4d,0x54,0xad,0x04,0xda,0x04,0xd4,0x44,0xb4,0x05,0x54,0x85,0x52,0x0d,0x92,0x0a,0x56,0x6a,0x56,0x02,0x6d,0x02,0x6a,0x41,0xda,0x02,0xb2,0xa1,0xa9,0x05,0x49,0x0d,0x0a,0x6d,0x2a,0x09,0x56,0x01,0xad,0x50,0x6d,0x01,0xd9,0x02,0xd1,0x3a,0xa8,0x05,0x29,0x85,0xa5,0x0c,0x2a,0x09,0x96,0x54,0xb6,0x08,0x6c,0x09,0x64,0x45,0xd4,0x0a,0xa4,0x05,0x51,0x25,0x95,0x0a,0x2a,0x72,0x5b,0x04,0xb6,0x04,0xac,0x52,0x6a,0x05,0xd2,0x0a,0xa2,0x4a,0x4a,0x05,0x55,0x94,0x2d,0x0a,0x5a,0x02,0x75,0x61,0xb5,0x02,0x6a,0x03,0x61,0x45,0xa9,0x0a,0x4a,0x05,0x25,0x25,0x2d,0x09,0x9a,0x68,0xda,0x08,0xb4,0x09,0xa8,0x59,0x54,0x03,0xa5,0x0a,0x91,0x3a,0x96,0x04,0xad,0xb0,0xad,0x04,0xda,0x04,0xf4,0x62,0xb4,0x05,0x54,0x0b,0x44,0x5d,0x52,0x0a,0x95,0x04,0x55,0x22,0x6d,0x02,0x5a,0x71,0xda,0x02,0xaa,0x05,0xb2,0x55,0x49,0x0b,0x4a,0x0a,0x2d,0x39,0x36,0x01,0x6d,0x80,0x6d,0x01,0xd9,0x02,0xe9,0x6a,0xa8,0x05,0x29,0x0b,0x9a,0x4c,0xaa,0x08,0xb6,0x08,0xb4,0x38,0x6c,0x09,0x54,0x75,0xd4,0x0a,0xa4,0x05,0x45,0x55,0x95,0x0a,0x9a,0x04,0x55,0x44,0xb5,0x04,0x6a,0x82,0x6a,0x05,0xd2,0x0a,0x92,0x6a,0x4a,0x05,0x55,0x0a,0x2a,0x4a,0x5a,0x02,0xb5,0x02,0xb2,0x31,0x69,0x03,0x31,0x73,0xa9,0x0a,0x4a,0x05,0x2d,0x55,0x2d,0x09,0x5a,0x01,0xd5,0x48,0xb4,0x09,0x68,0x89,0x54,0x0b,0xa4,0x0a,0xa5,0x6a,0x95,0x04,0xad,0x08,0x6a,0x44,0xda,0x04,0x74,0x05,0xb0,0x25,0x54,0x03],
@@ -1490,7 +1576,7 @@
       CHONG_GAN_TIE:{'甲':'己','乙':'戊','丙':'辛','丁':'庚','戊':'癸','己':'壬','庚':'乙','辛':'甲','壬':'丁','癸':'丙'},
       CHONG_GAN_TIE_GOOD:{'甲':'己','丙':'辛','戊':'癸','庚':'乙','壬':'丁'},
       SHA:{'子':'南','丑':'东','寅':'北','卯':'西','辰':'南','巳':'东','午':'北','未':'西','申':'南','酉':'东','戌':'北','亥':'西'},
-      POSITION_DESC:{'坎':'正北','艮':'东北','震':'正东','巽':'东南','离':'正南','坤':'西南','兑':'正西','乾':'西北'},
+      POSITION_DESC:{'坎':'正北','艮':'东北','震':'正东','巽':'东南','离':'正南','坤':'西南','兑':'正西','乾':'西北','中':'中宫'},
       NAYIN:{'甲子':'海中金','甲午':'沙中金','丙寅':'炉中火','丙申':'山下火','戊辰':'大林木','戊戌':'平地木','庚午':'路旁土','庚子':'壁上土','壬申':'剑锋金','壬寅':'金箔金','甲戌':'山头火','甲辰':'覆灯火','丙子':'涧下水','丙午':'天河水','戊寅':'城头土','戊申':'大驿土','庚辰':'白蜡金','庚戌':'钗钏金','壬午':'杨柳木','壬子':'桑柘木','甲申':'泉中水','甲寅':'大溪水','丙戌':'屋上土','丙辰':'沙中土','戊子':'霹雳火','戊午':'天上火','庚寅':'松柏木','庚申':'石榴木','壬辰':'长流水','壬戌':'大海水','乙丑':'海中金','乙未':'沙中金','丁卯':'炉中火','丁酉':'山下火','己巳':'大林木','己亥':'平地木','辛未':'路旁土','辛丑':'壁上土','癸酉':'剑锋金','癸卯':'金箔金','乙亥':'山头火','乙巳':'覆灯火','丁丑':'涧下水','丁未':'天河水','己卯':'城头土','己酉':'大驿土','辛巳':'白蜡金','辛亥':'钗钏金','癸未':'杨柳木','癸丑':'桑柘木','乙酉':'泉中水','乙卯':'大溪水','丁亥':'屋上土','丁巳':'沙中土','己丑':'霹雳火','己未':'天上火','辛卯':'松柏木','辛酉':'石榴木','癸巳':'长流水','癸亥':'大海水'},
       WU_XING_GAN:{'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水'},
       WU_XING_ZHI:{'寅':'木','卯':'木','巳':'火','午':'火','辰':'土','丑':'土','戌':'土','未':'土','申':'金','酉':'金','亥':'水','子':'水'},
@@ -1927,6 +2013,79 @@
       getHoliday:function(){return _getHoliday(arguments);},
       getHolidays:function(){return _getHolidays(arguments);},
       getHolidaysByTarget:function(){return _getHolidaysByTarget(arguments);}
+    };
+  })();
+  var NineStar = (function(){
+    var _fromIndex=function(index){
+      return {
+        _p:{index:index},
+        getNumber:function(){return NineStar.NUMBER[this._p.index];},
+        getColor:function(){return NineStar.COLOR[this._p.index];},
+        getWuXing:function(){return NineStar.WU_XING[this._p.index];},
+        getPosition:function(){return NineStar.POSITION[this._p.index];},
+        getPositionDesc:function(){return LunarUtil.POSITION_DESC[this.getPosition()];},
+        getNameInXuanKong:function(){return NineStar.NAME_XUAN_KONG[this._p.index];},
+        getNameInBeiDou:function(){return NineStar.NAME_BEI_DOU[this._p.index];},
+        getNameInQiMen:function(){return NineStar.NAME_QI_MEN[this._p.index];},
+        getNameInTaiYi:function(){return NineStar.NAME_TAI_YI[this._p.index];},
+        getLuckInQiMen:function(){return NineStar.LUCK_QI_MEN[this._p.index];},
+        getLuckInXuanKong:function(){return NineStar.LUCK_XUAN_KONG[this._p.index];},
+        getYinYangInQiMen:function(){return NineStar.YIN_YANG_QI_MEN[this._p.index];},
+        getTypeInTaiYi:function(){return NineStar.TYPE_TAI_YI[this._p.index];},
+        getBaMenInQiMen:function(){return NineStar.BA_MEN_QI_MEN[this._p.index];},
+        getSongInTaiYi:function(){return NineStar.SONG_TAI_YI[this._p.index];},
+        getIndex:function(){return this._p.index;},
+        toString:function(){return this.getNumber()+this.getColor()+this.getWuXing()+this.getNameInBeiDou();},
+        toFullString:function(){
+          var s = this.getNumber();
+          s += this.getColor();
+          s += this.getWuXing();
+          s += ' ';
+          s += this.getPosition();
+          s += '(';
+          s += this.getPositionDesc();
+          s += ') ';
+          s += this.getNameInBeiDou();
+          s += ' 玄空[';
+          s += this.getNameInXuanKong();
+          s += ' ';
+          s += this.getLuckInXuanKong();
+          s += '] 奇门[';
+          s += this.getNameInQiMen();
+          s += ' ';
+          s += this.getLuckInQiMen();
+          if(this.getBaMenInQiMen().length>0) {
+            s += ' ';
+            s += this.getBaMenInQiMen();
+            s += '门';
+          }
+          s += ' ';
+          s += this.getYinYangInQiMen();
+          s += '] 太乙[';
+          s += this.getNameInTaiYi();
+          s += ' ';
+          s += this.getTypeInTaiYi();
+          s += ']';
+          return s;
+        }
+      };
+    };
+    return {
+      NUMBER:['一','二','三','四','五','六','七','八','九'],
+      COLOR:['白','黒','碧','绿','黄','白','赤','白','紫'],
+      WU_XING:['水','土','木','木','土','金','金','土','火'],
+      POSITION:['坎','坤','震','巽','中','乾','兑','艮','离'],
+      NAME_BEI_DOU:['天枢','天璇','天玑','天权','玉衡','开阳','摇光','洞明','隐元'],
+      NAME_XUAN_KONG:['贪狼','巨门','禄存','文曲','廉贞','武曲','破军','左辅','右弼'],
+      NAME_QI_MEN:['天蓬','天芮','天冲','天辅','天禽','天心','天柱','天任','天英'],
+      BA_MEN_QI_MEN:['休','死','伤','杜','','开','惊','生','景'],
+      NAME_TAI_YI:['太乙','摄提','轩辕','招摇','天符','青龙','咸池','太阴','天乙'],
+      TYPE_TAI_YI:['吉神','凶神','安神','安神','凶神','吉神','凶神','吉神','吉神'],
+      SONG_TAI_YI:['门中太乙明，星官号贪狼，赌彩财喜旺，婚姻大吉昌，出入无阻挡，参谒见贤良，此行三五里，黑衣别阴阳。','门前见摄提，百事必忧疑，相生犹自可，相克祸必临，死门并相会，老妇哭悲啼，求谋并吉事，尽皆不相宜，只可藏隐遁，若动伤身疾。','出入会轩辕，凡事必缠牵，相生全不美，相克更忧煎，远行多不利，博彩尽输钱，九天玄女法，句句不虚言。','招摇号木星，当之事莫行，相克行人阻，阴人口舌迎，梦寐多惊惧，屋响斧自鸣，阴阳消息理，万法弗违情。','五鬼为天符，当门阴女谋，相克无好事，行路阻中途，走失难寻觅，道逢有尼姑，此星当门值，万事有灾除。','神光跃青龙，财气喜重重，投入有酒食，赌彩最兴隆，更逢相生旺，休言克破凶，见贵安营寨，万事总吉同。','吾将为咸池，当之尽不宜，出入多不利，相克有灾情，赌彩全输尽，求财空手回，仙人真妙语，愚人莫与知，动用虚惊退，反复逆风吹。','坐临太阴星，百祸不相侵，求谋悉成就，知交有觅寻，回风归来路，恐有殃伏起，密语中记取，慎乎莫轻行。','迎来天乙星，相逢百事兴，运用和合庆，茶酒喜相迎，求谋并嫁娶，好合有天成，祸福如神验，吉凶甚分明。'],
+      LUCK_XUAN_KONG:['吉','凶','凶','吉','凶','吉','凶','吉','吉'],
+      LUCK_QI_MEN:['大凶','大凶','小吉','大吉','大吉','大吉','小凶','小吉','小凶'],
+      YIN_YANG_QI_MEN:['阳','阴','阳','阳','阳','阴','阴','阳','阴'],
+      fromIndex:function(index){return _fromIndex(index);}
     };
   })();
   return {
