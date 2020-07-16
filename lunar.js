@@ -310,8 +310,9 @@
       return - 20 + jsd * dy * dy;
     };
     var _dtCalc = function(y) {
-      var y0 = DT_AT[DT_AT.length - 2];
-      var t0 = DT_AT[DT_AT.length - 1];
+      var size = DT_AT.length;
+      var y0 = DT_AT[size - 2];
+      var t0 = DT_AT[size - 1];
       if (y >= y0) {
         var jsd = 31;
         if (y > y0 + 100) {
@@ -322,7 +323,7 @@
         return v - dv * (y0 + 100 - y) / 100;
       }
       var i = 0;
-      for (; i < DT_AT.length; i += 5) {
+      for (; i < size; i += 5) {
         if (y < DT_AT[i + 5]) {
           break;
         }
@@ -367,15 +368,16 @@
       return t;
     };
     var _calcJieQi = function(jd) {
+      var size = QI_KB.length;
       var d = 0;
       var pc = 7;
       jd += 2451545;
-      var f1 = QI_KB[0] - pc, f2 = QI_KB[QI_KB.length - 1] - pc, f3 = 2436935;
+      var f1 = QI_KB[0] - pc, f2 = QI_KB[size - 1] - pc, f3 = 2436935;
       if (jd < f1 || jd >= f3) {
         d = Math.floor(_qiHigh(Math.floor((jd + pc - 2451259) * 24 / 365.2422) * Math.PI / 12) + 0.5);
       }else if (jd >= f1 && jd < f2) {
         var i = 0;
-        for (; i < QI_KB.length; i += 2) {
+        for (; i < size; i += 2) {
           if (jd + pc < QI_KB[i + 2]) {
             break;
           }
@@ -761,34 +763,94 @@
           return LunarUtil.PENGZU_ZHI[this._p.dayZhiIndex+1];
         },
         getPositionXi:function(){
-          return LunarUtil.POSITION_XI[this._p.dayGanIndex+1];
+          return this.getDayPositionXi();
         },
         getPositionXiDesc:function(){
-          return LunarUtil.POSITION_DESC[this.getPositionXi()];
+          return this.getDayPositionXiDesc();
         },
         getPositionYangGui:function(){
-          return LunarUtil.POSITION_YANG_GUI[this._p.dayGanIndex+1];
+          return this.getDayPositionYangGui();
         },
         getPositionYangGuiDesc:function(){
-          return LunarUtil.POSITION_DESC[this.getPositionYangGui()];
+          return this.getDayPositionYangGuiDesc();
         },
         getPositionYinGui:function(){
-          return LunarUtil.POSITION_YIN_GUI[this._p.dayGanIndex+1];
+          return this.getDayPositionYinGui();
         },
         getPositionYinGuiDesc:function(){
-          return LunarUtil.POSITION_DESC[this.getPositionYinGui()];
+          return this.getDayPositionYinGuiDesc();
         },
         getPositionFu:function(){
-          return LunarUtil.POSITION_FU[this._p.dayGanIndex+1];
+          return this.getDayPositionFu();
         },
         getPositionFuDesc:function(){
-          return LunarUtil.POSITION_DESC[this.getPositionFu()];
+          return this.getDayPositionFuDesc();
         },
         getPositionCai:function(){
-          return LunarUtil.POSITION_CAI[this._p.dayGanIndex+1];
+          return this.getDayPositionCai();
         },
         getPositionCaiDesc:function(){
-          return LunarUtil.POSITION_DESC[this.getPositionCai()];
+          return this.getDayPositionCaiDesc();
+        },
+        getDayPositionXi:function(){
+          return LunarUtil.POSITION_XI[this._p.dayGanIndex+1];
+        },
+        getDayPositionXiDesc:function(){
+          return LunarUtil.POSITION_DESC[this.getDayPositionXi()];
+        },
+        getDayPositionYangGui:function(){
+          return LunarUtil.POSITION_YANG_GUI[this._p.dayGanIndex+1];
+        },
+        getDayPositionYangGuiDesc:function(){
+          return LunarUtil.POSITION_DESC[this.getDayPositionYangGui()];
+        },
+        getDayPositionYinGui:function(){
+          return LunarUtil.POSITION_YIN_GUI[this._p.dayGanIndex+1];
+        },
+        getDayPositionYinGuiDesc:function(){
+          return LunarUtil.POSITION_DESC[this.getDayPositionYinGui()];
+        },
+        getDayPositionFu:function(){
+          return LunarUtil.POSITION_FU[this._p.dayGanIndex+1];
+        },
+        getDayPositionFuDesc:function(){
+          return LunarUtil.POSITION_DESC[this.getDayPositionFu()];
+        },
+        getDayPositionCai:function(){
+          return LunarUtil.POSITION_CAI[this._p.dayGanIndex+1];
+        },
+        getDayPositionCaiDesc:function(){
+          return LunarUtil.POSITION_DESC[this.getDayPositionCai()];
+        },
+        getTimePositionXi:function(){
+          return LunarUtil.POSITION_XI[this._p.timeGanIndex+1];
+        },
+        getTimePositionXiDesc:function(){
+          return LunarUtil.POSITION_DESC[this.getTimePositionXi()];
+        },
+        getTimePositionYangGui:function(){
+          return LunarUtil.POSITION_YANG_GUI[this._p.timeGanIndex+1];
+        },
+        getTimePositionYangGuiDesc:function(){
+          return LunarUtil.POSITION_DESC[this.getTimePositionYangGui()];
+        },
+        getTimePositionYinGui:function(){
+          return LunarUtil.POSITION_YIN_GUI[this._p.timeGanIndex+1];
+        },
+        getTimePositionYinGuiDesc:function(){
+          return LunarUtil.POSITION_DESC[this.getTimePositionYinGui()];
+        },
+        getTimePositionFu:function(){
+          return LunarUtil.POSITION_FU[this._p.timeGanIndex+1];
+        },
+        getTimePositionFuDesc:function(){
+          return LunarUtil.POSITION_DESC[this.getTimePositionFu()];
+        },
+        getTimePositionCai:function(){
+          return LunarUtil.POSITION_CAI[this._p.timeGanIndex+1];
+        },
+        getTimePositionCaiDesc:function(){
+          return LunarUtil.POSITION_DESC[this.getTimePositionCai()];
         },
         getChong:function(){
           return this.getDayChong();
@@ -1171,13 +1233,13 @@
           s += ' '+this.getGong()+'方'+this.getShou();
           s += ' 星宿['+this.getXiu()+this.getZheng()+this.getAnimal()+']('+this.getXiuLuck()+')';
           s += ' 彭祖百忌['+this.getPengZuGan()+' '+this.getPengZuZhi()+']';
-          s += ' 喜神方位['+this.getPositionXi()+']('+this.getPositionXiDesc()+')';
-          s += ' 阳贵神方位['+this.getPositionYangGui()+']('+this.getPositionYangGuiDesc()+')';
-          s += ' 阴贵神方位['+this.getPositionYinGui()+']('+this.getPositionYinGuiDesc()+')';
-          s += ' 福神方位['+this.getPositionFu()+']('+this.getPositionFuDesc()+')';
-          s += ' 财神方位['+this.getPositionCai()+']('+this.getPositionCaiDesc()+')';
-          s += ' 冲['+this.getChongDesc()+']';
-          s += ' 煞['+this.getSha()+']';
+          s += ' 喜神方位['+this.getDayPositionXi()+']('+this.getDayPositionXiDesc()+')';
+          s += ' 阳贵神方位['+this.getDayPositionYangGui()+']('+this.getDayPositionYangGuiDesc()+')';
+          s += ' 阴贵神方位['+this.getDayPositionYinGui()+']('+this.getDayPositionYinGuiDesc()+')';
+          s += ' 福神方位['+this.getDayPositionFu()+']('+this.getDayPositionFuDesc()+')';
+          s += ' 财神方位['+this.getDayPositionCai()+']('+this.getDayPositionCaiDesc()+')';
+          s += ' 冲['+this.getDayChongDesc()+']';
+          s += ' 煞['+this.getDaySha()+']';
           return s;
         }
       };
