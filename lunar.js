@@ -2185,6 +2185,7 @@
     LunarUtil:LunarUtil,
     Solar:Solar,
     Lunar:Lunar,
+    NineStar:NineStar,
     SolarWeek:SolarWeek,
     SolarMonth:SolarMonth,
     SolarSeason:SolarSeason,
