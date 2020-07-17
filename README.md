@@ -60,8 +60,3 @@ lunar是一款无第三方依赖的公历(阳历)和农历(阴历、老黄历)�
 ## 文档
 
 请移步至 [http://6tail.cn/calendar/api.html](http://6tail.cn/calendar/api.html "http://6tail.cn/calendar/api.html")
-
-## 联系
-
-<a target="_blank" href="https://jq.qq.com/?_wv=1027&k=5F9Pbf0"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="lunar" title="lunar"></a>
-
