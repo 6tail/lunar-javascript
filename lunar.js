@@ -1123,6 +1123,32 @@
           }
           return l;
         },
+        _getBaZiShiShenZhi:function(zhi){
+          var baZi = this.getBaZi();
+          var dayGan = baZi[2].substr(0,1);
+          var hideGan = LunarUtil.ZHI_HIDE_GAN[zhi];
+          var l = [];
+          for(var i=0,j=hideGan.length;i<j;i++){
+            l.push(LunarUtil.SHI_SHEN_ZHI[dayGan+zhi+hideGan[i]]);
+          }
+          return l;
+        },
+        getBaZiShiShenYearZhi:function(){
+          var baZi = this.getBaZi();
+          return this._getBaZiShiShenZhi(baZi[0].substr(1));
+        },
+        getBaZiShiShenMonthZhi:function(){
+          var baZi = this.getBaZi();
+          return this._getBaZiShiShenZhi(baZi[1].substr(1));
+        },
+        getBaZiShiShenDayZhi:function(){
+          var baZi = this.getBaZi();
+          return this._getBaZiShiShenZhi(baZi[2].substr(1));
+        },
+        getBaZiShiShenTimeZhi:function(){
+          var baZi = this.getBaZi();
+          return this._getBaZiShiShenZhi(baZi[3].substr(1));
+        },
         getZhiXing:function(){
           var offset = this._p.dayZhiIndex-this._p.monthZhiIndex;
           if(offset<0){
