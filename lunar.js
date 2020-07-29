@@ -1069,82 +1069,61 @@
           return l;
         },
         getBaZi:function(){
+          var bz = this.getEightChar();
           var l = [];
-          l.push(this.getYearInGanZhiExact());
-          l.push(this.getMonthInGanZhiExact());
-          l.push(this.getDayInGanZhiExact());
-          l.push(this.getTimeInGanZhi());
+          l.push(bz.getYear());
+          l.push(bz.getMonth());
+          l.push(bz.getDay());
+          l.push(bz.getTime());
           return l;
         },
         getBaZiWuXing:function(){
-          var baZi = this.getBaZi();
+          var bz = this.getEightChar();
           var l = [];
-          for(var i=0,j=baZi.length;i<j;i++){
-            var ganZhi = baZi[i];
-            var gan = ganZhi.substr(0,1);
-            var zhi = ganZhi.substr(1);
-            l.push(LunarUtil.WU_XING_GAN[gan]+LunarUtil.WU_XING_ZHI[zhi]);
-          }
+          l.push(bz.getYearWuXing());
+          l.push(bz.getMonthWuXing());
+          l.push(bz.getDayWuXing());
+          l.push(bz.getTimeWuXing());
           return l;
         },
         getBaZiNaYin:function(){
-          var baZi = this.getBaZi();
+          var bz = this.getEightChar();
           var l = [];
-          for(var i=0,j=baZi.length;i<j;i++){
-            var ganZhi = baZi[i];
-            l.push(LunarUtil.NAYIN[ganZhi]);
-          }
+          l.push(bz.getYearNaYin());
+          l.push(bz.getMonthNaYin());
+          l.push(bz.getDayNaYin());
+          l.push(bz.getTimeNaYin());
           return l;
         },
         getBaZiShiShenGan:function(){
-          var baZi = this.getBaZi();
-          var yearGan = baZi[0].substr(0,1);
-          var monthGan = baZi[1].substr(0,1);
-          var dayGan = baZi[2].substr(0,1);
-          var timeGan = baZi[3].substr(0,1);
+          var bz = this.getEightChar();
           var l = [];
-          l.push(LunarUtil.SHI_SHEN_GAN[dayGan+yearGan]);
-          l.push(LunarUtil.SHI_SHEN_GAN[dayGan+monthGan]);
-          l.push('日主');
-          l.push(LunarUtil.SHI_SHEN_GAN[dayGan+timeGan]);
+          l.push(bz.getYearShiShenGan());
+          l.push(bz.getMonthShiShenGan());
+          l.push(bz.getDayShiShenGan());
+          l.push(bz.getTimeShiShenGan());
           return l;
         },
         getBaZiShiShenZhi:function(){
-          var baZi = this.getBaZi();
-          var dayGan = baZi[2].substr(0,1);
+          var bz = this.getEightChar();
           var l = [];
-          for(var i=0,j=baZi.length;i<j;i++){
-            var ganZhi = baZi[i];
-            var zhi = ganZhi.substr(1);
-            l.push(LunarUtil.SHI_SHEN_ZHI[dayGan+zhi+LunarUtil.ZHI_HIDE_GAN[zhi][0]]);
-          }
-          return l;
-        },
-        _getBaZiShiShenZhi:function(zhi){
-          var baZi = this.getBaZi();
-          var dayGan = baZi[2].substr(0,1);
-          var hideGan = LunarUtil.ZHI_HIDE_GAN[zhi];
-          var l = [];
-          for(var i=0,j=hideGan.length;i<j;i++){
-            l.push(LunarUtil.SHI_SHEN_ZHI[dayGan+zhi+hideGan[i]]);
-          }
+          l.push(bz.getYearShiShenZhi()[0]);
+          l.push(bz.getMonthShiShenZhi()[0]);
+          l.push(bz.getDayShiShenZhi()[0]);
+          l.push(bz.getTimeShiShenZhi()[0]);
           return l;
         },
         getBaZiShiShenYearZhi:function(){
-          var baZi = this.getBaZi();
-          return this._getBaZiShiShenZhi(baZi[0].substr(1));
+          return this.getEightChar().getYearShiShenZhi();
         },
         getBaZiShiShenMonthZhi:function(){
-          var baZi = this.getBaZi();
-          return this._getBaZiShiShenZhi(baZi[1].substr(1));
+          return this.getEightChar().getMonthShiShenZhi();
         },
         getBaZiShiShenDayZhi:function(){
-          var baZi = this.getBaZi();
-          return this._getBaZiShiShenZhi(baZi[2].substr(1));
+          return this.getEightChar().getDayShiShenZhi();
         },
         getBaZiShiShenTimeZhi:function(){
-          var baZi = this.getBaZi();
-          return this._getBaZiShiShenZhi(baZi[3].substr(1));
+          return this.getEightChar().getTimeShiShenZhi();
         },
         getZhiXing:function(){
           var offset = this._p.dayZhiIndex-this._p.monthZhiIndex;
