@@ -1279,6 +1279,65 @@
         getJieQiList:function(){
           return this._p.jieQiList;
         },
+        getNextJie:function(){return this._getNearJieQi(true,LunarUtil.JIE);},
+        getPrevJie:function(){return this._getNearJieQi(false,LunarUtil.JIE);},
+        getNextJieQi:function(){return this._getNearJieQi(true,null);},
+        getPrevJieQi:function(){return this._getNearJieQi(false,null);},
+        _getNearJieQi:function(forward, conditions){
+          var name = null;
+          var near = null;
+          var filters = {};
+          var filter = false;
+          if(null!=conditions){
+            for(var i=0,j=conditions.length;i<j;i++){
+              filters[conditions[i]] = true;
+              filter = true;
+            }
+          }
+          var today = this._p.solar.toYmdHms();
+          for(var jq in this._p.jieQi){
+            if('DONG_ZHI'===jq){
+              jq = '冬至';
+            }
+            if(filter){
+              if(!filters[jq]){
+                continue;
+              }
+            }
+            var solar = this._p.jieQi[jq];
+            var day = solar.toYmdHms();
+            if(forward){
+              if(day<today){
+                continue;
+              }
+              if(null==near || day<near.toYmdHms()){
+                name = jq;
+                near = solar;
+              }
+            }else{
+              if(day>today){
+                continue;
+              }
+              if(null==near || day>near.toYmdHms()) {
+                name = jq;
+                near = solar;
+              }
+            }
+          }
+          if(null==near){
+            return null;
+          }
+          return {
+            _p: {
+              name: name,
+              solar: near
+            },
+            getName: function(){return this._p.name;},
+            getSolar: function(){return this._p.solar;},
+            setName: function(name){this._p.name=name;},
+            setSolar: function(solar){this._p.solar=solar;}
+          };
+        },
         getEightChar:function(){
           if(!this._p.eightChar){
             this._p.eightChar=EightChar.fromLunar(this);
@@ -2512,6 +2571,225 @@
           return LunarUtil.JIA_ZI[jiaZiIndex];
         },
         getShenGongNaYin:function(){return LunarUtil.NAYIN[this.getShenGong()];},
+        getLunar:function(){return this._p.lunar;},
+        getYun:function(gender){
+          var lunar = this.getLunar();
+          var yang = 0 === lunar.getYearGanIndexExact() % 2;
+          var man = 1 === gender;
+          var forward = (yang && man) || (!yang && !man);
+          var start = (function(){
+            var prev = lunar.getPrevJie();
+            var next = lunar.getNextJie();
+            var current = lunar.getSolar();
+            var start = forward ? current : prev.getSolar();
+            var end = forward ? next.getSolar() : current;
+            var hourDiff = LunarUtil.getTimeZhiIndex(end.toYmdHms().substr(11, 5)) - LunarUtil.getTimeZhiIndex(start.toYmdHms().substr(11, 5));
+            var endCalendar = new Date(end.getYear(), end.getMonth() - 1, end.getDay());
+            var startCalendar = new Date(start.getYear(), start.getMonth() - 1, start.getDay());
+            // 天数差
+            var dayDiff = Math.floor((endCalendar - startCalendar) / (1000 * 3600 * 24));
+            if (hourDiff < 0) {
+              hourDiff += 12;
+              dayDiff--;
+            }
+            var monthDiff = Math.floor(hourDiff * 10 / 30);
+            var month = dayDiff * 4 + monthDiff;
+            var day = hourDiff * 10 - monthDiff * 30;
+            var year = Math.floor(month / 12);
+            month = month - year * 12;
+            return {
+              year: year,
+              month: month,
+              day: day
+            };
+          })();
+          var buildLiuYue = function(liuNian, index){
+            return {
+              _p: {
+                index: index,
+                liuNian: liuNian
+              },
+              getIndex: function(){return this._p.index;},
+              getMonthInChinese: function(){return LunarUtil.MONTH[this._p.index + 1];},
+              getGanZhi: function(){
+                var offset = 0;
+                var yearGan = liuNian.getGanZhi().substr(0, 1);
+                if ('甲'===yearGan || '己'===yearGan) {
+                  offset = 2;
+                } else if ('乙'===yearGan || '庚'===yearGan) {
+                  offset = 4;
+                } else if ('丙'===yearGan || '辛'===yearGan) {
+                  offset = 6;
+                } else if ('丁'===yearGan || '壬'===yearGan) {
+                  offset = 8;
+                }
+                var gan = LunarUtil.GAN[(this._p.index + offset) % 10 + 1];
+                var zhi = LunarUtil.ZHI[(this._p.index + LunarUtil.BASE_MONTH_ZHI_INDEX) % 12 + 1];
+                return gan + zhi;
+              }
+            };
+          };
+          var buildLiuNian = function(daYun, index){
+            return {
+              _p: {
+                year: daYun.getStartYear() + index,
+                age: daYun.getStartAge() + index,
+                index: index,
+                daYun: daYun,
+                lunar: daYun.getLunar()
+              },
+              getYear: function(){return this._p.year;},
+              getAge: function(){return this._p.age;},
+              getIndex: function(){return this._p.index;},
+              getLunar: function(){return this._p.lunar;},
+              getGanZhi: function(){
+                var offset = LunarUtil.getJiaZiIndex(this._p.lunar.getYearInGanZhiExact()) + this._p.index;
+                if (this._p.daYun.getIndex() > 0) {
+                  offset += this._p.daYun.getStartAge() - 1;
+                }
+                offset %= LunarUtil.JIA_ZI.length;
+                return LunarUtil.JIA_ZI[offset];
+              },
+              getLiuYue: function(){
+                var n = 12;
+                var l = [];
+                for (var i = 0; i < n; i++) {
+                  l.push(buildLiuYue(this,i));
+                }
+                return l;
+              }
+            };
+          };
+          var buildXiaoYun = function(daYun, index, forward){
+            return {
+              _p: {
+                year: daYun.getStartYear() + index,
+                age: daYun.getStartAge() + index,
+                index: index,
+                daYun: daYun,
+                forward: forward,
+                lunar: daYun.getLunar()
+              },
+              getYear: function(){return this._p.year;},
+              getAge: function(){return this._p.age;},
+              getIndex: function(){return this._p.index;},
+              getGanZhi: function(){
+                var offset = LunarUtil.getJiaZiIndex(this._p.lunar.getTimeInGanZhi());
+                var add = this._p.index + 1;
+                if (this._p.daYun.getIndex() > 0) {
+                  add += this._p.daYun.getStartAge() - 1;
+                }
+                offset += this._p.forward ? add : -add;
+                var size = LunarUtil.JIA_ZI.length;
+                while (offset < 0) {
+                  offset += size;
+                }
+                offset %= size;
+                return LunarUtil.JIA_ZI[offset];
+              }
+            };
+          };
+          var buildDaYun = function(yun, index){
+            var year = yun.getStartSolar().getYear();
+            var startYear,startAge,endYear,endAge;
+            if (index < 1) {
+              startYear = lunar.getSolar().getYear();
+              startAge = 1;
+              endYear = year - 1;
+              endAge = yun.getStartYear();
+            } else {
+              var add = (index - 1) * 10;
+              startYear = year + add;
+              startAge = yun.getStartYear() + add + 1;
+              endYear = startYear + 9;
+              endAge = startAge + 9;
+            }
+            return {
+              _p: {
+                startYear: startYear,
+                endYear: endYear,
+                startAge: startAge,
+                endAge: endAge,
+                index: index,
+                yun: yun,
+                lunar: yun.getLunar()
+              },
+              getStartYear: function(){return this._p.startYear;},
+              getEndYear: function(){return this._p.endYear;},
+              getStartAge: function(){return this._p.startAge;},
+              getEndAge: function(){return this._p.endAge;},
+              getIndex: function(){return this._p.index;},
+              getLunar: function(){return this._p.lunar;},
+              getGanZhi: function(){
+                if (this._p.index < 1) {
+                  return '';
+                }
+                var offset = LunarUtil.getJiaZiIndex(this._p.lunar.getMonthInGanZhiExact());
+                offset += this._p.yun.isForward() ? this._p.index : -this._p.index;
+                var size = LunarUtil.JIA_ZI.length;
+                if (offset >= size) {
+                  offset -= size;
+                }
+                if (offset < 0) {
+                  offset += size;
+                }
+                return LunarUtil.JIA_ZI[offset];
+              },
+              getLiuNian: function(){
+                console.log(this._p);
+                var n = 10;
+                if (this._p.index < 1) {
+                  n = this._p.endYear-this._p.startYear+1;
+                }
+                var l = [];
+                for (var i = 0; i < n; i++) {
+                  l.push(buildLiuNian(this,i));
+                }
+                return l;
+              },
+              getXiaoYun: function(){
+                var n = 10;
+                if (this._p.index < 1) {
+                  n = this._p.endYear-this._p.startYear+1;
+                }
+                var l = [];
+                for (var i = 0; i < n; i++) {
+                  l.push(buildXiaoYun(this,i,this._p.yun.isForward()));
+                }
+                return l;
+              }
+            };
+          };
+          return {
+            _p: {
+              gender: gender,
+              startYear: start.year,
+              startMonth: start.month,
+              startDay: start.day,
+              forward: forward,
+              lunar: lunar
+            },
+            getGender: function(){return this._p.gender;},
+            getStartYear: function(){return this._p.startYear;},
+            getStartMonth: function(){return this._p.startMonth;},
+            getStartDay: function(){return this._p.startDay;},
+            isForward: function(){return this._p.forward;},
+            getLunar: function(){return this._p.lunar;},
+            getStartSolar: function(){
+              var birth = this._p.lunar.getSolar();
+              var c = new Date(birth.getYear() + this._p.startYear, birth.getMonth() - 1+this._p.startMonth, birth.getDay() + this._p.startDay);
+              return Solar.fromDate(c);
+            },
+            getDaYun: function(){
+              var n = 10;
+              var l = [];
+              for (var i = 0; i < n; i++) {
+                l.push(buildDaYun(this,i));
+              }
+              return l;
+            }
+          };
+        },
         toString:function(){return this.getYear()+' '+this.getMonth()+' '+this.getDay()+' '+this.getTime();}
       };
     };
