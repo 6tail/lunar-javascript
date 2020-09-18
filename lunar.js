@@ -494,6 +494,10 @@
         w -= 365.2422;
       }
       var q,key;
+      q = _calcJieQi(w - 15.2184);
+      key = Lunar.JIE_QI_PREPEND;
+      o['jieQiList'].push(key);
+      o['jieQi'][key] = Solar.fromJulianDay(_qiAccurate2(q) + Solar.J2000);
       var size = JIE_QI.length;
       for (var i=0;i<size;i++) {
         q = _calcJieQi(w + 15.2184 * i);
@@ -502,7 +506,7 @@
         o['jieQi'][key] = Solar.fromJulianDay(_qiAccurate2(q) + Solar.J2000);
       }
       q = _calcJieQi(w + 15.2184 * size);
-      key = 'DONG_ZHI';
+      key = Lunar.JIE_QI_APPEND;
       o['jieQiList'].push(key);
       o['jieQi'][key] = Solar.fromJulianDay(_qiAccurate2(q) + Solar.J2000);
     };
@@ -1001,12 +1005,17 @@
           return LunarUtil.SEASON[Math.abs(this._p.month)];
         },
         getJie:function(){
+          var d;
           for(var i=0,j=LunarUtil.JIE.length;i<j;i++){
             var jie = LunarUtil.JIE[i];
-            var d = this._p.jieQi[jie];
+            d = this._p.jieQi[jie];
             if(d.getYear()===this._p.solar.getYear()&&d.getMonth()===this._p.solar.getMonth()&&d.getDay()===this._p.solar.getDay()){
               return jie;
             }
+          }
+          d = this._p.jieQi[Lunar.JIE_QI_PREPEND];
+          if(d.getYear()==this._p.solar.getYear()&&d.getMonth()==this._p.solar.getMonth()&&d.getDay()==this._p.solar.getDay()){
+            return Lunar.JIE_QI_LAST;
           }
           return '';
         },
@@ -1019,9 +1028,9 @@
               return qi;
             }
           }
-          d = this._p.jieQi['DONG_ZHI'];
+          d = this._p.jieQi[Lunar.JIE_QI_APPEND];
           if(d.getYear()==this._p.solar.getYear()&&d.getMonth()==this._p.solar.getMonth()&&d.getDay()==this._p.solar.getDay()){
-            return '冬至';
+            return Lunar.JIE_QI_FIRST;
           }
           return '';
         },
@@ -1296,15 +1305,18 @@
           }
           var today = this._p.solar.toYmdHms();
           for(var jq in this._p.jieQi){
-            if('DONG_ZHI'===jq){
-              jq = '冬至';
+            var solar = this._p.jieQi[jq];
+            if(Lunar.JIE_QI_APPEND===jq){
+              jq = Lunar.JIE_QI_FIRST;
+            }
+            if(Lunar.JIE_QI_PREPEND===jq){
+              jq = Lunar.JIE_QI_LAST;
             }
             if(filter){
               if(!filters[jq]){
                 continue;
               }
             }
-            var solar = this._p.jieQi[jq];
             var day = solar.toYmdHms();
             if(forward){
               if(day<today){
@@ -1382,6 +1394,10 @@
       };
     };
     return {
+      JIE_QI_PREPEND: 'DA_XUE',
+      JIE_QI_APPEND: 'DONG_ZHI',
+      JIE_QI_FIRST: '冬至',
+      JIE_QI_LAST: '大雪',
       fromYmdHms:function(y,m,d,hour,minute,second){return _fromYmdHms(y,m,d,hour,minute,second);},
       fromYmd:function(y,m,d){return _fromYmdHms(y,m,d,0,0,0);},
       fromDate:function(date){return _fromDate(date);}
@@ -2736,7 +2752,6 @@
                 return LunarUtil.JIA_ZI[offset];
               },
               getLiuNian: function(){
-                console.log(this._p);
                 var n = 10;
                 if (this._p.index < 1) {
                   n = this._p.endYear-this._p.startYear+1;
