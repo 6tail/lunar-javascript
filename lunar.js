@@ -1034,6 +1034,22 @@
           }
           return '';
         },
+        getJieQi:function(){
+          var name = '';
+          for(var key in this._p.jieQi){
+            var d = this._p.jieQi[key];
+            if(d.getYear()==this._p.solar.getYear()&&d.getMonth()==this._p.solar.getMonth()&&d.getDay()==this._p.solar.getDay()){
+              name = key;
+              break;
+            }
+          }
+          if(Lunar.JIE_QI_APPEND===name){
+            name = Lunar.JIE_QI_FIRST;
+          }else if(Lunar.JIE_QI_PREPEND===name){
+            name = Lunar.JIE_QI_LAST;
+          }
+          return name;
+        },
         getWeek:function(){
           return this._p.weekIndex;
         },
@@ -1290,8 +1306,40 @@
         },
         getNextJie:function(){return this._getNearJieQi(true,LunarUtil.JIE);},
         getPrevJie:function(){return this._getNearJieQi(false,LunarUtil.JIE);},
+        getNextQi:function(){return this._getNearJieQi(true,LunarUtil.QI);},
+        getPrevQi:function(){return this._getNearJieQi(false,LunarUtil.QI);},
         getNextJieQi:function(){return this._getNearJieQi(true,null);},
         getPrevJieQi:function(){return this._getNearJieQi(false,null);},
+        _buildJieQi:function(name, solar){
+          var jie=false,qi=false,i,j;
+          for(i=0,j=LunarUtil.JIE.length;i<j;i++){
+            if(LunarUtil.JIE[i]===name){
+              jie=true;
+            }
+          }
+          if(!jie) {
+            for(i=0,j=LunarUtil.QI.length;i<j;i++){
+              if(LunarUtil.QI[i]===name){
+                qi = true;
+              }
+            }
+          }
+          return {
+            _p: {
+              name: name,
+              solar: solar,
+              jie: jie,
+              qi: qi
+            },
+            getName: function(){return this._p.name;},
+            getSolar: function(){return this._p.solar;},
+            setName: function(name){this._p.name=name;},
+            setSolar: function(solar){this._p.solar=solar;},
+            isJie: function(){return this._p.jie;},
+            isQi: function(){return this._p.qi;},
+            toString: function(){return this.getName();}
+          };
+        },
         _getNearJieQi:function(forward, conditions){
           var name = null;
           var near = null;
@@ -1339,16 +1387,19 @@
           if(null==near){
             return null;
           }
-          return {
-            _p: {
-              name: name,
-              solar: near
-            },
-            getName: function(){return this._p.name;},
-            getSolar: function(){return this._p.solar;},
-            setName: function(name){this._p.name=name;},
-            setSolar: function(solar){this._p.solar=solar;}
-          };
+          return this._buildJieQi(name, near);
+        },
+        getCurrentJieQi:function(){
+          var name = this.getJieQi();
+          return name.length>0 ? this._buildJieQi(name,solar) : null;
+        },
+        getCurrentJie:function(){
+          var name = this.getJie();
+          return name.length>0 ? this._buildJieQi(name,solar) : null;
+        },
+        getCurrentQi:function(){
+          var name = this.getQi();
+          return name.length>0 ? this._buildJieQi(name,solar) : null;
         },
         getEightChar:function(){
           if(!this._p.eightChar){
@@ -1375,7 +1426,7 @@
           for(i=0,j=otherFestivals.length;i<j;i++){
             s += ' ('+otherFestivals[i]+')';
           }
-          var jq = this.getJie()+this.getQi();
+          var jq = this.getJieQi();
           if(jq.length>0){
             s += ' ['+jq+']';
           }
