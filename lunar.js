@@ -511,6 +511,7 @@
       o['jieQi'][key] = Solar.fromJulianDay(_qiAccurate2(q) + Solar.J2000);
     };
     var _computeYear = function(o,solar,year){
+      //以正月初一开始
       var yearGanIndex = (year+LunarUtil.BASE_YEAR_GANZHI_INDEX)%10;
       var yearZhiIndex = (year+LunarUtil.BASE_YEAR_GANZHI_INDEX)%12;
 
@@ -522,37 +523,60 @@
       var gExact = yearGanIndex;
       var zExact = yearZhiIndex;
 
+      //获取立春的阳历时刻
+      var liChun = o['jieQi']['立春'];
+
+      //阳历和阴历年份相同代表正月初一及以后
       if(year===solar.getYear()){
-        //获取立春的阳历时刻
-        var liChun = o['jieQi']['立春'];
         //立春日期判断
         if(solar.toYmd()<liChun.toYmd()) {
           g--;
-          if(g<0){
-            g += 10;
-          }
           z--;
-          if(z<0){
-            z += 12;
-          }
         }
         //立春交接时刻判断
         if(solar.toYmdHms()<liChun.toYmdHms()) {
           gExact--;
-          if(gExact<0){
-            gExact += 10;
-          }
           zExact--;
-          if(zExact<0){
-            zExact += 12;
-          }
+        }
+      }else{
+        if(solar.toYmd()>=liChun.toYmd()) {
+          g++;
+          z++;
+        }
+        if(solar.toYmdHms()>=liChun.toYmdHms()) {
+          gExact++;
+          zExact++;
         }
       }
+      if(g<0){
+        g += 10;
+      }
+      if(g>=10){
+        g-=10;
+      }
+      if(z<0){
+        z += 12;
+      }
+      if(z>=12){
+        z-=12;
+      }
+      if(gExact<0){
+        gExact += 10;
+      }
+      if(gExact>=10){
+        gExact-=10;
+      }
+      if(zExact<0){
+        zExact += 12;
+      }
+      if(zExact>=12){
+        zExact-=12;
+      }
+
       o['yearGanIndex'] = yearGanIndex;
       o['yearZhiIndex'] = yearZhiIndex;
       o['yearGanIndexByLiChun'] = g;
       o['yearZhiIndexByLiChun'] = z;
-
       o['yearGanIndexExact'] = gExact;
       o['yearZhiIndexExact'] = zExact;
     };
@@ -1407,6 +1431,49 @@
           }
           return this._p.eightChar;
         },
+        next:function(days){
+          var y = this._p.year,m = this._p.month,d = this._p.day,daysInMonth,rest;
+          if(days>0){
+            daysInMonth = LunarUtil.getDaysOfMonth(y,m);
+            rest = day+days;
+            while(daysInMonth < rest) {
+              if(m>0){
+                if(LunarUtil.getLeapMonth(y)!=m){
+                  m++;
+                }else{
+                  m = -m;
+                }
+              }else{
+                m = 1-m;
+              }
+              if(13==m){
+                y++;
+                m=1;
+              }
+              rest -= daysInMonth;
+              daysInMonth = LunarUtil.getDaysOfMonth(y,m);
+            }
+            d = rest;
+          }else if(days<0){
+            daysInMonth = day;
+            rest = -days;
+            while(daysInMonth <= rest) {
+              if(m>0){
+                m--;
+                if(0==m){
+                  y--;
+                  m = LunarUtil.getLeapMonth(y)!=12?12:-12;
+                }
+              }else{
+                m = -m;
+              }
+              rest -= daysInMonth;
+              daysInMonth = LunarUtil.getDaysOfMonth(y,m);
+            }
+            d = daysInMonth - rest;
+          }
+          return _fromYmdHms(y,m,d,this._p.hour,this._p.minute,this._p.second);
+        },
         toString:function(){
           return this.getYearInChinese()+'年'+this.getMonthInChinese()+'月'+this.getDayInChinese();
         },
@@ -1975,15 +2042,11 @@
       nextMonth:function(y,m){
         var n = Math.abs(m)+1;
         if(m>0){
-          var index = y-this.BASE_YEAR+this.BASE_INDEX;
-          var v = this.LUNAR_MONTH[2*index+1];
-          v = (v>>4)&0x0F;
-          if(v===m){
+          if(m==LunarUtil.getLeapMonth(y)){
             n = -m;
           }
         }
-        if(n===13) n = 1;
-        return n;
+        return 13!=n?n:1;
       },
       getDaysOfMonth:function(year,month){
         var index = year-this.BASE_YEAR+this.BASE_INDEX;
