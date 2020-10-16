@@ -1277,6 +1277,9 @@
           }
           // 寅月起，所以需要-2
           var monthIndex = this._p.monthZhiIndex-2;
+          if(monthIndex<0){
+            monthIndex += 12
+          }
           var index = start-monthIndex-1;
           if(index<0){
             index += 9;
