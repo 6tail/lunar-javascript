@@ -509,6 +509,16 @@
       key = Lunar.JIE_QI_APPEND;
       o['jieQiList'].push(key);
       o['jieQi'][key] = Solar.fromJulianDay(_qiAccurate2(q) + Solar.J2000);
+      size++;
+      q = _calcJieQi(w + 15.2184 * size);
+      key = Lunar.JIE_APPEND_SOLAR_FIRST;
+      o['jieQiList'].push(key);
+      o['jieQi'][key] = Solar.fromJulianDay(_qiAccurate2(q) + Solar.J2000);
+      size++;
+      q = _calcJieQi(w + 15.2184 * size);
+      key = Lunar.QI_APPEND_SOLAR_SECOND;
+      o['jieQiList'].push(key);
+      o['jieQi'][key] = Solar.fromJulianDay(_qiAccurate2(q) + Solar.J2000);
     };
     var _computeYear = function(o,solar,year){
       //以正月初一开始
@@ -1041,6 +1051,10 @@
           if(d.getYear()==this._p.solar.getYear()&&d.getMonth()==this._p.solar.getMonth()&&d.getDay()==this._p.solar.getDay()){
             return Lunar.JIE_QI_LAST;
           }
+          d = this._p.jieQi[Lunar.JIE_APPEND_SOLAR_FIRST];
+          if(d.getYear()==this._p.solar.getYear()&&d.getMonth()==this._p.solar.getMonth()&&d.getDay()==this._p.solar.getDay()){
+            return Lunar.JIE_SOLAR_FIRST;
+          }
           return '';
         },
         getQi:function(){
@@ -1055,6 +1069,10 @@
           d = this._p.jieQi[Lunar.JIE_QI_APPEND];
           if(d.getYear()==this._p.solar.getYear()&&d.getMonth()==this._p.solar.getMonth()&&d.getDay()==this._p.solar.getDay()){
             return Lunar.JIE_QI_FIRST;
+          }
+          d = this._p.jieQi[Lunar.QI_APPEND_SOLAR_SECOND];
+          if(d.getYear()==this._p.solar.getYear()&&d.getMonth()==this._p.solar.getMonth()&&d.getDay()==this._p.solar.getDay()){
+            return Lunar.QI_SOLAR_SECOND;
           }
           return '';
         },
@@ -1071,6 +1089,10 @@
             name = Lunar.JIE_QI_FIRST;
           }else if(Lunar.JIE_QI_PREPEND===name){
             name = Lunar.JIE_QI_LAST;
+          }else if(Lunar.JIE_APPEND_SOLAR_FIRST===name){
+            name = Lunar.JIE_SOLAR_FIRST;
+          }else if(Lunar.QI_APPEND_SOLAR_SECOND===name){
+            name = Lunar.QI_SOLAR_SECOND;
           }
           return name;
         },
@@ -1384,6 +1406,12 @@
             if(Lunar.JIE_QI_PREPEND===jq){
               jq = Lunar.JIE_QI_LAST;
             }
+            if(Lunar.JIE_APPEND_SOLAR_FIRST===jq){
+              jq = Lunar.JIE_SOLAR_FIRST;
+            }
+            if(Lunar.QI_APPEND_SOLAR_SECOND===jq){
+              jq = Lunar.QI_SOLAR_SECOND;
+            }
             if(filter){
               if(!filters[jq]){
                 continue;
@@ -1514,8 +1542,12 @@
     return {
       JIE_QI_PREPEND: 'DA_XUE',
       JIE_QI_APPEND: 'DONG_ZHI',
+      JIE_APPEND_SOLAR_FIRST: 'XIAO_HAN',
+      QI_APPEND_SOLAR_SECOND: 'DA_HAN',
       JIE_QI_FIRST: '冬至',
       JIE_QI_LAST: '大雪',
+      JIE_SOLAR_FIRST: '小寒',
+      QI_SOLAR_SECOND: '大寒',
       fromYmdHms:function(y,m,d,hour,minute,second){return _fromYmdHms(y,m,d,hour,minute,second);},
       fromYmd:function(y,m,d){return _fromYmdHms(y,m,d,0,0,0);},
       fromDate:function(date){return _fromDate(date);}
