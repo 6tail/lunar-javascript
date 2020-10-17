@@ -1281,7 +1281,7 @@
             monthIndex += 12;
           }
           var index = start-monthIndex-1;
-          if(index<0){
+          while(index<0){
             index += 9;
           }
           return NineStar.fromIndex(index);
