@@ -2855,17 +2855,18 @@
             };
           };
           var buildDaYun = function(yun, index){
+            var birthYear = yun.getLunar().getSolar().getYear();
             var year = yun.getStartSolar().getYear();
             var startYear,startAge,endYear,endAge;
             if (index < 1) {
-              startYear = lunar.getSolar().getYear();
+              startYear = birthYear;
               startAge = 1;
               endYear = year - 1;
-              endAge = yun.getStartYear();
+              endAge = year - birthYear;
             } else {
               var add = (index - 1) * 10;
               startYear = year + add;
-              startAge = yun.getStartYear() + add + 1;
+              startAge = startYear - birthYear + 1;
               endYear = startYear + 9;
               endAge = startAge + 9;
             }
