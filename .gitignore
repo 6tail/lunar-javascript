@@ -1,16 +1,2 @@
-*.class
-target/
-
-#idea
 .idea/
-/idea/
-*.ipr
 *.iml
-*.iws
-
-# temp file
-*.log
-*.cache
-*.diff
-*.patch
-*.tmp

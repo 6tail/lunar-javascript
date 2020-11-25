@@ -1,0 +1,6 @@
+.git/
+.idea/
+.gitignore
+*.html
+*.iml
+
