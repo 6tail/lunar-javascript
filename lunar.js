@@ -2707,7 +2707,7 @@
     };
   })();
   var EightChar = (function(){
-    var CHANG_SHENG_OFFSET = {'甲':11,'丙':2,'戊':2,'庚':5,'壬':8,'乙':6,'丁':9,'己':9,'辛':0,'癸':3};
+    var CHANG_SHENG_OFFSET = {'甲':1,'丙':10,'戊':10,'庚':7,'壬':4,'乙':6,'丁':9,'己':9,'辛':0,'癸':3};
     var _fromLunar=function(lunar){
       return {
         _p:{lunar:lunar},
