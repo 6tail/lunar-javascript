@@ -2978,7 +2978,7 @@
               getIndex: function(){return this._p.index;},
               getLunar: function(){return this._p.lunar;},
               getGanZhi: function(){
-                var offset = LunarUtil.getJiaZiIndex(this._p.lunar.getYearInGanZhiExact()) + this._p.index;
+                var offset = LunarUtil.getJiaZiIndex(this._p.lunar.getJieQiTable()['立春'].getLunar().getYearInGanZhiExact()) + this._p.index;
                 if (this._p.daYun.getIndex() > 0) {
                   offset += this._p.daYun.getStartAge() - 1;
                 }
