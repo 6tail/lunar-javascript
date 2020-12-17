@@ -210,7 +210,8 @@
         }
       };
     };
-    var _fromBaZi=function(yearGanZhi,monthGanZhi,dayGanZhi,timeGanZhi){
+    var _fromBaZi=function(yearGanZhi,monthGanZhi,dayGanZhi,timeGanZhi,sect){
+      sect = (1==sect)?1:2;
       var l = [];
       var today = _fromDate(new Date());
       var lunar = today.getLunar();
@@ -267,7 +268,8 @@
           solar = _fromYmdHms(year, month, day, hour, 0, 0);
           while (counter < 61) {
             lunar = solar.getLunar();
-            if (lunar.getYearInGanZhiExact()===yearGanZhi && lunar.getMonthInGanZhiExact()===monthGanZhi && lunar.getDayInGanZhiExact()===dayGanZhi && lunar.getTimeInGanZhi()===timeGanZhi) {
+            var dgz = (2==sect)?lunar.getDayInGanZhiExact2():lunar.getDayInGanZhiExact();
+            if (lunar.getYearInGanZhiExact()===yearGanZhi && lunar.getMonthInGanZhiExact()===monthGanZhi && dgz===dayGanZhi && lunar.getTimeInGanZhi()===timeGanZhi) {
               l.push(solar);
               break;
             }
@@ -671,6 +673,8 @@
       o['dayZhiIndex'] = dayZhiIndex;
       var dayGanExact = dayGanIndex;
       var dayZhiExact = dayZhiIndex;
+      o['dayGanIndexExact2'] = dayGanExact;
+      o['dayZhiIndexExact2'] = dayZhiExact;
       var hm = (hour<10?'0':'')+hour+':'+(minute<10?'0':'')+minute;
       if(hm>='23:00'&&hm<='23:59'){
         dayGanExact++;
@@ -740,6 +744,8 @@
           dayZhiIndex:gz.dayZhiIndex,
           dayGanIndexExact:gz.dayGanIndexExact,
           dayZhiIndexExact:gz.dayZhiIndexExact,
+          dayGanIndexExact2:gz.dayGanIndexExact2,
+          dayZhiIndexExact2:gz.dayZhiIndexExact2,
           monthGanIndex:gz.monthGanIndex,
           monthZhiIndex:gz.monthZhiIndex,
           monthGanIndexExact:gz.monthGanIndexExact,
@@ -765,113 +771,50 @@
         getTimeGanIndex:function(){return this._p.timeGanIndex;},
         getTimeZhiIndex:function(){return this._p.timeZhiIndex;},
         getDayGanIndexExact:function(){return this._p.dayGanIndexExact;},
+        getDayGanIndexExact2:function(){return this._p.dayGanIndexExact2;},
         getDayZhiIndexExact:function(){return this._p.dayZhiIndexExact;},
+        getDayZhiIndexExact2:function(){return this._p.dayZhiIndexExact2;},
         getMonthGanIndexExact:function(){return this._p.monthGanIndexExact;},
         getMonthZhiIndexExact:function(){return this._p.monthZhiIndexExact;},
         getYearGanIndexExact:function(){return this._p.yearGanIndexExact;},
         getYearZhiIndexExact:function(){return this._p.yearZhiIndexExact;},
-        getGan:function(){
-          return this.getYearGan();
-        },
-        getZhi:function(){
-          return this.getYearZhi();
-        },
-        getYearGan:function(){
-          return LunarUtil.GAN[this._p.yearGanIndex+1];
-        },
-        getYearGanByLiChun:function(){
-          return LunarUtil.GAN[this._p.yearGanIndexByLiChun+1];
-        },
-        getYearGanExact:function(){
-          return LunarUtil.GAN[this._p.yearGanIndexExact+1];
-        },
-        getYearZhi:function(){
-          return LunarUtil.ZHI[this._p.yearZhiIndex+1];
-        },
-        getYearZhiByLiChun:function(){
-          return LunarUtil.ZHI[this._p.yearZhiIndexByLiChun+1];
-        },
-        getYearZhiExact:function(){
-          return LunarUtil.ZHI[this._p.yearZhiIndexExact+1];
-        },
-        getYearInGanZhi:function(){
-          return this.getYearGan()+this.getYearZhi();
-        },
-        getYearInGanZhiByLiChun:function(){
-          return this.getYearGanByLiChun()+this.getYearZhiByLiChun();
-        },
-        getYearInGanZhiExact:function(){
-          return this.getYearGanExact()+this.getYearZhiExact();
-        },
-        getMonthGan:function(){
-          return LunarUtil.GAN[this._p.monthGanIndex+1];
-        },
-        getMonthGanExact:function(){
-          return LunarUtil.GAN[this._p.monthGanIndexExact+1];
-        },
-        getMonthZhi:function(){
-          return LunarUtil.ZHI[this._p.monthZhiIndex+1];
-        },
-        getMonthZhiExact:function(){
-          return LunarUtil.ZHI[this._p.monthZhiIndexExact+1];
-        },
-        getMonthInGanZhi:function(){
-          return this.getMonthGan()+this.getMonthZhi();
-        },
-        getMonthInGanZhiExact:function(){
-          return this.getMonthGanExact()+this.getMonthZhiExact();
-        },
-        getDayGan:function(){
-          return LunarUtil.GAN[this._p.dayGanIndex+1];
-        },
-        getDayGanExact:function(){
-          return LunarUtil.GAN[this._p.dayGanIndexExact+1];
-        },
-        getDayZhi:function(){
-          return LunarUtil.ZHI[this._p.dayZhiIndex+1];
-        },
-        getDayZhiExact:function(){
-          return LunarUtil.ZHI[this._p.dayZhiIndexExact+1];
-        },
-        getDayInGanZhi:function(){
-          return this.getDayGan()+this.getDayZhi();
-        },
-        getDayInGanZhiExact:function(){
-          return this.getDayGanExact()+this.getDayZhiExact();
-        },
-        getTimeGan:function(){
-          return LunarUtil.GAN[this._p.timeGanIndex+1];
-        },
-        getTimeZhi:function(){
-          return LunarUtil.ZHI[this._p.timeZhiIndex+1];
-        },
-        getTimeInGanZhi:function(){
-          return this.getTimeGan()+this.getTimeZhi();
-        },
-        getShengxiao:function(){
-          return this.getYearShengXiao();
-        },
-        getYearShengXiao:function(){
-          return LunarUtil.SHENGXIAO[this._p.yearZhiIndex+1];
-        },
-        getYearShengXiaoByLiChun:function(){
-          return LunarUtil.SHENGXIAO[this._p.yearZhiIndexByLiChun+1];
-        },
-        getYearShengXiaoExact:function(){
-          return LunarUtil.SHENGXIAO[this._p.yearZhiIndexExact+1];
-        },
-        getMonthShengXiao:function(){
-          return LunarUtil.SHENGXIAO[this._p.monthZhiIndex+1];
-        },
-        getMonthShengXiaoExact:function(){
-          return LunarUtil.SHENGXIAO[this._p.monthZhiIndexExact+1];
-        },
-        getDayShengXiao:function(){
-          return LunarUtil.SHENGXIAO[this._p.dayZhiIndex+1];
-        },
-        getTimeShengXiao:function(){
-          return LunarUtil.SHENGXIAO[this._p.timeZhiIndex+1];
-        },
+        getGan:function(){return this.getYearGan();},
+        getZhi:function(){return this.getYearZhi();},
+        getYearGan:function(){return LunarUtil.GAN[this._p.yearGanIndex+1];},
+        getYearGanByLiChun:function(){return LunarUtil.GAN[this._p.yearGanIndexByLiChun+1];},
+        getYearGanExact:function(){return LunarUtil.GAN[this._p.yearGanIndexExact+1];},
+        getYearZhi:function(){return LunarUtil.ZHI[this._p.yearZhiIndex+1];},
+        getYearZhiByLiChun:function(){return LunarUtil.ZHI[this._p.yearZhiIndexByLiChun+1];},
+        getYearZhiExact:function(){return LunarUtil.ZHI[this._p.yearZhiIndexExact+1];},
+        getYearInGanZhi:function(){return this.getYearGan()+this.getYearZhi();},
+        getYearInGanZhiByLiChun:function(){return this.getYearGanByLiChun()+this.getYearZhiByLiChun();},
+        getYearInGanZhiExact:function(){return this.getYearGanExact()+this.getYearZhiExact();},
+        getMonthGan:function(){return LunarUtil.GAN[this._p.monthGanIndex+1];},
+        getMonthGanExact:function(){return LunarUtil.GAN[this._p.monthGanIndexExact+1];},
+        getMonthZhi:function(){return LunarUtil.ZHI[this._p.monthZhiIndex+1];},
+        getMonthZhiExact:function(){return LunarUtil.ZHI[this._p.monthZhiIndexExact+1];},
+        getMonthInGanZhi:function(){return this.getMonthGan()+this.getMonthZhi();},
+        getMonthInGanZhiExact:function(){return this.getMonthGanExact()+this.getMonthZhiExact();},
+        getDayGan:function(){return LunarUtil.GAN[this._p.dayGanIndex+1];},
+        getDayGanExact:function(){return LunarUtil.GAN[this._p.dayGanIndexExact+1];},
+        getDayGanExact2:function(){return LunarUtil.GAN[this._p.dayGanIndexExact2+1];},
+        getDayZhi:function(){return LunarUtil.ZHI[this._p.dayZhiIndex+1];},
+        getDayZhiExact:function(){return LunarUtil.ZHI[this._p.dayZhiIndexExact+1];},
+        getDayZhiExact2:function(){return LunarUtil.ZHI[this._p.dayZhiIndexExact2+1];},
+        getDayInGanZhi:function(){return this.getDayGan()+this.getDayZhi();},
+        getDayInGanZhiExact:function(){return this.getDayGanExact()+this.getDayZhiExact();},
+        getDayInGanZhiExact2:function(){return this.getDayGanExact2()+this.getDayZhiExact2();},
+        getTimeGan:function(){return LunarUtil.GAN[this._p.timeGanIndex+1];},
+        getTimeZhi:function(){return LunarUtil.ZHI[this._p.timeZhiIndex+1];},
+        getTimeInGanZhi:function(){return this.getTimeGan()+this.getTimeZhi();},
+        getShengxiao:function(){return this.getYearShengXiao();},
+        getYearShengXiao:function(){return LunarUtil.SHENGXIAO[this._p.yearZhiIndex+1];},
+        getYearShengXiaoByLiChun:function(){return LunarUtil.SHENGXIAO[this._p.yearZhiIndexByLiChun+1];},
+        getYearShengXiaoExact:function(){return LunarUtil.SHENGXIAO[this._p.yearZhiIndexExact+1];},
+        getMonthShengXiao:function(){return LunarUtil.SHENGXIAO[this._p.monthZhiIndex+1];},
+        getMonthShengXiaoExact:function(){return LunarUtil.SHENGXIAO[this._p.monthZhiIndexExact+1];},
+        getDayShengXiao:function(){return LunarUtil.SHENGXIAO[this._p.dayZhiIndex+1];},
+        getTimeShengXiao:function(){return LunarUtil.SHENGXIAO[this._p.timeZhiIndex+1];},
         getYearInChinese:function(){
           var y = (this._p.year+'');
           var s = '';
@@ -1558,6 +1501,9 @@
         getDayXunExact:function(){
           return LunarUtil.getXun(this.getDayInGanZhiExact());
         },
+        getDayXunExact2:function(){
+          return LunarUtil.getXun(this.getDayInGanZhiExact2());
+        },
         getYearXunKong:function(){
           return LunarUtil.getXunKong(this.getYearInGanZhi());
         },
@@ -1581,6 +1527,9 @@
         },
         getDayXunKongExact:function(){
           return LunarUtil.getXunKong(this.getDayInGanZhiExact());
+        },
+        getDayXunKongExact2:function(){
+          return LunarUtil.getXunKong(this.getDayInGanZhiExact2());
         },
         toString:function(){
           return this.getYearInChinese()+'年'+this.getMonthInChinese()+'月'+this.getDayInChinese();
@@ -2710,14 +2659,16 @@
     var CHANG_SHENG_OFFSET = {'甲':1,'丙':10,'戊':10,'庚':7,'壬':4,'乙':6,'丁':9,'己':9,'辛':0,'癸':3};
     var _fromLunar=function(lunar){
       return {
-        _p:{lunar:lunar},
+        _p:{sect:2,lunar:lunar},
+        setSect:function(sect){this._p.sect=(1==sect)?1:2;},
+        getSect:function(){return this._p.sect;},
+        getDayGanIndex:function(){return 2==this._p.sect?this._p.lunar.getDayGanIndexExact2():this._p.lunar.getDayGanIndexExact();},
+        getDayZhiIndex:function(){return 2==this._p.sect?this._p.lunar.getDayZhiIndexExact2():this._p.lunar.getDayZhiIndexExact();},
         getYear:function(){return this._p.lunar.getYearInGanZhiExact();},
         getYearGan:function(){return this._p.lunar.getYearGanExact();},
         getYearZhi:function(){return this._p.lunar.getYearZhiExact();},
         getYearHideGan:function(){return LunarUtil.ZHI_HIDE_GAN[this.getYearZhi()];},
-        getYearWuXing:function(){
-          return LunarUtil.WU_XING_GAN[this._p.lunar.getYearGanExact()]+LunarUtil.WU_XING_ZHI[this._p.lunar.getYearZhiExact()];
-        },
+        getYearWuXing:function(){return LunarUtil.WU_XING_GAN[this.getYearGan()]+LunarUtil.WU_XING_ZHI[this.getYearZhi()];},
         getYearNaYin:function(){return LunarUtil.NAYIN[this.getYear()];},
         getYearShiShenGan:function(){return LunarUtil.SHI_SHEN_GAN[this.getDayGan()+this.getYearGan()];},
         getYearShiShenZhi:function(){
@@ -2730,10 +2681,9 @@
           }
           return l;
         },
-        getYearDiShi:function(){
-          var zhiIndex = this._p.lunar.getYearZhiIndexExact();
+        _getDiShi:function(zhiIndex){
           var offset = CHANG_SHENG_OFFSET[this.getDayGan()];
-          var index = offset + (this._p.lunar.getDayGanIndexExact()%2==0?zhiIndex:-zhiIndex);
+          var index = offset + (this.getDayGanIndex()%2==0?zhiIndex:-zhiIndex);
           if(index>=12){
             index -= 12;
           }
@@ -2742,15 +2692,14 @@
           }
           return EightChar.CHANG_SHENG[index];
         },
+        getYearDiShi:function(){return this._getDiShi(this._p.lunar.getYearZhiIndexExact());},
         getYearXun:function(){return this._p.lunar.getYearXunExact()},
         getYearXunKong:function(){return this._p.lunar.getYearXunKongExact()},
         getMonth:function(){return this._p.lunar.getMonthInGanZhiExact();},
         getMonthGan:function(){return this._p.lunar.getMonthGanExact();},
         getMonthZhi:function(){return this._p.lunar.getMonthZhiExact();},
         getMonthHideGan:function(){return LunarUtil.ZHI_HIDE_GAN[this.getMonthZhi()];},
-        getMonthWuXing:function(){
-          return LunarUtil.WU_XING_GAN[this._p.lunar.getMonthGanExact()]+LunarUtil.WU_XING_ZHI[this._p.lunar.getMonthZhiExact()];
-        },
+        getMonthWuXing:function(){return LunarUtil.WU_XING_GAN[this.getMonthGan()]+LunarUtil.WU_XING_ZHI[this.getMonthZhi()];},
         getMonthNaYin:function(){return LunarUtil.NAYIN[this.getMonth()];},
         getMonthShiShenGan:function(){return LunarUtil.SHI_SHEN_GAN[this.getDayGan()+this.getMonthGan()];},
         getMonthShiShenZhi:function(){
@@ -2763,27 +2712,14 @@
           }
           return l;
         },
-        getMonthDiShi:function(){
-          var zhiIndex = this._p.lunar.getMonthZhiIndexExact();
-          var offset = CHANG_SHENG_OFFSET[this.getDayGan()];
-          var index = offset + (this._p.lunar.getDayGanIndexExact()%2==0?zhiIndex:-zhiIndex);
-          if(index>=12){
-            index -= 12;
-          }
-          if(index<0){
-            index += 12;
-          }
-          return EightChar.CHANG_SHENG[index];
-        },
+        getMonthDiShi:function(){return this._getDiShi(this._p.lunar.getMonthZhiIndexExact());},
         getMonthXun:function(){return this._p.lunar.getMonthXunExact()},
         getMonthXunKong:function(){return this._p.lunar.getMonthXunKongExact()},
-        getDay:function(){return this._p.lunar.getDayInGanZhiExact();},
-        getDayGan:function(){return this._p.lunar.getDayGanExact();},
-        getDayZhi:function(){return this._p.lunar.getDayZhiExact();},
+        getDay:function(){return 2==this._p.sect?this._p.lunar.getDayInGanZhiExact2():this._p.lunar.getDayInGanZhiExact();},
+        getDayGan:function(){return 2==this._p.sect?this._p.lunar.getDayGanExact2():this._p.lunar.getDayGanExact();},
+        getDayZhi:function(){return 2==this._p.sect?this._p.lunar.getDayZhiExact2():this._p.lunar.getDayZhiExact();},
         getDayHideGan:function(){return LunarUtil.ZHI_HIDE_GAN[this.getDayZhi()];},
-        getDayWuXing:function(){
-          return LunarUtil.WU_XING_GAN[this._p.lunar.getDayGanExact()]+LunarUtil.WU_XING_ZHI[this._p.lunar.getDayZhiExact()];
-        },
+        getDayWuXing:function(){return LunarUtil.WU_XING_GAN[this.getDayGan()]+LunarUtil.WU_XING_ZHI[this.getDayZhi()];},
         getDayNaYin:function(){return LunarUtil.NAYIN[this.getDay()];},
         getDayShiShenGan:function(){return '日主';},
         getDayShiShenZhi:function(){
@@ -2796,27 +2732,14 @@
           }
           return l;
         },
-        getDayDiShi:function(){
-          var zhiIndex = this._p.lunar.getDayZhiIndexExact();
-          var offset = CHANG_SHENG_OFFSET[this.getDayGan()];
-          var index = offset + (this._p.lunar.getDayGanIndexExact()%2==0?zhiIndex:-zhiIndex);
-          if(index>=12){
-            index -= 12;
-          }
-          if(index<0){
-            index += 12;
-          }
-          return EightChar.CHANG_SHENG[index];
-        },
-        getDayXun:function(){return this._p.lunar.getDayXunExact()},
-        getDayXunKong:function(){return this._p.lunar.getDayXunKongExact()},
+        getDayDiShi:function(){return this._getDiShi(this.getDayZhiIndex());},
+        getDayXun:function(){return 2==this._p.sect?this._p.lunar.getDayXunExact2():this._p.lunar.getDayXunExact()},
+        getDayXunKong:function(){return 2==this._p.sect?this._p.lunar.getDayXunKongExact2():this._p.lunar.getDayXunKongExact()},
         getTime:function(){return this._p.lunar.getTimeInGanZhi();},
         getTimeGan:function(){return this._p.lunar.getTimeGan();},
         getTimeZhi:function(){return this._p.lunar.getTimeZhi();},
         getTimeHideGan:function(){return LunarUtil.ZHI_HIDE_GAN[this.getTimeZhi()];},
-        getTimeWuXing:function(){
-          return LunarUtil.WU_XING_GAN[this._p.lunar.getTimeGan()]+LunarUtil.WU_XING_ZHI[this._p.lunar.getTimeZhi()];
-        },
+        getTimeWuXing:function(){return LunarUtil.WU_XING_GAN[this.getTimeGan()]+LunarUtil.WU_XING_ZHI[this.getTimeZhi()];},
         getTimeNaYin:function(){return LunarUtil.NAYIN[this.getTime()];},
         getTimeShiShenGan:function(){return LunarUtil.SHI_SHEN_GAN[this.getDayGan()+this.getTimeGan()];},
         getTimeShiShenZhi:function(){
@@ -2829,18 +2752,7 @@
           }
           return l;
         },
-        getTimeDiShi:function(){
-          var zhiIndex = this._p.lunar.getTimeZhiIndex();
-          var offset = CHANG_SHENG_OFFSET[this.getDayGan()];
-          var index = offset + (this._p.lunar.getDayGanIndexExact()%2==0?zhiIndex:-zhiIndex);
-          if(index>=12){
-            index -= 12;
-          }
-          if(index<0){
-            index += 12;
-          }
-          return EightChar.CHANG_SHENG[index];
-        },
+        getTimeDiShi:function(){return this._getDiShi(this._p.lunar.getTimeZhiIndex());},
         getTimeXun:function(){return this._p.lunar.getTimeXun();},
         getTimeXunKong:function(){return this._p.lunar.getTimeXunKong();},
         getTaiYuan:function(){
