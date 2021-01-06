@@ -118,23 +118,35 @@
           return l;
         },
         getXingzuo:function(){
-          var index = 11,m = this._p.month,d = this._p.day;
-          var y = m*100+d;
-          if(y>=321&&y<=419) index = 0;
-          else if(y>=420&&y<=520) index = 1;
-          else if(y>=521&&y<=620) index = 2;
-          else if(y>=621&&y<=722) index = 3;
-          else if(y>=723&&y<=822) index = 4;
-          else if(y>=823&&y<=922) index = 5;
-          else if(y>=923&&y<=1022) index = 6;
-          else if(y>=1023&&y<=1121) index = 7;
-          else if(y>=1122&&y<=1221) index = 8;
-          else if(y>=1222||y<=119) index = 9;
-          else if(y<=218) index = 10;
-          return SolarUtil.XINGZUO[index];
+          return this.getXingZuo();
         },
         getXingZuo:function(){
-          return this.getXingzuo();
+          var index = 11;
+          var y = this._p.month*100+this._p.day;
+          if (y >= 321 && y <= 419) {
+            index = 0;
+          } else if (y >= 420 && y <= 520) {
+            index = 1;
+          } else if (y >= 521 && y <= 621) {
+            index = 2;
+          } else if (y >= 622 && y <= 722) {
+            index = 3;
+          } else if (y >= 723 && y <= 822) {
+            index = 4;
+          } else if (y >= 823 && y <= 922) {
+            index = 5;
+          } else if (y >= 923 && y <= 1023) {
+            index = 6;
+          } else if (y >= 1024 && y <= 1122) {
+            index = 7;
+          } else if (y >= 1123 && y <= 1221) {
+            index = 8;
+          } else if (y >= 1222 || y <= 119) {
+            index = 9;
+          } else if (y <= 218) {
+            index = 10;
+          }
+          return SolarUtil.XINGZUO[index];
         },
         toYmd:function(){
           return [this._p.year,(this._p.month<10?'0':'')+this._p.month,(this._p.day<10?'0':'')+this._p.day].join('-');
@@ -770,13 +782,21 @@
         getSecond:function(){return this._p.second;},
         getTimeGanIndex:function(){return this._p.timeGanIndex;},
         getTimeZhiIndex:function(){return this._p.timeZhiIndex;},
+        getDayGanIndex:function(){return this._p.dayGanIndex;},
         getDayGanIndexExact:function(){return this._p.dayGanIndexExact;},
         getDayGanIndexExact2:function(){return this._p.dayGanIndexExact2;},
+        getDayZhiIndex:function(){return this._p.dayZhiIndex;},
         getDayZhiIndexExact:function(){return this._p.dayZhiIndexExact;},
         getDayZhiIndexExact2:function(){return this._p.dayZhiIndexExact2;},
+        getMonthGanIndex:function(){return this._p.monthGanIndex;},
         getMonthGanIndexExact:function(){return this._p.monthGanIndexExact;},
+        getMonthZhiIndex:function(){return this._p.monthZhiIndex;},
         getMonthZhiIndexExact:function(){return this._p.monthZhiIndexExact;},
+        getYearGanIndex:function(){return this._p.yearGanIndex;},
+        getYearGanIndexByLiChun:function(){return this._p.yearGanIndexByLiChun;},
         getYearGanIndexExact:function(){return this._p.yearGanIndexExact;},
+        getYearZhiIndex:function(){return this._p.yearZhiIndex;},
+        getYearZhiIndexByLiChun:function(){return this._p.yearZhiIndexByLiChun;},
         getYearZhiIndexExact:function(){return this._p.yearZhiIndexExact;},
         getGan:function(){return this.getYearGan();},
         getZhi:function(){return this.getYearZhi();},
@@ -1566,6 +1586,94 @@
           s += ' 冲['+this.getDayChongDesc()+']';
           s += ' 煞['+this.getDaySha()+']';
           return s;
+        },
+        _buildNameAndIndex: function(name, index){
+          return {
+            _p:{
+              name: name,
+              index: index
+            },
+            getName: function(){return this._p.name;},
+            setName: function(name){this._p.name = name;},
+            getIndex: function(){return this._p.index;},
+            setIndex: function(index){this._p.index = index;},
+            toString: function(){return this.getName();},
+            toFullString: function(){return this.getName()+'第'+this.getIndex()+'天';}
+          };
+        },
+        getShuJiu:function(){
+          var currentCalendar = new Date(this._p.solar.getYear() + '/' + this._p.solar.getMonth() + '/' + this._p.solar.getDay() + ' 0:0:0');
+          var start = this._p.jieQi[Lunar.JIE_QI_APPEND];
+          var startCalendar = new Date(start.getYear() + '/' + start.getMonth() + '/' + start.getDay() + ' 0:0:0');
+          if (currentCalendar < startCalendar) {
+            start = this._p.jieQi[Lunar.JIE_QI_FIRST];
+            startCalendar = new Date(start.getYear() + '/' + start.getMonth() + '/' + start.getDay() + ' 0:0:0');
+          }
+          var endCalendar = new Date(start.getYear() + '/' + start.getMonth() + '/' + start.getDay() + ' 0:0:0');
+          endCalendar.setDate(endCalendar.getDate() + 81);
+          if (currentCalendar < startCalendar || currentCalendar >= endCalendar) {
+            return null;
+          }
+          var days = Math.floor((currentCalendar.getTime() - startCalendar.getTime()) / (1000 * 60 * 60 * 24));
+          return this._buildNameAndIndex(LunarUtil.NUMBER[Math.floor(days / 9) + 1] + '九', days % 9 + 1);
+        },
+        getFu:function(){
+          var currentCalendar = new Date(this._p.solar.getYear() + '/' + this._p.solar.getMonth() + '/' + this._p.solar.getDay() + ' 0:0:0');
+          var xiaZhi = this._p.jieQi['夏至'];
+          var liQiu = this._p.jieQi['立秋'];
+          var startCalendar = new Date(xiaZhi.getYear() + '/' + xiaZhi.getMonth() + '/' + xiaZhi.getDay() + ' 0:0:0');
+
+          // 第1个庚日
+          var add = 6 - xiaZhi.getLunar().getDayGanIndex();
+          if (add < 0) {
+            add += 10;
+          }
+          // 第3个庚日，即初伏第1天
+          add += 20;
+          startCalendar.setDate(startCalendar.getDate() + add);
+
+          // 初伏以前
+          if (currentCalendar < startCalendar) {
+            return null;
+          }
+
+          var days = Math.floor((currentCalendar.getTime() - startCalendar.getTime()) / (1000 * 60 * 60 * 24));
+          if (days < 10) {
+            return this._buildNameAndIndex('初伏', days + 1);
+          }
+
+          // 第4个庚日，中伏第1天
+          startCalendar.setDate(startCalendar.getDate() + 10);
+
+          days = Math.floor((currentCalendar.getTime() - startCalendar.getTime()) / (1000 * 60 * 60 * 24));
+          if (days < 10) {
+            return this._buildNameAndIndex('中伏', days + 1);
+          }
+
+          // 第5个庚日，中伏第11天或末伏第1天
+          startCalendar.setDate(startCalendar.getDate() + 10);
+
+          var liQiuCalendar = new Date(liQiu.getYear() + '/' + liQiu.getMonth() + '/' + liQiu.getDay() + ' 0:0:0');
+
+          days = Math.floor((currentCalendar.getTime() - startCalendar.getTime()) / (1000 * 60 * 60 * 24));
+          // 末伏
+          if (liQiuCalendar <= startCalendar) {
+            if (days < 10) {
+              return this._buildNameAndIndex('末伏', days + 1);
+            }
+          } else {
+            // 中伏
+            if (days < 10) {
+              return this._buildNameAndIndex('中伏', days + 11);
+            }
+            // 末伏第1天
+            startCalendar.setDate(startCalendar.getDate() + 10);
+            days = Math.floor((currentCalendar.getTime() - startCalendar.getTime()) / (1000 * 60 * 60 * 24));
+            if (days < 10) {
+              return this._buildNameAndIndex('末伏', days + 1);
+            }
+          }
+          return null;
         }
       };
     };
