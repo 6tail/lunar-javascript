@@ -1,4 +1,4 @@
-const {Solar, Lunar, NineStar, EightChar, SolarWeek, SolarMonth, SolarSeason, SolarHalfYear, SolarYear, SolarUtil, LunarUtil, HolidayUtil} = require('./lunar.js')
+const {Solar, Lunar, NineStar, EightChar, SolarWeek, SolarMonth, SolarSeason, SolarHalfYear, SolarYear, LunarMonth, LunarYear, ShouXingUtil, SolarUtil, LunarUtil, HolidayUtil} = require('./lunar.js')
 
 module.exports = {
   Solar: Solar,
@@ -10,6 +10,9 @@ module.exports = {
   SolarSeason: SolarSeason,
   SolarHalfYear: SolarHalfYear,
   SolarYear: SolarYear,
+  LunarMonth: LunarMonth,
+  LunarYear: LunarYear,
+  ShouXingUtil: ShouXingUtil,
   SolarUtil: SolarUtil,
   LunarUtil: LunarUtil,
   HolidayUtil: HolidayUtil
