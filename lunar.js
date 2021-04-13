@@ -49,6 +49,12 @@
       return _fromYmdHms(year,month,day,hour,minute,second);
     };
     var _fromYmdHms = function(y,m,d,hour,minute,second){
+      var calendar = new Date(y+'/'+m+'/'+d+' '+hour+':'+minute+':'+second);
+      if(y<100) {
+        calendar.setFullYear(y);
+        calendar.setMonth(m - 1);
+        calendar.setDate(d);
+      }
       return {
         _p:{
           year:y,
@@ -57,7 +63,7 @@
           hour:hour,
           minute:minute,
           second:second,
-          calendar:new Date(y+'/'+m+'/'+d+' '+hour+':'+minute+':'+second)
+          calendar:calendar
         },
         getYear:function(){
           return this._p.year;
@@ -479,7 +485,15 @@
       return o;
     };
     var _fromDate = function(date){
-      var c = new Date(date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate() + ' 0:0:0');
+      var solarYear = date.getFullYear();
+      var solarMonth = date.getMonth();
+      var solarDay = date.getDate();
+      var c = new Date(solarYear + '/' + (solarMonth + 1) + '/' + solarDay + ' 0:0:0');
+      if(solarYear<100){
+        c.setFullYear(solarYear);
+        c.setMonth(solarMonth);
+        c.setDate(solarDay);
+      }
       var solarTime = c.getTime();
       var lunarYear = 0;
       var lunarMonth = 0;
@@ -1603,7 +1617,7 @@
           return l;
         },
         toString:function(){
-          return this.getYear()+'-'+this.getMonth()+'.'+this.getIndex();
+          return this.getYear()+'.'+this.getMonth()+'.'+this.getIndex();
         },
         toFullString:function(){
           return this.getYear()+'年'+this.getMonth()+'月第'+this.getIndex()+'周';
@@ -1834,7 +1848,7 @@
           return l;
         },
         toString:function(){
-          return this.getYear();
+          return this.getYear()+'';
         },
         toFullString:function(){
           return this.getYear()+'年';
