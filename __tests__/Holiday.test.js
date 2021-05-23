@@ -38,3 +38,7 @@ test('test1', () => {
   expect(HolidayUtil.getHoliday('2021-11-11') + '').toBe('2021-11-11 结婚纪念日 2021-11-11');
   expect(HolidayUtil.getHoliday('2021-12-01') + '').toBe('2021-12-01 她的生日 2021-12-01');
 });
+
+test('test2', () => {
+  expect(HolidayUtil.getHoliday('2016-10-04').getTarget()).toBe('2016-10-01');
+});

@@ -1,4 +1,4 @@
-var {Solar} = require('../lunar');
+var {Solar, Lunar} = require('../lunar');
 
 test('test1', () => {
   const solar = Solar.fromYmdHms(2005, 12, 23, 8, 37, 0);
@@ -51,6 +51,15 @@ test('test4', () => {
   expect(eightChar.getMonth()).toBe('癸丑');
   expect(eightChar.getDay()).toBe('丁亥');
   expect(eightChar.getTime()).toBe('辛亥');
+});
+
+test('test5', () => {
+  const lunar = Lunar.fromYmdHms(2019,12,12,11,22,0);
+  const eightChar = lunar.getEightChar();
+  expect(eightChar.getYear()).toBe('己亥');
+  expect(eightChar.getMonth()).toBe('丁丑');
+  expect(eightChar.getDay()).toBe('戊申');
+  expect(eightChar.getTime()).toBe('戊午');
 });
 
 test('地支藏干', () => {
