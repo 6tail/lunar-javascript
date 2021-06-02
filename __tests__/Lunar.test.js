@@ -361,3 +361,24 @@ test('test34', () => {
   const lunar = solar.getLunar();
   expect(lunar.getDayInGanZhi()).toBe('丙寅');
 });
+
+test('test35', () => {
+  const lunar = Lunar.fromYmd(2021, 12, 29);
+  expect(lunar.getFestivals()[0]).toBe('除夕');
+});
+
+test('test36', () => {
+  const lunar = Lunar.fromYmd(2020, 12, 30);
+  expect(lunar.getFestivals()[0]).toBe('除夕');
+});
+
+test('test37', () => {
+  const lunar = Lunar.fromYmd(2020, 12, 29);
+  expect(lunar.getFestivals().length).toBe(0);
+});
+
+test('test38', () => {
+  const solar = Solar.fromYmd(2022, 1, 31);
+  const lunar = solar.getLunar();
+  expect(lunar.getFestivals()[0]).toBe('除夕');
+});
