@@ -1,4 +1,4 @@
-var {Solar} = require('../lunar');
+var {Solar, SolarUtil} = require('../lunar');
 
 test('test', () => {
   var solar = Solar.fromYmd(2019,5,1);
@@ -26,4 +26,8 @@ test('7', () => {
 test('9', () => {
   var solar = Solar.fromYmd(26,4,13);
   expect(solar.getLunar().toString()).toBe('二六年三月初八');
+});
+
+test('10', () => {
+  expect(SolarUtil.isLeapYear(1500)).toBe(false);
 });

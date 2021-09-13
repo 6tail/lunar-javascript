@@ -47,3 +47,9 @@ test('test8()', () => {
   const lunar = solar.getLunar();
   expect(lunar.getWuHou()).toBe('鹖鴠不鸣');
 });
+
+test('test9()', () => {
+  const solar = Solar.fromYmd(1982,12,22);
+  const lunar = solar.getLunar();
+  expect(lunar.getWuHou()).toBe('蚯蚓结');
+});
