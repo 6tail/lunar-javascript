@@ -352,6 +352,14 @@
       var yearGanIndex = offset % 10;
       var yearZhiIndex = offset % 12;
 
+      if (yearGanIndex < 0) {
+        yearGanIndex += 10;
+      }
+
+      if (yearZhiIndex < 0) {
+        yearZhiIndex += 12;
+      }
+
       //以立春作为新一年的开始的干支纪年
       var g = yearGanIndex;
       var z = yearZhiIndex;
@@ -827,6 +835,10 @@
             jq = '立春';
           }else if('DA_XUE'===jq){
             jq = '大雪';
+          }else if('YU_SHUI'===jq){
+            jq = "雨水";
+          }else if('JING_ZHE'===jq){
+            jq = "惊蛰";
           }
           return jq;
         },
@@ -1448,7 +1460,7 @@
     };
     return {
       JIE_QI: ['冬至','小寒','大寒','立春','雨水','惊蛰','春分','清明','谷雨','立夏','小满','芒种','夏至','小暑','大暑','立秋','处暑','白露','秋分','寒露','霜降','立冬','小雪','大雪'],
-      JIE_QI_IN_USE: ['DA_XUE', '冬至', '小寒', '大寒', '立春', '雨水', '惊蛰', '春分', '清明', '谷雨', '立夏', '小满', '芒种', '夏至', '小暑', '大暑', '立秋', '处暑', '白露', '秋分', '寒露', '霜降', '立冬', '小雪', '大雪', 'DONG_ZHI', 'XIAO_HAN', 'DA_HAN', 'LI_CHUN'],
+      JIE_QI_IN_USE: ['DA_XUE', '冬至', '小寒', '大寒', '立春', '雨水', '惊蛰', '春分', '清明', '谷雨', '立夏', '小满', '芒种', '夏至', '小暑', '大暑', '立秋', '处暑', '白露', '秋分', '寒露', '霜降', '立冬', '小雪', '大雪', 'DONG_ZHI', 'XIAO_HAN', 'DA_HAN', 'LI_CHUN', 'YU_SHUI', 'JING_ZHE'],
       fromYmdHms:function(y,m,d,hour,minute,second){return _fromYmdHms(y,m,d,hour,minute,second);},
       fromYmd:function(y,m,d){return _fromYmdHms(y,m,d,0,0,0);},
       fromDate:function(date){return _fromDate(date);}

@@ -510,3 +510,23 @@ test('test038', () => {
   const lunar = Lunar.fromYmd(7013, -11, 4);
   expect(lunar.getSolar().toString()).toBe('7013-12-24');
 });
+
+test('test041', () => {
+  const solar = Solar.fromYmd(4, 2, 10);
+  expect(solar.getLunar().getYearShengXiao()).toBe('鼠');
+});
+
+test('test042', () => {
+  const solar = Solar.fromYmd(4, 2, 9);
+  expect(solar.getLunar().getYearShengXiao()).toBe('猪');
+});
+
+test('test043', () => {
+  const solar = Solar.fromYmd(1, 2, 12);
+  expect(solar.getLunar().getYearShengXiao()).toBe('鸡');
+});
+
+test('test044', () => {
+  const solar = Solar.fromYmd(1, 1, 1);
+  expect(solar.getLunar().getYearShengXiao()).toBe('猴');
+});
