@@ -1,4 +1,4 @@
-var {Solar, Lunar} = require('../lunar');
+var {Solar, Lunar, LunarYear} = require('../lunar');
 
 test('干支', () => {
   let solar = Solar.fromYmdHms(2020, 1, 1, 13, 22, 0);
@@ -529,4 +529,14 @@ test('test043', () => {
 test('test044', () => {
   const solar = Solar.fromYmd(1, 1, 1);
   expect(solar.getLunar().getYearShengXiao()).toBe('猴');
+});
+
+test('test045', () => {
+  const lunarMonth = LunarYear.fromYear(2020).getMonth(-4);
+  expect(lunarMonth.toString()).toBe('2020年闰四月(29)天');
+});
+
+test('test046', () => {
+  const solar = Solar.fromYmdHms(2000, 1, 1, 16, 0, 0);
+  expect(solar.getLunar().getHour()).toBe(16);
 });

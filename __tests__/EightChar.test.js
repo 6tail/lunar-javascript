@@ -147,4 +147,3 @@ test('身宫', () => {
   const eightChar = lunar.getEightChar();
   expect(eightChar.getShenGong()).toBe('壬午');
 });
-
