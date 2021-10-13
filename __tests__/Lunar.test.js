@@ -540,3 +540,8 @@ test('test046', () => {
   const solar = Solar.fromYmdHms(2000, 1, 1, 16, 0, 0);
   expect(solar.getLunar().getHour()).toBe(16);
 });
+
+test('test047', () => {
+  const lunar = Solar.fromYmd(2017, 2, 15).getLunar();
+  expect(lunar.getDayLu()).toBe('子命互禄 辛命进禄');
+});
