@@ -1,4 +1,4 @@
-var {Solar} = require('../lunar');
+var {Solar, Lunar} = require('../lunar');
 
 test('test1', () => {
   const solar = Solar.fromYmd(1986, 1, 5);
@@ -86,3 +86,12 @@ test('test6', () => {
   expect(lunar.getPrevJieQi().getName()).toBe('冬至');
 });
 
+test('test7', () => {
+  const lunar = Lunar.fromYmd(2012, 9, 1);
+  expect(lunar.getJieQiTable()['白露'].toYmdHms()).toBe('2012-09-07 13:29:00');
+});
+
+test('test8', () => {
+  const lunar = Lunar.fromYmd(2050, 12, 1);
+  expect(lunar.getJieQiTable()['大雪'].toYmdHms()).toBe('2050-12-07 06:41:00');
+});

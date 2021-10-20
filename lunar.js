@@ -65,6 +65,14 @@
       f -= minute;
       f *= 60;
       var second = Math.round(f);
+      if(second>59){
+        second-=60;
+        minute++;
+      }
+      if(minute>59){
+        minute-=60;
+        hour++;
+      }
       return _fromYmdHms(year,month,day,hour,minute,second);
     };
     var _fromYmdHms = function(y,m,d,hour,minute,second){
