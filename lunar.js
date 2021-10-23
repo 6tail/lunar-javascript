@@ -139,6 +139,16 @@
           }
           return l;
         },
+        getOtherFestivals:function(){
+          var l = [];
+          var fs = SolarUtil.OTHER_FESTIVAL[this._p.month+'-'+this._p.day];
+          if(fs){
+            for(var i=0,j=fs.length;i<j;i++){
+              l.push(fs[i]);
+            }
+          }
+          return l;
+        },
         getXingzuo:function(){
           return this.getXingZuo();
         },
