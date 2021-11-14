@@ -545,3 +545,28 @@ test('test047', () => {
   const lunar = Solar.fromYmd(2017, 2, 15).getLunar();
   expect(lunar.getDayLu()).toBe('子命互禄 辛命进禄');
 });
+
+test('test048', () => {
+  const lunar = Solar.fromYmd(2021, 11, 13).getLunar();
+  expect(lunar.getDayPositionTai()).toBe('碓磨厕 外东南');
+});
+
+test('test049', () => {
+  const lunar = Solar.fromYmd(2021, 11, 12).getLunar();
+  expect(lunar.getDayPositionTai()).toBe('占门碓 外东南');
+});
+
+test('test050', () => {
+  const lunar = Solar.fromYmd(2021, 11, 13).getLunar();
+  expect(lunar.getDayPositionFuDesc()).toBe('西南');
+});
+
+test('test051', () => {
+  const lunar = Solar.fromYmd(2021, 11, 12).getLunar();
+  expect(lunar.getDayPositionFuDesc()).toBe('正北');
+});
+
+test('test052', () => {
+  const lunar = Solar.fromYmd(2011, 11, 12).getLunar();
+  expect(lunar.getDayPositionTai()).toBe('厕灶厨 外西南');
+});

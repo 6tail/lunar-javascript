@@ -715,11 +715,11 @@
         getDayPositionYinGuiDesc:function(){
           return LunarUtil.POSITION_DESC[this.getDayPositionYinGui()];
         },
-        getDayPositionFu:function(){
-          return LunarUtil.POSITION_FU[this._p.dayGanIndex+1];
+        getDayPositionFu:function(sect){
+          return (1===sect?LunarUtil.POSITION_FU:LunarUtil.POSITION_FU_2)[this._p.dayGanIndex+1];
         },
-        getDayPositionFuDesc:function(){
-          return LunarUtil.POSITION_DESC[this.getDayPositionFu()];
+        getDayPositionFuDesc:function(sect){
+          return LunarUtil.POSITION_DESC[this.getDayPositionFu(sect)];
         },
         getDayPositionCai:function(){
           return LunarUtil.POSITION_CAI[this._p.dayGanIndex+1];
@@ -1030,11 +1030,7 @@
           return LunarUtil.TIAN_SHEN_TYPE_LUCK[this.getTimeTianShenType()];
         },
         getDayPositionTai:function(){
-          var offset = this._p.dayGanIndex-this._p.dayZhiIndex;
-          if(offset<0){
-            offset += 12;
-          }
-          return LunarUtil.POSITION_TAI_DAY[offset*5+this._p.dayGanIndex];
+          return LunarUtil.POSITION_TAI_DAY[LunarUtil.getJiaZiIndex(this.getDayInGanZhi())];
         },
         getMonthPositionTai:function(){
           var m = this._p.month;
@@ -2359,9 +2355,10 @@
       POSITION_YANG_GUI:['','坤','坤','兑','乾','艮','坎','离','艮','震','巽'],
       POSITION_YIN_GUI:['','艮','坎','乾','兑','坤','坤','艮','离','巽','震'],
       POSITION_FU:['','巽','巽','震','震','坎','离','坤','坤','乾','兑'],
+      POSITION_FU_2:['','坎','坤','乾','巽','艮','坎','坤','乾','巽','艮'],
       POSITION_CAI:['','艮','艮','坤','坤','坎','坎','震','震','离','离'],
-      POSITION_TAI_DAY:['占门碓外东南','碓磨厕外东南','厨灶炉外正南','仓库门外正南','房床厕外正南','占门床外正南','占碓磨外正南','厨灶厕外西南','仓库炉外西南','房床门外西南','门鸡栖外西南','碓磨床外西南','厨灶碓外西南','仓库厕外西南','房床厕外正南','房床炉外正西','碓磨栖外正西','厨灶床外正西','仓库碓外西北','房床厕外西北','占门炉外西北','碓磨门外西北','厨灶栖外西北','仓库床外西北','房床碓外正北','占门厕外正北','碓磨炉外正北','厨灶门外正北','仓库栖外正北','占房床房内北','占门碓房内北','碓磨厕房内北','厨灶炉房内北','仓库门房内北','门鸡栖外西南','占门床房内南','占碓磨房内南','厨灶厕房内南','仓库炉房内南','房床门房内南','门鸡栖房内东','碓磨床房内东','厨灶碓房内东','仓库厕房内东','房床炉房内东','占大门外东北','碓磨栖外东北','厨灶床外东北','仓库碓外东北','房床厕外东北','占门炉外东北','碓磨门外正东','厨灶栖外正东','仓库床外正东','房床碓外正东','占门厕外正东','碓磨炉外东南','仓库栖外东南','占房床外东南','占门碓外东南'],
-      POSITION_TAI_MONTH:['占房床','占户窗','占门堂','占厨灶','占身床','占床仓','占碓磨','占厕户','占门房','占房床','占炉灶','占房床'],
+      POSITION_TAI_DAY:['占门碓 外东南','碓磨厕 外东南','厨灶炉 外正南','仓库门 外正南','房床栖 外正南','占门床 外正南','占碓磨 外正南','厕灶厨 外西南','仓库炉 外西南','房床门 外西南','门碓栖 外西南','碓磨床 外西南','厨灶碓 外西南','仓库厕 外正西','房床炉 外正西','占大门 外正西','碓磨栖 外正西','厨房床 外正西','仓库碓 外西北','房床厕 外西北','占门炉 外西北','门碓磨 外西北','厨灶栖 外西北','仓库床 外西北','房床碓 外正北','占门厕 外正北','碓磨炉 外正北','厨灶门 外正北','仓库栖 外正北','占房床 房内北','占门碓 房内北','碓磨厕 房内北','厨灶炉 房内北','门仓库 房内北','床房栖 房内中','占门床 房内中','占碓磨 房内南','厨磨厕 房内南','仓库炉 房内南','房床门 房内西','门碓栖 房内东','碓磨床 房内东','厨灶碓 房内东','仓库厕 房内东','房床炉 房内中','占大门 外东北','碓磨栖 外东北','厨灶床 外东北','仓库碓 外东北','房床厕 外东北','占门炉 外东北','门碓磨 外正东','厨灶栖 外正东','仓库床 外正东','房床碓 外正东','占门厕 外正东','碓磨炉 外东南','厨灶门 外东南','仓库栖 外东南','占房床 外东南'],
+      POSITION_TAI_MONTH:['占房床','占户窗','占门堂','占厨灶','占房床','占床仓','占碓磨','占厕户','占门房','占房床','占灶炉','占房床'],
       ZHI:['','子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'],
       ZHI_XING:['','建','除','满','平','定','执','破','危','成','收','开','闭'],
       JIA_ZI:['甲子','乙丑','丙寅','丁卯','戊辰','己巳','庚午','辛未','壬申','癸酉','甲戌','乙亥','丙子','丁丑','戊寅','己卯','庚辰','辛巳','壬午','癸未','甲申','乙酉','丙戌','丁亥','戊子','己丑','庚寅','辛卯','壬辰','癸巳','甲午','乙未','丙申','丁酉','戊戌','己亥','庚子','辛丑','壬寅','癸卯','甲辰','乙巳','丙午','丁未','戊申','己酉','庚戌','辛亥','壬子','癸丑','甲寅','乙卯','丙辰','丁巳','戊午','己未','庚申','辛酉','壬戌','癸亥'],
@@ -3347,8 +3344,8 @@
         getPositionYangGuiDesc:function(){return LunarUtil.POSITION_DESC[this.getPositionYangGui()];},
         getPositionYinGui:function(){return LunarUtil.POSITION_YIN_GUI[this._p.ganIndex + 1];},
         getPositionYinGuiDesc:function(){return LunarUtil.POSITION_DESC[this.getPositionYinGui()];},
-        getPositionFu:function(){return LunarUtil.POSITION_FU[this._p.ganIndex + 1];},
-        getPositionFuDesc:function(){return LunarUtil.POSITION_DESC[this.getPositionFu()];},
+        getPositionFu:function(sect){return (1===sect?LunarUtil.POSITION_FU:LunarUtil.POSITION_FU_2)[this._p.ganIndex + 1];},
+        getPositionFuDesc:function(sect){return LunarUtil.POSITION_DESC[this.getPositionFu(sect)];},
         getPositionCai:function(){return LunarUtil.POSITION_CAI[this._p.ganIndex + 1];},
         getPositionCaiDesc:function(){return LunarUtil.POSITION_DESC[this.getPositionCai()];},
         getNaYin:function(){return LunarUtil.NAYIN[this.getGanZhi()];},
