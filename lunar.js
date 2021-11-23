@@ -1487,7 +1487,8 @@
           }
           return l;
         },
-        getFoto:function(){return Foto.fromLunar(this);}
+        getFoto:function(){return Foto.fromLunar(this);},
+        getTao:function(){return Tao.fromLunar(this);}
       };
     };
     return {
@@ -3439,7 +3440,8 @@
         getResult:function(){return this._p.result;},
         isEveryMonth:function(){return this._p.everyMonth;},
         getRemark:function(){return this._p.remark;},
-        toString:function(){
+        toString:function(){return this._p.name;},
+        toFullString:function(){
           var l = [this._p.name];
           if(this._p.result) {
             l.push(this._p.result);
@@ -3785,14 +3787,241 @@
       fromLunar:function(lunar){return _fromLunar(lunar);}
     };
   })();
+  var TaoFestival = (function(){
+    var _f=function(name,remark){
+      return {
+        _p:{
+          name:name,
+          remark:remark?remark:''
+        },
+        getName:function(){return this._p.name;},
+        getRemark:function(){return this._p.remark;},
+        toString:function(){return this._p.name;},
+        toFullString:function(){
+          var l = [this._p.name];
+          if(this._p.remark) {
+            l.push('['+this._p.remark+']');
+          }
+          return l.join('');
+        }
+      };
+    };
+    return {
+      create:function(name,remark){return _f(name,remark);}
+    };
+  })();
+  var TaoUtil = (function(){
+    var _f = TaoFestival.create;
+    return {
+      SAN_HUI:['1-7','7-7','10-15'],
+      SAN_YUAN:['1-15','7-15','10-15'],
+      WU_LA:['1-1','5-5','7-7','10-1','12-8'],
+      BA_HUI:{
+        '丙午':'天会',
+        '壬午':'地会',
+        '壬子':'人会',
+        '庚午':'日会',
+        '庚申':'月会',
+        '辛酉':'星辰会',
+        '甲辰':'五行会',
+        '甲戌':'四时会'
+      },
+      BA_JIE:{
+        '立春':'东北方度仙上圣天尊同梵炁始青天君下降',
+        '春分':'东方玉宝星上天尊同青帝九炁天君下降',
+        '立夏':'东南方好生度命天尊同梵炁始丹天君下降',
+        '夏至':'南方玄真万福天尊同赤帝三炁天君下降',
+        '立秋':'西南方太灵虚皇天尊同梵炁始素天君下降',
+        '秋分':'西方太妙至极天尊同白帝七炁天君下降',
+        '立冬':'西北方无量太华天尊同梵炁始玄天君下降',
+        '冬至':'北方玄上玉宸天尊同黑帝五炁天君下降'
+      },
+      FESTIVAL: {
+        '1-1': [_f('天腊之辰', '天腊，此日五帝会于束方九炁青天')],
+        '1-3': [_f('郝真人圣诞'), _f('孙真人圣诞')],
+        '1-5': [_f('孙祖清静元君诞')],
+        '1-7': [_f('举迁赏会', '此日上元赐福，天官同地水二官考校罪福')],
+        '1-9': [_f('玉皇上帝圣诞')],
+        '1-13': [_f('关圣帝君飞升')],
+        '1-15': [_f('上元天官圣诞'), _f('老祖天师圣诞')],
+        '1-19': [_f('长春邱真人(邱处机)圣诞')],
+        '1-28': [_f('许真君(许逊天师)圣诞')],
+        '2-1': [_f('勾陈天皇大帝圣诞'), _f('长春刘真人(刘渊然)圣诞')],
+        '2-2': [_f('土地正神诞'), _f('姜太公圣诞')],
+        '2-3': [_f('文昌梓潼帝君圣诞')],
+        '2-6': [_f('东华帝君圣诞')],
+        '2-13': [_f('度人无量葛真君圣诞')],
+        '2-15': [_f('太清道德天尊(太上老君)圣诞')],
+        '2-19': [_f('慈航真人圣诞')],
+        '3-1': [_f('谭祖(谭处端)长真真人圣诞')],
+        '3-3': [_f('玄天上帝圣诞')],
+        '3-6': [_f('眼光娘娘圣诞')],
+        '3-15': [_f('天师张大真人圣诞'), _f('财神赵公元帅圣诞')],
+        '3-16': [_f('三茅真君得道之辰'), _f('中岳大帝圣诞')],
+        '3-18': [_f('王祖(王处一)玉阳真人圣诞'), _f('后土娘娘圣诞')],
+        '3-19': [_f('太阳星君圣诞')],
+        '3-20': [_f('子孙娘娘圣诞')],
+        '3-23': [_f('天后妈祖圣诞')],
+        '3-26': [_f('鬼谷先师诞')],
+        '3-28': [_f('东岳大帝圣诞')],
+        '4-1': [_f('长生谭真君成道之辰')],
+        '4-10': [_f('何仙姑圣诞')],
+        '4-14': [_f('吕祖纯阳祖师圣诞')],
+        '4-15': [_f('钟离祖师圣诞')],
+        '4-18': [_f('北极紫微大帝圣诞'), _f('泰山圣母碧霞元君诞'), _f('华佗神医先师诞')],
+        '4-20': [_f('眼光圣母娘娘诞')],
+        '4-28': [_f('神农先帝诞')],
+        '5-1': [_f('南极长生大帝圣诞')],
+        '5-5': [_f('地腊之辰', '地腊，此日五帝会於南方三炁丹天'), _f('南方雷祖圣诞'), _f('地祗温元帅圣诞'), _f('雷霆邓天君圣诞')],
+        '5-11': [_f('城隍爷圣诞')],
+        '5-13': [_f('关圣帝君降神'), _f('关平太子圣诞')],
+        '5-18': [_f('张天师圣诞')],
+        '5-20': [_f('马祖丹阳真人圣诞')],
+        '5-29': [_f('紫青白祖师圣诞')],
+        '6-1': [_f('南斗星君下降')],
+        '6-2': [_f('南斗星君下降')],
+        '6-3': [_f('南斗星君下降')],
+        '6-4': [_f('南斗星君下降')],
+        '6-5': [_f('南斗星君下降')],
+        '6-6': [_f('南斗星君下降')],
+        '6-10': [_f('刘海蟾祖师圣诞')],
+        '6-15': [_f('灵官王天君圣诞')],
+        '6-19': [_f('慈航(观音)成道日')],
+        '6-23': [_f('火神圣诞')],
+        '6-24': [_f('南极大帝中方雷祖圣诞'), _f('关圣帝君圣诞')],
+        '6-26': [_f('二郎真君圣诞')],
+        '7-7': [_f('道德腊之辰', '道德腊，此日五帝会于西方七炁素天'), _f('庆生中会', '此日中元赦罪，地官同天水二官考校罪福')],
+        '7-12': [_f('西方雷祖圣诞')],
+        '7-15': [_f('中元地官大帝圣诞')],
+        '7-18': [_f('王母娘娘圣诞')],
+        '7-20': [_f('刘祖(刘处玄)长生真人圣诞')],
+        '7-22': [_f('财帛星君文财神增福相公李诡祖圣诞')],
+        '7-26': [_f('张三丰祖师圣诞')],
+        '8-1': [_f('许真君飞升日')],
+        '8-3': [_f('九天司命灶君诞')],
+        '8-5': [_f('北方雷祖圣诞')],
+        '8-10': [_f('北岳大帝诞辰')],
+        '8-15': [_f('太阴星君诞')],
+        '9-1': [_f('北斗九皇降世之辰')],
+        '9-2': [_f('北斗九皇降世之辰')],
+        '9-3': [_f('北斗九皇降世之辰')],
+        '9-4': [_f('北斗九皇降世之辰')],
+        '9-5': [_f('北斗九皇降世之辰')],
+        '9-6': [_f('北斗九皇降世之辰')],
+        '9-7': [_f('北斗九皇降世之辰')],
+        '9-8': [_f('北斗九皇降世之辰')],
+        '9-9': [_f('北斗九皇降世之辰'), _f('斗姥元君圣诞'), _f('重阳帝君圣诞'), _f('玄天上帝飞升'), _f('酆都大帝圣诞')],
+        '9-22': [_f('增福财神诞')],
+        '9-23': [_f('萨翁真君圣诞')],
+        '9-28': [_f('五显灵官马元帅圣诞')],
+        '10-1': [_f('民岁腊之辰', '民岁腊，此日五帝会於北方五炁黑天'), _f('东皇大帝圣诞')],
+        '10-3': [_f('三茅应化真君圣诞')],
+        '10-6': [_f('天曹诸司五岳五帝圣诞')],
+        '10-15': [_f('下元水官大帝圣诞'), _f('建生大会', '此日下元解厄，水官同天地二官考校罪福')],
+        '10-18': [_f('地母娘娘圣诞')],
+        '10-19': [_f('长春邱真君飞升')],
+        '10-20': [_f('虚靖天师(即三十代天师弘悟张真人)诞')],
+        '11-6': [_f('西岳大帝圣诞')],
+        '11-9': [_f('湘子韩祖圣诞')],
+        '11-11': [_f('太乙救苦天尊圣诞')],
+        '11-26': [_f('北方五道圣诞')],
+        '12-8': [_f('王侯腊之辰', '王侯腊，此日五帝会於上方玄都玉京')],
+        '12-16': [_f('南岳大帝圣诞'), _f('福德正神诞')],
+        '12-20': [_f('鲁班先师圣诞')],
+        '12-21': [_f('天猷上帝圣诞')],
+        '12-22': [_f('重阳祖师圣诞')],
+        '12-23': [_f('祭灶王', '最适宜谢旧年太岁，开启拜新年太岁')],
+        '12-25': [_f('玉帝巡天'), _f('天神下降')],
+        '12-29': [_f('清静孙真君(孙不二)成道')]
+      }
+    }
+  })();
+  var Tao = (function(){
+    var _fromYmdHms=function(y,m,d,hour,minute,second){
+      return _fromLunar(Lunar.fromYmdHms(y+Tao.BIRTH_YEAR,m,d,hour,minute,second));
+    };
+    var _fromLunar=function(lunar){
+      return {
+        _p: {
+          lunar: lunar
+        },
+        getLunar:function(){return this._p.lunar;},
+        getYear:function(){
+          return this._p.lunar.getYear()-Tao.BIRTH_YEAR;
+        },
+        getMonth:function(){return this._p.lunar.getMonth();},
+        getDay:function(){return this._p.lunar.getDay();},
+        getYearInChinese:function(){
+          var y = this.getYear()+'';
+          var s = '';
+          var zero = '0'.charCodeAt(0);
+          for(var i=0,j=y.length;i<j;i++){
+            s+=LunarUtil.NUMBER[y.charCodeAt(i)-zero];
+          }
+          return s;
+        },
+        getMonthInChinese:function(){return this._p.lunar.getMonthInChinese();},
+        getDayInChinese:function(){return this._p.lunar.getDayInChinese();},
+        getFestivals:function(){
+          var l=TaoUtil.FESTIVAL[this.getMonth()+'-'+this.getDay()];
+          if(!l){
+            l=[];
+          }
+          var jq = this._p.lunar.getJieQi();
+          if('冬至'===jq){
+            l.push(TaoFestival.create('元始天尊圣诞'));
+          }else if('夏至'===jq){
+            l.push(TaoFestival.create('灵宝天尊圣诞'));
+          }
+          var f = TaoUtil.BA_JIE[jq];
+          if(f){
+            l.push(TaoFestival.create(f));
+          }
+          f = TaoUtil.BA_HUI[this._p.lunar.getDayInGanZhi()];
+          if(f){
+            l.push(TaoFestival.create(f));
+          }
+          return l;
+        },
+        _isDayIn:function(days){
+          var md = this.getMonth() + '-' + this.getDay();
+          for(var i=0,j=days.length;i<j;i++){
+            if(md===days[i]){
+              return true;
+            }
+          }
+          return false;
+        },
+        isDaySanHui:function(){return this._isDayIn(TaoUtil.SAN_HUI);},
+        isDaySanYuan:function(){return this._isDayIn(TaoUtil.SAN_YUAN);},
+        isDayBaJie:function(){return !!TaoUtil.BA_JIE[this._p.lunar.getJieQi()];},
+        isDayWuLa:function(){return this._isDayIn(TaoUtil.WU_LA);},
+        isDayBaHui:function(){return !!TaoUtil.BA_HUI[this._p.lunar.getDayInGanZhi()];},
+        toString:function(){
+          return this.getYearInChinese()+'年'+this.getMonthInChinese()+'月'+this.getDayInChinese();
+        },
+        toFullString:function(){
+          return '道歷'+this.getYearInChinese()+'年，天運'+this._p.lunar.getYearInGanZhi()+'年，'+this._p.lunar.getMonthInGanZhi()+'月，'+this._p.lunar.getDayInGanZhi()+'日。'+this.getMonthInChinese()+'月'+this.getDayInChinese()+'日，'+this._p.lunar.getTimeZhi()+'時。';
+        }
+      };
+    };
+    return {
+      BIRTH_YEAR:-2697,
+      fromYmdHms:function(y,m,d,hour,minute,second){return _fromYmdHms(y,m,d,hour,minute,second);},
+      fromYmd:function(y,m,d){return _fromYmdHms(y,m,d,0,0,0);},
+      fromLunar:function(lunar){return _fromLunar(lunar);}
+    };
+  })();
   return {
     ShouXingUtil:ShouXingUtil,
     SolarUtil:SolarUtil,
     LunarUtil:LunarUtil,
     FotoUtil:FotoUtil,
+    TaoUtil:TaoUtil,
     Solar:Solar,
     Lunar:Lunar,
     Foto:Foto,
+    Tao:Tao,
     NineStar:NineStar,
     EightChar:EightChar,
     SolarWeek:SolarWeek,
