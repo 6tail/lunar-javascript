@@ -95,3 +95,11 @@ test('test8', () => {
   const lunar = Lunar.fromYmd(2050, 12, 1);
   expect(lunar.getJieQiTable()['大雪'].toYmdHms()).toBe('2050-12-07 06:41:00');
 });
+
+test('test9', () => {
+  const solar = Solar.fromYmd(2021, 12, 21);
+  const lunar = solar.getLunar();
+  expect(lunar.getJieQi()).toBe('冬至');
+  expect(lunar.getJie()).toBe('');
+  expect(lunar.getQi()).toBe('冬至');
+});
