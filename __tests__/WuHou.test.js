@@ -53,3 +53,27 @@ test('test9()', () => {
   const lunar = solar.getLunar();
   expect(lunar.getWuHou()).toBe('蚯蚓结');
 });
+
+test('test10', () => {
+  const solar = Solar.fromYmd(2021,12,21);
+  const lunar = solar.getLunar();
+  expect(lunar.getHou()).toBe('冬至 初候');
+});
+
+test('test11', () => {
+  const solar = Solar.fromYmd(2021,12,26);
+  const lunar = solar.getLunar();
+  expect(lunar.getHou()).toBe('冬至 二候');
+});
+
+test('test12', () => {
+  const solar = Solar.fromYmd(2021,12,31);
+  const lunar = solar.getLunar();
+  expect(lunar.getHou()).toBe('冬至 三候');
+});
+
+test('test13', () => {
+  const solar = Solar.fromYmd(2022,1,5);
+  const lunar = solar.getLunar();
+  expect(lunar.getHou()).toBe('小寒 初候');
+});
