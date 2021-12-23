@@ -1952,33 +1952,61 @@
           }
           return 0;
         },
-        getZhiShui:function(){
-          var offset = 4 - Solar.fromJulianDay(this.getMonth(1).getFirstJulianDay()).getLunar().getDayZhiIndex();
-          if (offset < 0) {
-            offset += 12;
-          }
-          return LunarUtil.NUMBER[offset+1] + '龙治水';
-        },
-        getFenBing:function(){
-          var offset = 2 - Solar.fromJulianDay(this.getMonth(1).getFirstJulianDay()).getLunar().getDayGanIndex();
+        _getZaoByGan:function(index, name){
+          var offset = index - Solar.fromJulianDay(this.getMonth(1).getFirstJulianDay()).getLunar().getDayGanIndex();
           if (offset < 0) {
             offset += 10;
           }
-          return LunarUtil.NUMBER[offset+1] + '人分饼';
+          return name.replace('几', LunarUtil.NUMBER[offset+1]);
+        },
+        _getZaoByZhi:function(index, name){
+          var offset = index - Solar.fromJulianDay(this.getMonth(1).getFirstJulianDay()).getLunar().getDayZhiIndex();
+          if (offset < 0) {
+            offset += 12;
+          }
+          return name.replace('几', LunarUtil.NUMBER[offset+1]);
+        },
+        getTouLiang:function(){
+          return this._getZaoByZhi(0, '几鼠偷粮');
+        },
+        getCaoZi:function(){
+          return this._getZaoByZhi(0, '草子几分');
         },
         getGengTian:function(){
-          var offset = 1 - Solar.fromJulianDay(this.getMonth(1).getFirstJulianDay()).getLunar().getDayZhiIndex();
-          if (offset < 0) {
-            offset += 12;
-          }
-          return LunarUtil.NUMBER[offset+1] + '牛耕田';
+          return this._getZaoByZhi(1, '几牛耕田');
+        },
+        getHuaShou:function(){
+          return this._getZaoByZhi(3, '花收几分');
+        },
+        getZhiShui:function(){
+          return this._getZaoByZhi(4, '几龙治水');
+        },
+        getTuoGu:function(){
+          return this._getZaoByZhi(6, '几马驮谷');
+        },
+        getQiangMi:function(){
+          return this._getZaoByZhi(9, '几鸡抢米');
+        },
+        getKanCan:function(){
+          return this._getZaoByZhi(9, '几姑看蚕');
+        },
+        getGongZhu:function(){
+          return this._getZaoByZhi(11, '几屠共猪');
+        },
+        getJiaTian:function(){
+          return this._getZaoByGan(0, '甲田几分');
+        },
+        getFenBing:function(){
+          return this._getZaoByGan(2, '几人分饼');
         },
         getDeJin:function(){
-          var offset = 7 - Solar.fromJulianDay(this.getMonth(1).getFirstJulianDay()).getLunar().getDayGanIndex();
-          if (offset < 0) {
-            offset += 10;
-          }
-          return LunarUtil.NUMBER[offset+1] + '日得金';
+          return this._getZaoByGan(7, '几日得金');
+        },
+        getRenBing:function(){
+          return this._getZaoByGan(2, this._getZaoByZhi(2, '几人几丙'));
+        },
+        getRenChu:function(){
+          return this._getZaoByGan(3, this._getZaoByZhi(2, '几人几锄'));
         },
         getYuan:function(){
           return _YUAN[Math.floor((this._p.year+2696)/60)%3]+'元';
@@ -3343,7 +3371,7 @@
             getLunar: function(){return this._p.lunar;},
             getStartSolar: function(){
               var birth = this._p.lunar.getSolar();
-              var c = birth.getCalendar();
+              var c = ExactDate.fromYmdHms(birth.getYear(), birth.getMonth(), birth.getDay(), birth.getHour(), birth.getMinute(), birth.getSecond());
               c.setFullYear(birth.getYear() + this._p.startYear);
               c.setMonth(birth.getMonth()-1+this._p.startMonth);
               c.setDate(birth.getDay() + this._p.startDay);
