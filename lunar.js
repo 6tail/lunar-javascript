@@ -304,7 +304,7 @@
       if(offsetYear<0){
         offsetYear = offsetYear+60;
       }
-      var startYear = today.getYear() - offsetYear;
+      var startYear = lunar.getYear() - offsetYear;
       var hour = 0;
       var timeZhi = timeGanZhi.substr(1);
       for(var i=0,j=LunarUtil.ZHI.length;i<j;i++){
@@ -366,7 +366,7 @@
       fromYmdHms:function(y,m,d,hour,minute,second){return _fromYmdHms(y,m,d,hour,minute,second);},
       fromDate:function(date){return _fromDate(date);},
       fromJulianDay:function(julianDay){return _fromJulianDay(julianDay);},
-      fromBaZi:function(yearGanZhi,monthGanZhi,dayGanZhi,timeGanZhi){return _fromBaZi(yearGanZhi,monthGanZhi,dayGanZhi,timeGanZhi);}
+      fromBaZi:function(yearGanZhi,monthGanZhi,dayGanZhi,timeGanZhi,sect,baseYear){return _fromBaZi(yearGanZhi,monthGanZhi,dayGanZhi,timeGanZhi,sect,baseYear);}
     };
   })();
   var Lunar = (function(){
