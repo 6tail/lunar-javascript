@@ -27,13 +27,7 @@
       fromYmdHms:function(y,m,d,hour,minute,second){
         return this._(new Date(y+'/'+m+'/'+d+' '+hour+':'+minute+':'+second),y,m,d);
       },
-      getDaysBetween:function(date0, date1){
-        var ay = date0.getFullYear();
-        var by = date1.getFullYear();
-        var am = date0.getMonth() + 1;
-        var bm = date1.getMonth() + 1;
-        var ad = date0.getDate();
-        var bd = date1.getDate();
+      getDaysBetweenYmd:function(ay, am, ad, by, bm, bd){
         var n;
         var days;
         var i;
@@ -55,6 +49,9 @@
           n = days;
         }
         return n;
+      },
+      getDaysBetween:function(date0, date1){
+        return this.getDaysBetweenYmd(date0.getFullYear(), date0.getMonth() + 1, date0.getDate(), date1.getFullYear(), date1.getMonth() + 1, date1.getDate());
       }
     };
   })();
@@ -527,22 +524,19 @@
       return o;
     };
     var _fromDate = function(date){
-      var c = ExactDate.fromYmd(date.getFullYear(),date.getMonth()+1,date.getDate());
+      var currentYear = date.getFullYear();
+      var currentMonth = date.getMonth() + 1;
+      var currentDay = date.getDate();
       var lunarYear = 0;
       var lunarMonth = 0;
       var lunarDay = 0;
-      var y = c.getFullYear();
-      var ly = LunarYear.fromYear(y);
+      var ly = LunarYear.fromYear(currentYear);
       var lms = ly.getMonths();
       for (var i = 0, j = lms.length; i < j; i++) {
         var m = lms[i];
         // 初一
-        var firstDay = Solar.fromJulianDay(m.getFirstJulianDay()).getCalendar();
-        firstDay.setHours(0);
-        firstDay.setMinutes(0);
-        firstDay.setSeconds(0);
-        firstDay.setMilliseconds(0);
-        var days = ExactDate.getDaysBetween(firstDay, c);
+        var firstDay = Solar.fromJulianDay(m.getFirstJulianDay());
+        var days = ExactDate.getDaysBetweenYmd(firstDay.getYear(), firstDay.getMonth(), firstDay.getDay(), currentYear, currentMonth, currentDay);
         if (days < m.getDayCount()) {
           lunarYear = m.getYear();
           lunarMonth = m.getMonth();
@@ -1159,9 +1153,9 @@
           var dongZhiIndex = LunarUtil.getJiaZiIndex(dongZhi.getLunar().getDayInGanZhi());
           var dongZhiIndex2 = LunarUtil.getJiaZiIndex(dongZhi2.getLunar().getDayInGanZhi());
           var xiaZhiIndex = LunarUtil.getJiaZiIndex(xiaZhi.getLunar().getDayInGanZhi());
-          var solarShunBai = null;
-          var solarShunBai2 = null;
-          var solarNiZi = null;
+          var solarShunBai;
+          var solarShunBai2;
+          var solarNiZi;
           if (dongZhiIndex>29) {
             solarShunBai = dongZhi.next(60 - dongZhiIndex);
           } else {
@@ -1206,8 +1200,7 @@
             start = asc ? 3 : 5;
           }
           var index = asc ? start + this._p.timeZhiIndex : start + 9 - this._p.timeZhiIndex;
-          var offset = index % 9;
-          return NineStar.fromIndex(offset);
+          return NineStar.fromIndex(index % 9);
         },
         getSolar:function(){
           return this._p.solar;
@@ -2577,6 +2570,9 @@
           days += this.getDaysOfMonth(year, i);
         }
         days += day;
+        if (1582 === year && 10 === month && day >= 15) {
+          days -= 10;
+        }
         return days;
       },
       getWeeksOfMonth:function(year,month,start){
