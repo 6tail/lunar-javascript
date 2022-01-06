@@ -770,9 +770,9 @@
         getTimePositionCaiDesc:function(){
           return LunarUtil.POSITION_DESC[this.getTimePositionCai()];
         },
-        getDayPositionTaiSui:function(){
+        _getDayPositionTaiSui:function(dayInGanZhi, yearZhiIndex){
           var p = '';
-          switch (this.getDayInGanZhi()) {
+          switch (dayInGanZhi) {
             case '甲子':
             case '乙丑':
             case '丙寅':
@@ -814,12 +814,91 @@
               p = '坎';
               break;
             default:
-              p = LunarYear.fromYear(this.getYear()).getPositionTaiSui();
+              p = LunarUtil.POSITION_TAI_SUI_YEAR[yearZhiIndex];
           }
           return p;
         },
-        getDayPositionTaiSuiDesc:function(){
-          return LunarUtil.POSITION_DESC[this.getDayPositionTaiSui()];
+        getDayPositionTaiSui:function(sect){
+          var dayInGanZhi;
+          var yearZhiIndex;
+          switch (sect) {
+            case 1:
+              dayInGanZhi = this.getDayInGanZhi();
+              yearZhiIndex = this._p.yearZhiIndex;
+              break;
+            case 3:
+              dayInGanZhi = this.getDayInGanZhi();
+              yearZhiIndex = this._p.yearZhiIndexExact;
+              break;
+            default:
+              dayInGanZhi = this.getDayInGanZhiExact2();
+              yearZhiIndex = this._p.yearZhiIndexByLiChun;
+          }
+          return this._getDayPositionTaiSui(dayInGanZhi, yearZhiIndex);
+        },
+        getDayPositionTaiSuiDesc:function(sect){
+          return LunarUtil.POSITION_DESC[this.getDayPositionTaiSui(sect)];
+        },
+        _getMonthPositionTaiSui:function(monthZhiIndex, monthGanIndex){
+          var p = '';
+          var m = monthZhiIndex - LunarUtil.BASE_MONTH_ZHI_INDEX;
+          if (m < 0) {
+            m += 12;
+          }
+          switch(m) {
+            case 0:
+            case 4:
+            case 8:
+              p = '艮';
+              break;
+            case 2:
+            case 6:
+            case 10:
+              p = '坤';
+              break;
+            case 3:
+            case 7:
+            case 11:
+              p = '巽';
+              break;
+            default:
+              p = LunarUtil.POSITION_GAN[monthGanIndex];
+          }
+          return p;
+        },
+        getMonthPositionTaiSui:function(sect){
+          var monthZhiIndex;
+          var monthGanIndex;
+          switch (sect) {
+            case 3:
+              monthZhiIndex = this._p.monthZhiIndexExact;
+              monthGanIndex = this._p.monthGanIndexExact;
+              break;
+            default:
+              monthZhiIndex = this._p.monthZhiIndex;
+              monthGanIndex = this._p.monthGanIndex;
+          }
+          return this._getMonthPositionTaiSui(monthZhiIndex, monthGanIndex);
+        },
+        getMonthPositionTaiSuiDesc:function(sect){
+          return LunarUtil.POSITION_DESC[this.getMonthPositionTaiSui(sect)];
+        },
+        getYearPositionTaiSui:function(sect){
+          var yearZhiIndex;
+          switch (sect) {
+            case 1:
+              yearZhiIndex = this._p.yearZhiIndex;
+              break;
+            case 3:
+              yearZhiIndex = this._p.yearZhiIndexExact;
+              break;
+            default:
+              yearZhiIndex = this._p.yearZhiIndexByLiChun;
+          }
+          return LunarUtil.POSITION_TAI_SUI_YEAR[yearZhiIndex];
+        },
+        getYearPositionTaiSuiDesc:function(sect){
+          return LunarUtil.POSITION_DESC[this.getYearPositionTaiSui(sect)];
         },
         getChong:function(){
           return this.getDayChong();
@@ -1124,26 +1203,69 @@
         getYueXiang:function(){
           return LunarUtil.YUE_XIANG[this._p.day];
         },
-        getYearNineStar:function(){
-          return LunarYear.fromYear(this._p.year).getNineStar();
+        _getYearNineStar:function(yearInGanZhi){
+          var index = LunarUtil.getJiaZiIndex(yearInGanZhi) + 1;
+          var yearOffset = 0;
+          if (index != LunarUtil.getJiaZiIndex(this.getYearInGanZhi()) + 1) {
+            yearOffset = -1;
+          }
+          var n = 65;
+          var yuan = Math.floor((this._p.year + yearOffset + 2696) / 60) % 3;
+          switch(yuan){
+            case 2:
+              n = 68;
+              break;
+            case 0:
+              n = 62;
+              break;
+            default:
+          }
+          var offset = (n - index) % 9;
+          if(0 === offset){
+            offset = 9;
+          }
+          return NineStar.fromIndex(offset - 1);
         },
-        getMonthNineStar:function(){
-          var n = 12;
-          var yearZhi = this.getYearZhi();
-          if ('子午卯酉'.indexOf(yearZhi)>-1) {
-            n = 18;
-          } else if ('辰戌丑未'.indexOf(yearZhi)>-1) {
-            n = 15;
+        getYearNineStar:function(sect){
+          var yearInGanZhi;
+          switch (sect) {
+            case 1:
+              yearInGanZhi = this.getYearInGanZhi();
+              break;
+            case 3:
+              yearInGanZhi = this.getYearInGanZhiExact();
+              break;
+            default:
+              yearInGanZhi = this.getYearInGanZhiByLiChun();
           }
-          var m = this._p.month;
-          if(m<0){
-            m = -m;
+          return this._getYearNineStar(yearInGanZhi);
+        },
+        _getMonthNineStar:function(yearZhiIndex, monthZhiIndex){
+          var index = yearZhiIndex % 3;
+          var n = 27 - (index * 3);
+          if (monthZhiIndex < LunarUtil.BASE_MONTH_ZHI_INDEX) {
+            n -= 3;
           }
-          var offset = (n-m)%9;
-          if(0===offset){
-            offset=9;
+          var offset = (n - monthZhiIndex) % 9;
+          return NineStar.fromIndex(offset);
+        },
+        getMonthNineStar:function(sect){
+          var yearZhiIndex;
+          var monthZhiIndex;
+          switch (sect) {
+            case 1:
+              yearZhiIndex = this._p.yearZhiIndex;
+              monthZhiIndex = this._p.monthZhiIndex;
+              break;
+            case 3:
+              yearZhiIndex = this._p.yearZhiIndexExact;
+              monthZhiIndex = this._p.monthZhiIndexExact;
+              break;
+            default:
+              yearZhiIndex = this._p.yearZhiIndexByLiChun;
+              monthZhiIndex = this._p.monthZhiIndex;
           }
-          return NineStar.fromIndex(offset-1);
+          return this._getMonthNineStar(yearZhiIndex, monthZhiIndex);
         },
         getDayNineStar:function(){
           var solarYmd = this._p.solar.toYmd();
@@ -2292,6 +2414,24 @@
         },
         getPositionTaiSuiDesc:function(){
           return LunarUtil.POSITION_DESC[this.getPositionTaiSui()];
+        },
+        getMonthNineStar:function(){
+          var n = 12;
+          var yearZhi = LunarYear.fromYear(this._p.year).getZhi();
+          if ('子午卯酉'.indexOf(yearZhi)>-1) {
+            n = 18;
+          } else if ('辰戌丑未'.indexOf(yearZhi)>-1) {
+            n = 15;
+          }
+          var m = this._p.month;
+          if(m<0){
+            m = -m;
+          }
+          var offset = (n-m)%9;
+          if(0===offset){
+            offset=9;
+          }
+          return NineStar.fromIndex(offset-1);
         },
         toString:function(){return this.getYear()+'年'+(this.isLeap()?'闰':'')+LunarUtil.MONTH[Math.abs(this.getMonth())]+'月('+this.getDayCount()+')天';}
       };

@@ -415,12 +415,12 @@ test('test022', () => {
 
 test('test023', () => {
   const lunar = Lunar.fromYmd(2022, 1, 1);
-  expect(lunar.getYearNineStar().toString()).toBe('五黄土玉衡');
+  expect(lunar.getYearNineStar().toString()).toBe('六白金开阳');
 });
 
 test('test024', () => {
   const lunar = Lunar.fromYmd(2033, 1, 1);
-  expect(lunar.getYearNineStar().toString()).toBe('三碧木天玑');
+  expect(lunar.getYearNineStar().toString()).toBe('四绿木天权');
 });
 
 test('test025', () => {

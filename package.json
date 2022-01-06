@@ -1,6 +1,6 @@
 {
   "name": "lunar-javascript",
-  "version": "1.2.21",
+  "version": "1.2.22",
   "description": "lunar is a calendar library for Solar and Chinese Lunar.",
   "main": "index.js",
   "scripts": {
