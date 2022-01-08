@@ -1430,15 +1430,15 @@
         },
         getCurrentJieQi:function(){
           var name = this.getJieQi();
-          return name.length>0 ? this._buildJieQi(name,this.solar) : null;
+          return name.length>0 ? this._buildJieQi(name,this._p.solar) : null;
         },
         getCurrentJie:function(){
           var name = this.getJie();
-          return name.length>0 ? this._buildJieQi(name,this.solar) : null;
+          return name.length>0 ? this._buildJieQi(name,this._p.solar) : null;
         },
         getCurrentQi:function(){
           var name = this.getQi();
-          return name.length>0 ? this._buildJieQi(name,this.solar) : null;
+          return name.length>0 ? this._buildJieQi(name,this._p.solar) : null;
         },
         getEightChar:function(){
           if(!this._p.eightChar){
