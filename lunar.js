@@ -983,59 +983,51 @@
         },
         _convertJieQi:function(name){
           var jq = name;
-          if('DONG_ZHI'===jq){
+          if('DONG_ZHI' === jq){
             jq = '冬至';
-          }else if('DA_HAN'===jq){
+          }else if('DA_HAN' === jq){
             jq = '大寒';
-          }else if('XIAO_HAN'===jq){
+          }else if('XIAO_HAN' === jq){
             jq = '小寒';
-          }else if('LI_CHUN'===jq){
+          }else if('LI_CHUN' === jq){
             jq = '立春';
-          }else if('DA_XUE'===jq){
+          }else if('DA_XUE' === jq){
             jq = '大雪';
-          }else if('YU_SHUI'===jq){
+          }else if('YU_SHUI' === jq){
             jq = '雨水';
-          }else if('JING_ZHE'===jq){
+          }else if('JING_ZHE' === jq){
             jq = '惊蛰';
           }
           return jq;
         },
         getJie:function(){
-          var d;
-          var jie='';
-          for(var i=0,j=Lunar.JIE_QI_IN_USE.length;i<j;i+=2){
+          for(var i=0, j=Lunar.JIE_QI_IN_USE.length; i<j; i+=2){
             var key = Lunar.JIE_QI_IN_USE[i];
-            d = this._p.jieQi[key];
-            if(d.getYear()===this._p.solar.getYear()&&d.getMonth()===this._p.solar.getMonth()&&d.getDay()===this._p.solar.getDay()){
-              jie=key;
-              break;
+            var d = this._p.jieQi[key];
+            if(d.getYear() === this._p.solar.getYear() && d.getMonth() === this._p.solar.getMonth() && d.getDay() === this._p.solar.getDay()){
+              return this._convertJieQi(key);
             }
           }
-          return this._convertJieQi(jie);
+          return '';
         },
         getQi:function(){
-          var d;
-          var qi='';
-          for(var i=1,j=Lunar.JIE_QI_IN_USE.length;i<j;i+=2){
+          for(var i=1, j=Lunar.JIE_QI_IN_USE.length; i<j; i+=2){
             var key = Lunar.JIE_QI_IN_USE[i];
-            d = this._p.jieQi[key];
-            if(d.getYear()===this._p.solar.getYear()&&d.getMonth()===this._p.solar.getMonth()&&d.getDay()===this._p.solar.getDay()){
-              qi=key;
-              break;
+            var d = this._p.jieQi[key];
+            if(d.getYear() === this._p.solar.getYear() && d.getMonth() === this._p.solar.getMonth() && d.getDay() === this._p.solar.getDay()){
+              return this._convertJieQi(key);
             }
           }
-          return this._convertJieQi(qi);
+          return '';
         },
         getJieQi:function(){
-          var name = '';
           for(var key in this._p.jieQi){
             var d = this._p.jieQi[key];
-            if(d.getYear()==this._p.solar.getYear()&&d.getMonth()==this._p.solar.getMonth()&&d.getDay()==this._p.solar.getDay()){
-              name = key;
-              break;
+            if(d.getYear() === this._p.solar.getYear() && d.getMonth() === this._p.solar.getMonth() && d.getDay() === this._p.solar.getDay()){
+              return this._convertJieQi(key);
             }
           }
-          return this._convertJieQi(name);
+          return '';
         },
         getWeek:function(){
           return this._p.weekIndex;
@@ -1429,16 +1421,33 @@
           return this._buildJieQi(name, near);
         },
         getCurrentJieQi:function(){
-          var name = this.getJieQi();
-          return name.length>0 ? this._buildJieQi(name,this._p.solar) : null;
+          for(var key in this._p.jieQi){
+            var d = this._p.jieQi[key];
+            if(d.getYear() === this._p.solar.getYear() && d.getMonth() === this._p.solar.getMonth() && d.getDay() === this._p.solar.getDay()){
+              return this._buildJieQi(this._convertJieQi(key), d);
+            }
+          }
+          return null;
         },
         getCurrentJie:function(){
-          var name = this.getJie();
-          return name.length>0 ? this._buildJieQi(name,this._p.solar) : null;
+          for(var i=0, j=Lunar.JIE_QI_IN_USE.length; i<j; i+=2){
+            var key = Lunar.JIE_QI_IN_USE[i];
+            var d = this._p.jieQi[key];
+            if(d.getYear() === this._p.solar.getYear() && d.getMonth() === this._p.solar.getMonth() && d.getDay() === this._p.solar.getDay()){
+              return this._buildJieQi(this._convertJieQi(key), d);
+            }
+          }
+          return null;
         },
         getCurrentQi:function(){
-          var name = this.getQi();
-          return name.length>0 ? this._buildJieQi(name,this._p.solar) : null;
+          for(var i=1, j=Lunar.JIE_QI_IN_USE.length; i<j; i+=2){
+            var key = Lunar.JIE_QI_IN_USE[i];
+            var d = this._p.jieQi[key];
+            if(d.getYear() === this._p.solar.getYear() && d.getMonth() === this._p.solar.getMonth() && d.getDay() === this._p.solar.getDay()){
+              return this._buildJieQi(this._convertJieQi(key), d);
+            }
+          }
+          return null;
         },
         getEightChar:function(){
           if(!this._p.eightChar){
