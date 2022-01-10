@@ -1659,10 +1659,8 @@
         getHou:function(){
           var jieQi = this.getPrevJieQi(true);
           var name = jieQi.getName();
-          var currentCalendar = ExactDate.fromYmd(this._p.solar.getYear(),this._p.solar.getMonth(),this._p.solar.getDay());
           var startSolar = jieQi.getSolar();
-          var startCalendar = ExactDate.fromYmd(startSolar.getYear(),startSolar.getMonth(),startSolar.getDay());
-          var days = days = ExactDate.getDaysBetween(startCalendar, currentCalendar);
+          var days = days = ExactDate.getDaysBetweenYmd(startSolar.getYear(),startSolar.getMonth(),startSolar.getDay(), this._p.solar.getYear(),this._p.solar.getMonth(),this._p.solar.getDay());
           return name + ' ' + LunarUtil.HOU[(Math.floor(days/5)) % LunarUtil.HOU.length];
         },
         getDayLu:function(){
@@ -1726,10 +1724,11 @@
         getIndex:function(){
           var firstDate = ExactDate.fromYmd(this._p.year,this._p.month,1);
           var firstDayWeek = firstDate.getDay();
-          if(firstDayWeek===0){
-            firstDayWeek = 7;
+          var offset = firstDayWeek - this._p.start;
+          if(offset < 0) {
+            offset += 7;
           }
-          return Math.ceil((this._p.day+firstDayWeek-this._p.start)/7);
+          return Math.ceil((this._p.day + offset)/7);
         },
         /**
          * 周推移
@@ -3469,10 +3468,8 @@
             const startTimeZhiIndex = (start.getHour() === 23) ? 11 : LunarUtil.getTimeZhiIndex(start.toYmdHms().substr(11, 5));
             // 时辰差
             var hourDiff = endTimeZhiIndex - startTimeZhiIndex;
-            var endCalendar = ExactDate.fromYmd(end.getYear(), end.getMonth(), end.getDay());
-            var startCalendar = ExactDate.fromYmd(start.getYear(), start.getMonth(), start.getDay());
             // 天数差
-            var dayDiff = Math.floor((endCalendar - startCalendar) / (1000 * 3600 * 24));
+            var dayDiff = ExactDate.getDaysBetweenYmd(start.getYear(), start.getMonth(), start.getDay(), end.getYear(), end.getMonth(), end.getDay());
             if (hourDiff < 0) {
               hourDiff += 12;
               dayDiff--;

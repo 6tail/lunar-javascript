@@ -19,3 +19,15 @@ test('testFromSunday', () => {
   expect(week.getFirstDay().toString()).toBe('2019-04-28');
   expect(week.getFirstDayInMonth().toString()).toBe('2019-05-01');
 });
+
+test('test1', () => {
+  const start = 0;
+  const week = SolarWeek.fromYmd(2022, 5, 1, start);
+  expect(week.getIndex()).toBe(1);
+});
+
+test('test2', () => {
+  const start = 2;
+  const week = SolarWeek.fromYmd(2021, 5, 4, start);
+  expect(week.getIndex()).toBe(2);
+});
