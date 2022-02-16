@@ -1660,8 +1660,13 @@
           var jieQi = this.getPrevJieQi(true);
           var name = jieQi.getName();
           var startSolar = jieQi.getSolar();
-          var days = days = ExactDate.getDaysBetweenYmd(startSolar.getYear(),startSolar.getMonth(),startSolar.getDay(), this._p.solar.getYear(),this._p.solar.getMonth(),this._p.solar.getDay());
-          return name + ' ' + LunarUtil.HOU[(Math.floor(days/5)) % LunarUtil.HOU.length];
+          var days = ExactDate.getDaysBetweenYmd(startSolar.getYear(),startSolar.getMonth(),startSolar.getDay(), this._p.solar.getYear(),this._p.solar.getMonth(),this._p.solar.getDay());
+          var max = LunarUtil.HOU.length - 1;
+          var offset = Math.floor(days / 5);
+          if (offset > max) {
+            offset = max;
+          }
+          return name + ' ' + LunarUtil.HOU[offset];
         },
         getDayLu:function(){
           var gan = LunarUtil.LU[this.getDayGan()];
@@ -2266,6 +2271,9 @@
         toFullString:function(){
           return this.getYear()+'年';
         },
+        next:function(n){
+          return LunarYear.fromYear(this._p.year + n);
+        },
         _compute:function(){
           this._p.months = [];
           this._p.jieQiJulianDays = [];
@@ -2419,6 +2427,65 @@
           }
           var offset = (n - monthZhiIndex) % 9;
           return NineStar.fromIndex(offset);
+        },
+        next:function(n){
+          if (0 == n) {
+            return LunarMonth.fromYm(this._p.year, this._p.month);
+          } else {
+            var rest = Math.abs(n);
+            var ny = this._p.year;
+            var iy = ny;
+            var im = this._p.month;
+            var index = 0;
+            var months = LunarYear.fromYear(ny).getMonths();
+            var i;
+            var m;
+            var size;
+            if (n > 0) {
+              while (true) {
+                size = months.length;
+                for (i = 0; i < size; i++) {
+                  m = months[i];
+                  if (m.getYear() === iy && m.getMonth() === im) {
+                    index = i;
+                    break;
+                  }
+                }
+                var more = size - index - 1;
+                if (rest < more) {
+                  break;
+                }
+                rest -= more;
+                var lastMonth = months[size - 1];
+                iy = lastMonth.getYear();
+                im = lastMonth.getMonth();
+                ny++;
+                months = LunarYear.fromYear(ny).getMonths();
+              }
+              return months[index + rest];
+            } else {
+              while (true) {
+                size = months.length;
+                for (i = 0; i < size; i++) {
+                  m = months[i];
+                  if (m.getYear() === iy && m.getMonth() === im) {
+                    index = i;
+                    break;
+                  }
+                }
+                if (rest <= index) {
+                  break;
+                }
+                rest -= index;
+                var firstMonth = months[0];
+                iy = firstMonth.getYear();
+                im = firstMonth.getMonth();
+                ny--;
+                months = LunarYear.fromYear(ny).getMonths();
+              }
+              return months[index - rest];
+            }
+          }
         },
         toString:function(){return this.getYear()+'年'+(this.isLeap()?'闰':'')+LunarUtil.MONTH[Math.abs(this.getMonth())]+'月('+this.getDayCount()+')天';}
       };
@@ -4247,7 +4314,7 @@
         '冬至':'北方玄上玉宸天尊同黑帝五炁天君下降'
       },
       FESTIVAL: {
-        '1-1': [_f('天腊之辰', '天腊，此日五帝会于束方九炁青天')],
+        '1-1': [_f('天腊之辰', '天腊，此日五帝会于东方九炁青天')],
         '1-3': [_f('郝真人圣诞'), _f('孙真人圣诞')],
         '1-5': [_f('孙祖清静元君诞')],
         '1-7': [_f('举迁赏会', '此日上元赐福，天官同地水二官考校罪福')],
@@ -4282,7 +4349,7 @@
         '4-20': [_f('眼光圣母娘娘诞')],
         '4-28': [_f('神农先帝诞')],
         '5-1': [_f('南极长生大帝圣诞')],
-        '5-5': [_f('地腊之辰', '地腊，此日五帝会於南方三炁丹天'), _f('南方雷祖圣诞'), _f('地祗温元帅圣诞'), _f('雷霆邓天君圣诞')],
+        '5-5': [_f('地腊之辰', '地腊，此日五帝会于南方三炁丹天'), _f('南方雷祖圣诞'), _f('地祗温元帅圣诞'), _f('雷霆邓天君圣诞')],
         '5-11': [_f('城隍爷圣诞')],
         '5-13': [_f('关圣帝君降神'), _f('关平太子圣诞')],
         '5-18': [_f('张天师圣诞')],
@@ -4324,7 +4391,7 @@
         '9-22': [_f('增福财神诞')],
         '9-23': [_f('萨翁真君圣诞')],
         '9-28': [_f('五显灵官马元帅圣诞')],
-        '10-1': [_f('民岁腊之辰', '民岁腊，此日五帝会於北方五炁黑天'), _f('东皇大帝圣诞')],
+        '10-1': [_f('民岁腊之辰', '民岁腊，此日五帝会于北方五炁黑天'), _f('东皇大帝圣诞')],
         '10-3': [_f('三茅应化真君圣诞')],
         '10-6': [_f('天曹诸司五岳五帝圣诞')],
         '10-15': [_f('下元水官大帝圣诞'), _f('建生大会', '此日下元解厄，水官同天地二官考校罪福')],
@@ -4335,7 +4402,7 @@
         '11-9': [_f('湘子韩祖圣诞')],
         '11-11': [_f('太乙救苦天尊圣诞')],
         '11-26': [_f('北方五道圣诞')],
-        '12-8': [_f('王侯腊之辰', '王侯腊，此日五帝会於上方玄都玉京')],
+        '12-8': [_f('王侯腊之辰', '王侯腊，此日五帝会于上方玄都玉京')],
         '12-16': [_f('南岳大帝圣诞'), _f('福德正神诞')],
         '12-20': [_f('鲁班先师圣诞')],
         '12-21': [_f('天猷上帝圣诞')],

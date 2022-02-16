@@ -77,3 +77,9 @@ test('test13', () => {
   const lunar = solar.getLunar();
   expect(lunar.getHou()).toBe('小寒 初候');
 });
+
+test('test14', () => {
+  const solar = Solar.fromYmd(2022,5,20);
+  const lunar = solar.getLunar();
+  expect(lunar.getHou()).toBe('立夏 三候');
+});
