@@ -1736,6 +1736,19 @@
           return Math.ceil((this._p.day + offset)/7);
         },
         /**
+         * 获取当前日期是在当年第几周
+         * @return number 周序号，从1开始
+         */
+        getIndexInYear:function(){
+          var firstDate = ExactDate.fromYmd(this._p.year, 1, 1);
+          var firstDayWeek = firstDate.getDay();
+          var offset = firstDayWeek - this._p.start;
+          if(offset < 0) {
+            offset += 7;
+          }
+          return Math.ceil((SolarUtil.getDaysInYear(this._p.year, this._p.month, this._p.day) + offset)/7);
+        },
+        /**
          * 周推移
          * @param weeks 推移的周数，负数为倒推
          * @param separateMonth 是否按月单独计算
@@ -3520,7 +3533,8 @@
         },
         getShenGongNaYin:function(){return LunarUtil.NAYIN[this.getShenGong()];},
         getLunar:function(){return this._p.lunar;},
-        getYun:function(gender){
+        getYun:function(gender, sect){
+          sect = (2 == sect) ? sect : 1;
           var lunar = this.getLunar();
           var yang = 0 === lunar.getYearGanIndexExact() % 2;
           var man = 1 === gender;
@@ -3531,25 +3545,44 @@
             var current = lunar.getSolar();
             var start = forward ? current : prev.getSolar();
             var end = forward ? next.getSolar() : current;
-            const endTimeZhiIndex = (end.getHour() === 23) ? 11 : LunarUtil.getTimeZhiIndex(end.toYmdHms().substr(11, 5));
-            const startTimeZhiIndex = (start.getHour() === 23) ? 11 : LunarUtil.getTimeZhiIndex(start.toYmdHms().substr(11, 5));
-            // 时辰差
-            var hourDiff = endTimeZhiIndex - startTimeZhiIndex;
-            // 天数差
-            var dayDiff = ExactDate.getDaysBetweenYmd(start.getYear(), start.getMonth(), start.getDay(), end.getYear(), end.getMonth(), end.getDay());
-            if (hourDiff < 0) {
-              hourDiff += 12;
-              dayDiff--;
+
+            var year;
+            var month;
+            var day;
+            var hour = 0;
+
+            if (2 === sect) {
+              var minutes = Math.floor((end.getCalendar() - start.getCalendar()) / 60000);
+              year = Math.floor(minutes / 4320);
+              minutes -= year * 4320;
+              month = Math.floor(minutes / 360);
+              minutes -= month * 360;
+              day = Math.floor(minutes / 12);
+              minutes -= day * 12;
+              hour = minutes * 2;
+            } else {
+              var endTimeZhiIndex = (end.getHour() === 23) ? 11 : LunarUtil.getTimeZhiIndex(end.toYmdHms().substr(11, 5));
+              var startTimeZhiIndex = (start.getHour() === 23) ? 11 : LunarUtil.getTimeZhiIndex(start.toYmdHms().substr(11, 5));
+              // 时辰差
+              var hourDiff = endTimeZhiIndex - startTimeZhiIndex;
+              // 天数差
+              var dayDiff = ExactDate.getDaysBetweenYmd(start.getYear(), start.getMonth(), start.getDay(), end.getYear(), end.getMonth(), end.getDay());
+              if (hourDiff < 0) {
+                hourDiff += 12;
+                dayDiff--;
+              }
+              var monthDiff = Math.floor(hourDiff * 10 / 30);
+              month = dayDiff * 4 + monthDiff;
+              day = hourDiff * 10 - monthDiff * 30;
+              year = Math.floor(month / 12);
+              month = month - year * 12;
             }
-            var monthDiff = Math.floor(hourDiff * 10 / 30);
-            var month = dayDiff * 4 + monthDiff;
-            var day = hourDiff * 10 - monthDiff * 30;
-            var year = Math.floor(month / 12);
-            month = month - year * 12;
+
             return {
               year: year,
               month: month,
-              day: day
+              day: day,
+              hour: hour
             };
           })();
           var buildLiuYue = function(liuNian, index){
@@ -3729,6 +3762,7 @@
               startYear: start.year,
               startMonth: start.month,
               startDay: start.day,
+              startHour: start.hour,
               forward: forward,
               lunar: lunar
             },
@@ -3736,6 +3770,7 @@
             getStartYear: function(){return this._p.startYear;},
             getStartMonth: function(){return this._p.startMonth;},
             getStartDay: function(){return this._p.startDay;},
+            getStartHour: function(){return this._p.startHour;},
             isForward: function(){return this._p.forward;},
             getLunar: function(){return this._p.lunar;},
             getStartSolar: function(){
@@ -3744,6 +3779,7 @@
               c.setFullYear(birth.getYear() + this._p.startYear);
               c.setMonth(birth.getMonth()-1+this._p.startMonth);
               c.setDate(birth.getDay() + this._p.startDay);
+              c.setHours(birth.getHour() + this._p.startHour);
               return Solar.fromDate(c);
             },
             getDaYun: function(n){

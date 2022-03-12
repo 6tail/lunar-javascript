@@ -31,3 +31,9 @@ test('test2', () => {
   const week = SolarWeek.fromYmd(2021, 5, 4, start);
   expect(week.getIndex()).toBe(2);
 });
+
+test('test3', () => {
+  const start = 0;
+  const week = SolarWeek.fromYmd(2022, 3, 6, start);
+  expect(week.getIndexInYear()).toBe(11);
+});
