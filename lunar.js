@@ -1174,11 +1174,11 @@
           }
           return LunarUtil.POSITION_TAI_MONTH[m-1];
         },
-        getDayYi:function(){
-          return LunarUtil.getDayYi(this.getMonthInGanZhiExact(),this.getDayInGanZhi());
+        getDayYi:function(sect){
+          return LunarUtil.getDayYi(2 == sect ? this.getMonthInGanZhiExact() : this.getMonthInGanZhi(), this.getDayInGanZhi());
         },
-        getDayJi:function(){
-          return LunarUtil.getDayJi(this.getMonthInGanZhiExact(),this.getDayInGanZhi());
+        getDayJi:function(sect){
+          return LunarUtil.getDayJi(2 == sect ? this.getMonthInGanZhiExact() : this.getMonthInGanZhi(), this.getDayInGanZhi());
         },
         getDayJiShen:function(){
           return LunarUtil.getDayJiShen(this.getMonth(),this.getDayInGanZhi());
