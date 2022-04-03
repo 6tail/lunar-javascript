@@ -570,3 +570,23 @@ test('test052', () => {
   const lunar = Solar.fromYmd(2011, 11, 12).getLunar();
   expect(lunar.getDayPositionTai()).toBe('厕灶厨 外西南');
 });
+
+test('test053', () => {
+  const lunar = Solar.fromYmd(1722, 9, 25).getLunar();
+  expect(lunar.getOtherFestivals() + '').toBe('秋社');
+});
+
+test('test054', () => {
+  const lunar = Solar.fromYmd(840, 9, 14).getLunar();
+  expect(lunar.getOtherFestivals() + '').toBe('秋社');
+});
+
+test('test055', () => {
+  const lunar = Solar.fromYmd(2022, 3, 16).getLunar();
+  expect(lunar.getOtherFestivals() + '').toBe('春社');
+});
+
+test('test056', () => {
+  const lunar = Solar.fromYmd(2021, 3, 21).getLunar();
+  expect(lunar.getOtherFestivals() + '').toBe('春社');
+});

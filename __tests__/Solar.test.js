@@ -31,3 +31,18 @@ test('9', () => {
 test('10', () => {
   expect(SolarUtil.isLeapYear(1500)).toBe(false);
 });
+
+test('11', () => {
+  var solar = Solar.fromYmd(2022, 3, 28);
+  expect(solar.getFestivals() + '').toBe('全国中小学生安全教育日');
+});
+
+test('12', () => {
+  var solar = Solar.fromYmd(2021, 3, 29);
+  expect(solar.getFestivals() + '').toBe('全国中小学生安全教育日');
+});
+
+test('13', () => {
+  var solar = Solar.fromYmd(1996, 3, 25);
+  expect(solar.getFestivals() + '').toBe('全国中小学生安全教育日');
+});
