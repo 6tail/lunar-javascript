@@ -147,3 +147,24 @@ test('身宫', () => {
   const eightChar = lunar.getEightChar();
   expect(eightChar.getShenGong()).toBe('壬午');
 });
+
+test('身宫1', () => {
+  const solar = Solar.fromYmdHms(1994, 12, 6, 2, 0, 0);
+  const lunar = solar.getLunar();
+  const eightChar = lunar.getEightChar();
+  expect(eightChar.getShenGong()).toBe('丁丑');
+});
+
+test('身宫2', () => {
+  const solar = Solar.fromYmdHms(1990, 12, 11, 6, 0, 0);
+  const lunar = solar.getLunar();
+  const eightChar = lunar.getEightChar();
+  expect(eightChar.getShenGong()).toBe('庚辰');
+});
+
+test('身宫3', () => {
+  const solar = Solar.fromYmdHms(1993, 5, 23, 4, 0, 0);
+  const lunar = solar.getLunar();
+  const eightChar = lunar.getEightChar();
+  expect(eightChar.getShenGong()).toBe('庚申');
+});
