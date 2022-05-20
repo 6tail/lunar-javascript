@@ -1,4 +1,4 @@
-var {HolidayUtil} = require('../lunar');
+const {HolidayUtil} = require('../lunar');
 
 test('test1', () => {
   expect(HolidayUtil.getHoliday('2020-01-01') + '').toBe('2020-01-01 元旦节 2020-01-01');
@@ -41,4 +41,13 @@ test('test1', () => {
 
 test('test2', () => {
   expect(HolidayUtil.getHoliday('2016-10-04').getTarget()).toBe('2016-10-01');
+});
+
+test('testRemove', () => {
+  let holiday = HolidayUtil.getHoliday('2010-01-01');
+  expect(holiday.getName()).toBe('元旦');
+
+  HolidayUtil.fix('20100101~000000000000000000000000000');
+  holiday = HolidayUtil.getHoliday('2010-01-01');
+  expect(holiday).toBe(null);
 });
