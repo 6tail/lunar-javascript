@@ -46,3 +46,13 @@ test('13', () => {
   var solar = Solar.fromYmd(1996, 3, 25);
   expect(solar.getFestivals() + '').toBe('全国中小学生安全教育日');
 });
+
+test('14', () => {
+  const solar = Solar.fromYmd(1583, 1, 13);
+  expect(solar.getLunar().toString()).toBe('一五八二年腊月二十');
+});
+
+test('15', () => {
+  const solar = Solar.fromYmd(1583, 1, 14);
+  expect(solar.getLunar().toString()).toBe('一五八二年腊月廿一');
+});

@@ -1945,9 +1945,22 @@
         },
         getWeeks:function(start){
           var l = [];
-          var weeks = SolarUtil.getWeeksOfMonth(this._p.year,this._p.month,start);
+          var cy = this._p.year;
+          var cm = this._p.month;
+          var weeks = SolarUtil.getWeeksOfMonth(cy, cm, start);
+          var days = SolarUtil.getDaysOfMonth(cy, cm);
           for(var i = 0;i<weeks;i++){
-            l.push(SolarWeek.fromYmd(this._p.year,this._p.month,1+i*7,start));
+            var y = cy;
+            var m = cm;
+            var d = 1 + i * 7;
+            if (d > days) {
+              d -= days;
+              m++;
+              if (m > 12) {
+                y++;
+              }
+            }
+            l.push(SolarWeek.fromYmd(y, m, d, start));
           }
           return l;
         },
