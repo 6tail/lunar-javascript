@@ -168,3 +168,12 @@ test('身宫3', () => {
   const eightChar = lunar.getEightChar();
   expect(eightChar.getShenGong()).toBe('庚申');
 });
+
+test('test11', () => {
+  const lunar = Lunar.fromYmdHms(1987, 12, 28, 23, 30, 0);
+  const eightChar = lunar.getEightChar();
+  expect(eightChar.getYear()).toBe('戊辰');
+  expect(eightChar.getMonth()).toBe('甲寅');
+  expect(eightChar.getDay()).toBe('庚子');
+  expect(eightChar.getTime()).toBe('戊子');
+});

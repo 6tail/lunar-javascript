@@ -567,6 +567,9 @@
       }
       var noon = Solar.fromJulianDay(m.getFirstJulianDay() + lunarDay - 1);
       var solar = Solar.fromYmdHms(noon.getYear(), noon.getMonth(), noon.getDay(), hour, minute, second);
+      if (noon.getYear() !== lunarYear) {
+        y = LunarYear.fromYear(noon.getYear());
+      }
       return _new(lunarYear, lunarMonth, lunarDay, hour, minute, second, solar, y);
     };
     var _new = function(year,month,day,hour,minute,second,solar,ly){
@@ -1068,7 +1071,7 @@
           if(f){
             l.push(f);
           }
-          if (Math.abs(this._p.month) === 12 && this._p.day >= 29 && this._p.year != this.next(1).getYear()) {
+          if (Math.abs(this._p.month) === 12 && this._p.day >= 29 && this._p.year !== this.next(1).getYear()) {
             l.push('除夕');
           }
           return l;
@@ -1223,7 +1226,7 @@
         _getYearNineStar:function(yearInGanZhi){
           var index = LunarUtil.getJiaZiIndex(yearInGanZhi) + 1;
           var yearOffset = 0;
-          if (index != LunarUtil.getJiaZiIndex(this.getYearInGanZhi()) + 1) {
+          if (index !== LunarUtil.getJiaZiIndex(this.getYearInGanZhi()) + 1) {
             yearOffset = -1;
           }
           var yuan = Math.floor((this._p.year + yearOffset + 2696) / 60) % 3;
@@ -1377,7 +1380,7 @@
           var j;
           for(i=0,j=Lunar.JIE_QI.length;i<j;i++){
             if(Lunar.JIE_QI[i]===name){
-              if(i%2==0){
+              if(i%2===0){
                 qi = true;
               }else{
                 jie = true;
