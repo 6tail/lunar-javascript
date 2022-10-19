@@ -1682,7 +1682,11 @@
           var startSolar = jieQi.getSolar();
           var startCalendar = ExactDate.fromYmd(startSolar.getYear(),startSolar.getMonth(),startSolar.getDay());
           var days = ExactDate.getDaysBetween(startCalendar, currentCalendar);
-          return LunarUtil.WU_HOU[(offset*3+Math.floor(days/5)) % LunarUtil.WU_HOU.length];
+          var index = Math.floor(days / 5);
+          if (index > 2) {
+            index = 2;
+          }
+          return LunarUtil.WU_HOU[(offset * 3 + index) % LunarUtil.WU_HOU.length];
         },
         getHou:function(){
           var jieQi = this.getPrevJieQi(true);

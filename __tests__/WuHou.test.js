@@ -83,3 +83,15 @@ test('test14', () => {
   const lunar = solar.getLunar();
   expect(lunar.getHou()).toBe('立夏 三候');
 });
+
+test('test15', () => {
+  const solar = Solar.fromYmd(2022, 8, 22);
+  const lunar = solar.getLunar();
+  expect(lunar.getWuHou()).toBe('寒蝉鸣');
+});
+
+test('test16', () => {
+  const solar = Solar.fromYmd(2022, 8, 23);
+  const lunar = solar.getLunar();
+  expect(lunar.getWuHou()).toBe('鹰乃祭鸟');
+});
