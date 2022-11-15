@@ -1965,6 +1965,7 @@
               m++;
               if (m > 12) {
                 y++;
+                m=m-12;
               }
             }
             l.push(SolarWeek.fromYmd(y, m, d, start));
