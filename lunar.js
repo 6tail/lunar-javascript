@@ -1224,13 +1224,16 @@
           return LunarUtil.YUE_XIANG[this._p.day];
         },
         _getYearNineStar:function(yearInGanZhi){
-          var index = LunarUtil.getJiaZiIndex(yearInGanZhi) + 1;
-          var yearOffset = 0;
-          if (index !== LunarUtil.getJiaZiIndex(this.getYearInGanZhi()) + 1) {
-            yearOffset = -1;
+          var indexExact = LunarUtil.getJiaZiIndex(yearInGanZhi) + 1;
+          var index = LunarUtil.getJiaZiIndex(this.getYearInGanZhi()) + 1;
+          var yearOffset = indexExact - index;
+          if (yearOffset > 1) {
+            yearOffset -= 60;
+          } else if (yearOffset < -1) {
+            yearOffset += 60;
           }
           var yuan = Math.floor((this._p.year + yearOffset + 2696) / 60) % 3;
-          var offset = (62 + yuan * 3 - index) % 9;
+          var offset = (62 + yuan * 3 - indexExact) % 9;
           if(0 === offset){
             offset = 9;
           }
@@ -1952,23 +1955,15 @@
         },
         getWeeks:function(start){
           var l = [];
-          var cy = this._p.year;
-          var cm = this._p.month;
-          var weeks = SolarUtil.getWeeksOfMonth(cy, cm, start);
-          var days = SolarUtil.getDaysOfMonth(cy, cm);
-          for(var i = 0;i<weeks;i++){
-            var y = cy;
-            var m = cm;
-            var d = 1 + i * 7;
-            if (d > days) {
-              d -= days;
-              m++;
-              if (m > 12) {
-                y++;
-                m=m-12;
-              }
+          var week = SolarWeek.fromYmd(this._p.year, this._p.month, 1, start);
+          var firstDay = week.getFirstDay();
+          while (true) {
+            l.push(week);
+            week = week.next(1, false);
+            firstDay = week.getFirstDay();
+            if (firstDay.getYear() > this._p.year || firstDay.getMonth() > this._p.month) {
+              break;
             }
-            l.push(SolarWeek.fromYmd(y, m, d, start));
           }
           return l;
         },

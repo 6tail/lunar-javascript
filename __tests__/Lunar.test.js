@@ -413,16 +413,6 @@ test('test022', () => {
   expect(lunar.getSolar().toString()).toBe('2033-12-22');
 });
 
-test('test023', () => {
-  const lunar = Lunar.fromYmd(2022, 1, 1);
-  expect(lunar.getYearNineStar().toString()).toBe('六白金开阳');
-});
-
-test('test024', () => {
-  const lunar = Lunar.fromYmd(2033, 1, 1);
-  expect(lunar.getYearNineStar().toString()).toBe('四绿木天权');
-});
-
 test('test025', () => {
   const solar = Solar.fromYmdHms(2021, 6, 7, 21, 18, 0);
   expect(solar.getLunar().toString()).toBe('二〇二一年四月廿七');

@@ -59,4 +59,4 @@ lunar是一款无第三方依赖的公历(阳历)、农历(阴历、老黄历)�
 
 ## 文档
 
-请移步至 [http://6tail.cn/calendar/api.html](http://6tail.cn/calendar/api.html "http://6tail.cn/calendar/api.html")
+请移步至 [https://6tail.cn/calendar/api.html](https://6tail.cn/calendar/api.html "https://6tail.cn/calendar/api.html")
