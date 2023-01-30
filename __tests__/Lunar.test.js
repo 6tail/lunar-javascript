@@ -580,3 +580,13 @@ test('test056', () => {
   const lunar = Solar.fromYmd(2021, 3, 21).getLunar();
   expect(lunar.getOtherFestivals() + '').toBe('春社');
 });
+
+test('test057', () => {
+  const lunar = Lunar.fromYmd(1582, 9, 18);
+  expect(lunar.getSolar().toString()).toBe('1582-10-04');
+});
+
+test('test058', () => {
+  const lunar = Lunar.fromYmd(1582, 9, 19);
+  expect(lunar.getSolar().toString()).toBe('1582-10-15');
+});

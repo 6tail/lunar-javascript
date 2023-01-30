@@ -28,30 +28,50 @@
         return this._(new Date(y+'/'+m+'/'+d+' '+hour+':'+minute+':'+second),y,m,d);
       },
       getDaysBetweenYmd:function(ay, am, ad, by, bm, bd){
-        var n;
-        var days;
-        var i;
-        if (ay == by) {
-          n = SolarUtil.getDaysInYear(by, bm, bd) - SolarUtil.getDaysInYear(ay, am, ad);
-        } else if (ay > by) {
-          days = SolarUtil.getDaysOfYear(by) - SolarUtil.getDaysInYear(by, bm, bd);
-          for (i = by + 1; i < ay; i++) {
-            days += SolarUtil.getDaysOfYear(i);
-          }
-          days += SolarUtil.getDaysInYear(ay, am, ad);
-          n = -days;
-        } else {
-          days = SolarUtil.getDaysOfYear(ay) - SolarUtil.getDaysInYear(ay, am, ad);
-          for (i = ay + 1; i < by; i++) {
-            days += SolarUtil.getDaysOfYear(i);
-          }
-          days += SolarUtil.getDaysInYear(by, bm, bd);
-          n = days;
-        }
-        return n;
+        return SolarUtil.getDaysBetween(ay, am, ad, by, bm, bd);
       },
       getDaysBetween:function(date0, date1){
-        return this.getDaysBetweenYmd(date0.getFullYear(), date0.getMonth() + 1, date0.getDate(), date1.getFullYear(), date1.getMonth() + 1, date1.getDate());
+        return SolarUtil.getDaysBetween(date0.getFullYear(), date0.getMonth() + 1, date0.getDate(), date1.getFullYear(), date1.getMonth() + 1, date1.getDate());
+      },
+      createDay:function(y, m, d){
+        return {
+          year: y,
+          month: m,
+          day: d,
+          isAfter: function(day) {
+            if (this.year > day.year) {
+              return true;
+            } else if (this.year < day.year) {
+              return false;
+            }
+            if (this.month > day.month) {
+              return true;
+            } else if (this.month < day.month) {
+              return false;
+            }
+            return this.day > day.day;
+          },
+          isBefore: function(day) {
+            if (this.year > day.year) {
+              return false;
+            } else if (this.year < day.year) {
+              return true;
+            }
+            if (this.month > day.month) {
+              return false;
+            } else if (this.month < day.month) {
+              return true;
+            }
+            return this.day < day.day;
+          },
+          equals: function(day) {
+            return this.year == day.year && this.month == day.month && this.day == day.day;
+          },
+          next: function(days) {
+            var date = SolarUtil.addDays(this.year, this.month, this.day, days);
+            return ExactDate.createDay(date.year, date.month, date.day);
+          }
+        }
       }
     };
   })();
@@ -102,9 +122,9 @@
       return _fromYmdHms(year,month,day,hour,minute,second);
     };
     var _fromYmdHms = function(y,m,d,hour,minute,second){
-      if(y===1582&&m===10){
-        if(d>=15){
-          d -= 10;
+      if(1582==y && 10==m){
+        if(d>4&&d<15){
+          throw 'wrong solar year '+y+' month '+m+' day '+d;
         }
       }
       return {
@@ -136,7 +156,7 @@
           return this._p.second;
         },
         getWeek:function(){
-          return this._p.calendar.getDay();
+          return SolarUtil.getWeek(this._p.year, this._p.month, this._p.day);
         },
         getWeekInChinese:function(){
           return SolarUtil.WEEK[this.getWeek()];
@@ -211,17 +231,13 @@
           return SolarUtil.XINGZUO[index];
         },
         toYmd:function(){
+          var m = this._p.month;
           var d = this._p.day;
-          if(this._p.year===1582&&this._p.month===10){
-            if(d>=5){
-              d += 10;
-            }
-          }
           var y = this._p.year + '';
           while (y.length < 4) {
             y = '0' + y;
           }
-          return [y,(this._p.month<10?'0':'')+this._p.month,(d<10?'0':'')+d].join('-');
+          return [y,(m<10?'0':'')+m,(d<10?'0':'')+d].join('-');
         },
         toYmdHms:function(){
           return this.toYmd()+' '+[(this._p.hour<10?'0':'')+this._p.hour,(this._p.minute<10?'0':'')+this._p.minute,(this._p.second<10?'0':'')+this._p.second].join(':');
@@ -243,19 +259,27 @@
           return s;
         },
         next:function(days, onlyWorkday){
-          var date = ExactDate.fromYmdHms(this._p.year,this._p.month,this._p.day,this._p.hour,this._p.minute,this._p.second);
-          if(0!=days){
+          var y = this._p.year;
+          var m = this._p.month;
+          var d = this._p.day;
+          if(0 != days){
             if (!onlyWorkday){
-              date.setDate(date.getDate() + days);
+              var ymd = SolarUtil.addDays(y, m, d, days);
+              y = ymd.year;
+              m = ymd.month;
+              d = ymd.day;
             }else{
               var rest = Math.abs(days);
               var add = days < 1 ? -1 : 1;
               while(rest > 0){
-                date.setDate(date.getDate() + add);
+                var ymd = SolarUtil.addDays(y, m, d, add);
                 var work = true;
-                var holiday = HolidayUtil.getHoliday(date.getFullYear(), date.getMonth() + 1, date.getDate());
+                y = ymd.year;
+                m = ymd.month;
+                d = ymd.day;
+                var holiday = HolidayUtil.getHoliday(y, m, d);
                 if(!holiday){
-                  var week = date.getDay();
+                  var week = SolarUtil.getWeek(y, m, d);
                   if(0 === week || 6 === week){
                     work = false;
                   }
@@ -268,7 +292,7 @@
               }
             }
           }
-          return _fromDate(date);
+          return _fromYmdHms(y, m, d, this._p.hour,this._p.minute,this._p.second);
         },
         getLunar:function(){
           return Lunar.fromDate(this._p.calendar);
@@ -301,13 +325,17 @@
       sect = (1==sect)?1:2;
       baseYear = (undefined==baseYear)?1900:baseYear;
       var l = [];
+      var years = [];
       var today = _fromDate(new Date());
-      var lunar = today.getLunar();
-      var offsetYear = LunarUtil.getJiaZiIndex(lunar.getYearInGanZhiExact())-LunarUtil.getJiaZiIndex(yearGanZhi);
+      var offsetYear = LunarUtil.getJiaZiIndex(today.getLunar().getYearInGanZhiExact())-LunarUtil.getJiaZiIndex(yearGanZhi);
       if(offsetYear<0){
         offsetYear = offsetYear+60;
       }
-      var startYear = lunar.getYear() - offsetYear;
+      var startYear = today.getYear() - offsetYear - 1;
+      while (startYear >= baseYear) {
+        years.push(startYear);
+        startYear -= 60;
+      }
       var hour = 0;
       var timeZhi = timeGanZhi.substr(1);
       for(var i=0,j=LunarUtil.ZHI.length;i<j;i++){
@@ -315,51 +343,20 @@
           hour = (i-1)*2;
         }
       }
-      while(startYear>=baseYear){
-        var year = startYear-1;
-        var counter = 0;
-        var month = 12;
-        var day;
-        var solar;
-        var found = false;
-        while (counter < 15) {
-          if(year>=baseYear){
-            day = 1;
-            solar = _fromYmdHms(year, month, day, hour, 0, 0);
-            lunar = solar.getLunar();
-            if(lunar.getYearInGanZhiExact()===yearGanZhi && lunar.getMonthInGanZhiExact()===monthGanZhi){
-              found = true;
-              break;
-            }
-          }
-          month++;
-          if(month > 12){
-            month = 1;
-            year++;
-          }
-          counter++;
-        }
-        if(found){
-          counter = 0;
-          month--;
-          if(month<1){
-            month = 12;
-            year--;
-          }
-          day = 1;
-          solar = _fromYmdHms(year, month, day, hour, 0, 0);
-          while (counter < 61) {
-            lunar = solar.getLunar();
+      for (var i = 0, j = years.length; i < j; i++) {
+        inner:for (var x = 0; x < 3; x++) {
+          var year = years[i] + x;
+          var solar = _fromYmdHms(year, 1, 1, hour, 0, 0);
+          while (solar.getYear() == year) {
+            var lunar = solar.getLunar();
             var dgz = (2==sect)?lunar.getDayInGanZhiExact2():lunar.getDayInGanZhiExact();
             if (lunar.getYearInGanZhiExact()===yearGanZhi && lunar.getMonthInGanZhiExact()===monthGanZhi && dgz===dayGanZhi && lunar.getTimeInGanZhi()===timeGanZhi) {
               l.push(solar);
-              break;
+              break inner;
             }
             solar = solar.next(1);
-            counter++;
           }
         }
-        startYear -= 60;
       }
       return l;
     };
@@ -1595,26 +1592,26 @@
           };
         },
         getShuJiu:function(){
-          var currentCalendar = ExactDate.fromYmd(this._p.solar.getYear(),this._p.solar.getMonth(),this._p.solar.getDay());
+          var currentDay = ExactDate.createDay(this._p.solar.getYear(), this._p.solar.getMonth(), this._p.solar.getDay());
           var start = this._p.jieQi['DONG_ZHI'];
-          var startCalendar = ExactDate.fromYmd(start.getYear(),start.getMonth(),start.getDay());
-          if (currentCalendar < startCalendar) {
+          var startDay = ExactDate.createDay(start.getYear(), start.getMonth(), start.getDay());
+          if (currentDay.isBefore(startDay)) {
             start = this._p.jieQi['冬至'];
-            startCalendar = ExactDate.fromYmd(start.getYear(),start.getMonth(),start.getDay());
+            startDay = ExactDate.createDay(start.getYear(), start.getMonth(), start.getDay());
           }
-          var endCalendar = ExactDate.fromYmd(start.getYear(),start.getMonth(),start.getDay());
-          endCalendar.setDate(endCalendar.getDate() + 81);
-          if (currentCalendar < startCalendar || currentCalendar >= endCalendar) {
+          var endDay = ExactDate.createDay(start.getYear(), start.getMonth(), start.getDay());
+          endDay = endDay.next(81);
+          if (currentDay.isBefore(startDay) || (!currentDay.isBefore(endDay))) {
             return null;
           }
-          var days = ExactDate.getDaysBetween(startCalendar, currentCalendar);
+          var days = SolarUtil.getDaysBetween(startDay.year, startDay.month, startDay.day, currentDay.year, currentDay.month, currentDay.day);
           return this._buildNameAndIndex(LunarUtil.NUMBER[Math.floor(days / 9) + 1] + '九', days % 9 + 1);
         },
         getFu:function(){
-          var currentCalendar = ExactDate.fromYmd(this._p.solar.getYear(),this._p.solar.getMonth(),this._p.solar.getDay());
+          var currentDay = ExactDate.createDay(this._p.solar.getYear(), this._p.solar.getMonth(), this._p.solar.getDay());
           var xiaZhi = this._p.jieQi['夏至'];
           var liQiu = this._p.jieQi['立秋'];
-          var startCalendar = ExactDate.fromYmd(xiaZhi.getYear(),xiaZhi.getMonth(),xiaZhi.getDay());
+          var startDay = ExactDate.createDay(xiaZhi.getYear(), xiaZhi.getMonth(), xiaZhi.getDay());
 
           // 第1个庚日
           var add = 6 - xiaZhi.getLunar().getDayGanIndex();
@@ -1623,34 +1620,34 @@
           }
           // 第3个庚日，即初伏第1天
           add += 20;
-          startCalendar.setDate(startCalendar.getDate() + add);
+          startDay = startDay.next(add);
 
           // 初伏以前
-          if (currentCalendar < startCalendar) {
+          if (currentDay.isBefore(startDay)) {
             return null;
           }
 
-          var days = ExactDate.getDaysBetween(startCalendar, currentCalendar);
+          var days = SolarUtil.getDaysBetween(startDay.year, startDay.month, startDay.day, currentDay.year, currentDay.month, currentDay.day);
           if (days < 10) {
             return this._buildNameAndIndex('初伏', days + 1);
           }
 
           // 第4个庚日，中伏第1天
-          startCalendar.setDate(startCalendar.getDate() + 10);
+          startDay = startDay.next(10);
 
-          days = ExactDate.getDaysBetween(startCalendar, currentCalendar);
+          days = SolarUtil.getDaysBetween(startDay.year, startDay.month, startDay.day, currentDay.year, currentDay.month, currentDay.day);
           if (days < 10) {
             return this._buildNameAndIndex('中伏', days + 1);
           }
 
           // 第5个庚日，中伏第11天或末伏第1天
-          startCalendar.setDate(startCalendar.getDate() + 10);
+          startDay = startDay.next(10);
 
-          var liQiuCalendar = ExactDate.fromYmd(liQiu.getYear(),liQiu.getMonth(),liQiu.getDay());
+          var liQiuDay = ExactDate.createDay(liQiu.getYear(),liQiu.getMonth(),liQiu.getDay());
 
-          days = ExactDate.getDaysBetween(startCalendar, currentCalendar);
+          days = SolarUtil.getDaysBetween(startDay.year, startDay.month, startDay.day, currentDay.year, currentDay.month, currentDay.day);
           // 末伏
-          if (liQiuCalendar <= startCalendar) {
+          if (!liQiuDay.isAfter(startDay)) {
             if (days < 10) {
               return this._buildNameAndIndex('末伏', days + 1);
             }
@@ -1660,8 +1657,8 @@
               return this._buildNameAndIndex('中伏', days + 11);
             }
             // 末伏第1天
-            startCalendar.setDate(startCalendar.getDate() + 10);
-            days = ExactDate.getDaysBetween(startCalendar, currentCalendar);
+            startDay = startDay.next(10);
+            days = SolarUtil.getDaysBetween(startDay.year, startDay.month, startDay.day, currentDay.year, currentDay.month, currentDay.day);
             if (days < 10) {
               return this._buildNameAndIndex('末伏', days + 1);
             }
@@ -1742,8 +1739,7 @@
           year:y,
           month:m,
           day:d,
-          start:start,
-          calendar:ExactDate.fromYmd(y,m,d)
+          start:start
         },
         getYear:function(){
           return this._p.year;
@@ -1762,8 +1758,7 @@
          * @return number 周序号，从1开始
          */
         getIndex:function(){
-          var firstDate = ExactDate.fromYmd(this._p.year,this._p.month,1);
-          var firstDayWeek = firstDate.getDay();
+          var firstDayWeek = SolarUtil.getWeek(this._p.year,this._p.month,1);
           var offset = firstDayWeek - this._p.start;
           if(offset < 0) {
             offset += 7;
@@ -1775,8 +1770,7 @@
          * @return number 周序号，从1开始
          */
         getIndexInYear:function(){
-          var firstDate = ExactDate.fromYmd(this._p.year, 1, 1);
-          var firstDayWeek = firstDate.getDay();
+          var firstDayWeek = SolarUtil.getWeek(this._p.year,1,1);
           var offset = firstDayWeek - this._p.start;
           if(offset < 0) {
             offset += 7;
@@ -1790,65 +1784,69 @@
          * @return object 推移后的阳历周
          */
         next:function(weeks,separateMonth){
-          if(0===weeks){
-            return _fromYmd(this._p.year,this._p.month,this._p.day,this._p.start);
-          }
-          var date;
-          if(separateMonth){
-            var n = weeks;
-            date = ExactDate.fromYmd(this._p.year,this._p.month,this._p.day);
-            var week = _fromDate(date,this._p.start);
-            var month = this._p.month;
-            var plus = n>0;
-            while(0!==n){
-              date.setDate(date.getDate()+(plus?7:-7));
-              week = _fromDate(date,this._p.start);
-              var weekMonth = week.getMonth();
-              if(month!==weekMonth){
-                var index = week.getIndex();
-                if(plus){
-                  if(1===index){
-                    var firstDay = week.getFirstDay();
-                    week = _fromYmd(firstDay.getYear(),firstDay.getMonth(),firstDay.getDay(),this._p.start);
-                    weekMonth = week.getMonth();
+          var date = {};
+          date.year = this._p.year;
+          date.month = this._p.month;
+          date.day = this._p.day;
+          var start = this._p.start;
+          if (0 != weeks) {
+            if(separateMonth){
+              var n = weeks;
+              var week = _fromYmd(date.year, date.month, date.day, start);
+              var month = this._p.month;
+              var plus = n>0;
+              while(0 !== n){
+                date = SolarUtil.addDays(date.year, date.month, date.day, plus ? 7 : -7);
+                week = _fromYmd(date.year, date.month, date.day, start);
+                var weekMonth = week.getMonth();
+                if(month !== weekMonth){
+                  var index = week.getIndex();
+                  if(plus){
+                    if(1 === index){
+                      var firstDay = week.getFirstDay();
+                      week = _fromYmd(firstDay.getYear(), firstDay.getMonth(), firstDay.getDay(), start);
+                      weekMonth = week.getMonth();
+                    }else{
+                      date.year = week.getYear();
+                      date.month = week.getMonth();
+                      date.day = 1;
+                      week = _fromYmd(date.year, date.month, date.day, start);
+                    }
                   }else{
-                    date = ExactDate.fromYmd(week.getYear(),week.getMonth(),1);
-                    week = _fromDate(date,this._p.start);
+                    var size = SolarUtil.getWeeksOfMonth(week.getYear(),week.getMonth(),this._p.start);
+                    if(size===index){
+                      var lastDay = week.getFirstDay().next(6);
+                      week = _fromYmd(lastDay.getYear(),lastDay.getMonth(),lastDay.getDay(),this._p.start);
+                      weekMonth = week.getMonth();
+                    }else{
+                      date.year = week.getYear();
+                      date.month = week.getMonth();
+                      date.day = SolarUtil.getDaysOfMonth(week.getYear(),week.getMonth());
+                      week = _fromYmd(date.year, date.month, date.day, start);
+                    }
                   }
-                }else{
-                  var size = SolarUtil.getWeeksOfMonth(week.getYear(),week.getMonth(),this._p.start);
-                  if(size===index){
-                    var lastDay = week.getFirstDay().next(6);
-                    week = _fromYmd(lastDay.getYear(),lastDay.getMonth(),lastDay.getDay(),this._p.start);
-                    weekMonth = week.getMonth();
-                  }else{
-                    date = ExactDate.fromYmd(week.getYear(),week.getMonth(),SolarUtil.getDaysOfMonth(week.getYear(),week.getMonth()));
-                    week = _fromDate(date,this._p.start);
-                  }
+                  month = weekMonth;
                 }
-                month = weekMonth;
+                n -= plus ? 1 : -1;
               }
-              n-=plus?1:-1;
+              return week;
+            }else{
+              date = SolarUtil.addDays(date.year, date.month, date.day, weeks*7);
             }
-            return week;
-          }else{
-            date = ExactDate.fromYmd(this._p.year,this._p.month,this._p.day);
-            date.setDate(date.getDate()+weeks*7);
-            return _fromDate(date,this._p.start);
           }
+          return _fromYmd(date.year, date.month, date.day, start);
         },
         /**
          * 获取本周第一天的阳历日期（可能跨月）
          * @return object 本周第一天的阳历日期
          */
         getFirstDay:function(){
-          var date = ExactDate.fromYmd(this._p.year,this._p.month,this._p.day);
-          var prev = date.getDay()-this._p.start;
-          if(prev<0){
+          var prev = SolarUtil.getWeek(this._p.year,this._p.month,this._p.day)-this._p.start;
+          if(prev < 0){
             prev += 7;
           }
-          date.setDate(date.getDate()-prev);
-          return Solar.fromDate(date);
+          var ymd = SolarUtil.addDays(this._p.year,this._p.month,this._p.day, -prev);
+          return Solar.fromYmd(ymd.year, ymd.month, ymd.day);
         },
         /**
          * 获取本周第一天的阳历日期（仅限当月）
@@ -1929,8 +1927,7 @@
       return {
         _p:{
           year:y,
-          month:m,
-          calendar:ExactDate.fromYmd(y,m,1)
+          month:m
         },
         getYear:function(){
           return this._p.year;
@@ -1987,8 +1984,7 @@
       return {
         _p:{
           year:y,
-          month:m,
-          calendar:ExactDate.fromYmd(y,m,1)
+          month:m
         },
         getYear:function(){
           return this._p.year;
@@ -2049,8 +2045,7 @@
       return {
         _p:{
           year:y,
-          month:m,
-          calendar:ExactDate.fromYmd(y,m,1)
+          month:m
         },
         getYear:function(){
           return this._p.year;
@@ -2110,8 +2105,7 @@
     var _fromYear = function(y){
       return {
         _p:{
-          year:y,
-          calendar:ExactDate.fromYmd(y,1,1)
+          year:y
         },
         getYear:function(){
           return this._p.year;
@@ -2781,9 +2775,9 @@
           d = Math.floor(this.shuoLow(Math.floor((jd + pc - 2451551) / 29.5306) * Math.PI * 2) + 0.5);
           var from = Math.floor((jd - f2) / 29.5306);
           var n = this.SB.substr(from, 1);
-          if ('1' == n) {
+          if ('1' === n) {
             d += 1;
-          } else if ('2' == n) {
+          } else if ('2' === n) {
             d -= 1;
           }
         }
@@ -2800,15 +2794,21 @@
       OTHER_FESTIVAL:{'1-8':['周恩来逝世纪念日'],'1-10':['中国人民警察节','中国公安110宣传日'],'1-21':['列宁逝世纪念日'],'1-26':['国际海关日'],'2-2':['世界湿地日'],'2-4':['世界抗癌日'],'2-7':['京汉铁路罢工纪念'],'2-10':['国际气象节'],'2-19':['邓小平逝世纪念日'],'2-21':['国际母语日'],'2-24':['第三世界青年日'],'3-1':['国际海豹日'],'3-3':['全国爱耳日'],'3-5':['周恩来诞辰纪念日','中国青年志愿者服务日'],'3-6':['世界青光眼日'],'3-12':['孙中山逝世纪念日'],'3-14':['马克思逝世纪念日'],'3-17':['国际航海日'],'3-18':['全国科技人才活动日'],'3-21':['世界森林日','世界睡眠日'],'3-22':['世界水日'],'3-23':['世界气象日'],'3-24':['世界防治结核病日'],'4-2':['国际儿童图书日'],'4-7':['世界卫生日'],'4-22':['列宁诞辰纪念日'],'4-23':['世界图书和版权日'],'4-26':['世界知识产权日'],'5-3':['世界新闻自由日'],'5-5':['马克思诞辰纪念日'],'5-8':['世界红十字日'],'5-11':['世界肥胖日'],'5-25':['525心理健康节'],'5-27':['上海解放日'],'5-31':['世界无烟日'],'6-5':['世界环境日'],'6-6':['全国爱眼日'],'6-8':['世界海洋日'],'6-11':['中国人口日'],'6-14':['世界献血日'],'7-1':['香港回归纪念日'],'7-7':['中国人民抗日战争纪念日'],'7-11':['世界人口日'],'8-5':['恩格斯逝世纪念日'],'8-6':['国际电影节'],'8-12':['国际青年日'],'8-22':['邓小平诞辰纪念日'],'9-3':['中国抗日战争胜利纪念日'],'9-8':['世界扫盲日'],'9-9':['毛泽东逝世纪念日'],'9-14':['世界清洁地球日'],'9-18':['九一八事变纪念日'],'9-20':['全国爱牙日'],'9-21':['国际和平日'],'9-27':['世界旅游日'],'10-4':['世界动物日'],'10-10':['辛亥革命纪念日'],'10-13':['中国少年先锋队诞辰日'],'10-25':['抗美援朝纪念日'],'11-12':['孙中山诞辰纪念日'],'11-17':['国际大学生节'],'11-28':['恩格斯诞辰纪念日'],'12-1':['世界艾滋病日'],'12-12':['西安事变纪念日'],'12-13':['国家公祭日'],'12-26':['毛泽东诞辰纪念日']},
       WEEK_FESTIVAL:{'3-0-1':'全国中小学生安全教育日','5-2-0':'母亲节','6-3-0':'父亲节','11-4-4':'感恩节'},
       isLeapYear:function(year){return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);},
-      getDaysOfMonth:function(year,month){
+      getDaysOfMonth:function(year, month){
+        if (1582 == year && 10 == month) {
+          return 21;
+        }
         var m = month-1;
         var d = this.DAYS_OF_MONTH[m];
-        if(m===1&&this.isLeapYear(year)){
+        if (m === 1 && this.isLeapYear(year)) {
           d++;
         }
         return d;
       },
       getDaysOfYear:function(year){
+        if (1582 == year) {
+          return 355;
+        }
         return this.isLeapYear(year) ? 366: 365;
       },
       getDaysInYear:function(year, month, day){
@@ -2816,17 +2816,107 @@
         for (var i = 1; i < month; i++) {
           days += this.getDaysOfMonth(year, i);
         }
-        days += day;
-        if (1582 === year && 10 === month && day >= 15) {
-          days -= 10;
+        var d = day;
+        if (1582 == year && 10 == month) {
+          if (day >= 15) {
+            d -= 10;
+          } else if (day > 4) {
+            throw 'wrong solar year '+year+' month '+month+' day '+day;
+          }
         }
+        days += d;
         return days;
       },
-      getWeeksOfMonth:function(year,month,start){
-        var days = this.getDaysOfMonth(year,month);
-        var firstDate = ExactDate.fromYmd(year,month,1);
-        var firstDayWeek = firstDate.getDay();
-        return Math.ceil((days+firstDayWeek-start)/7);
+      getDaysBetween:function(ay, am, ad, by, bm, bd){
+        var n;
+        var days;
+        var i;
+        if (ay == by) {
+          n = this.getDaysInYear(by, bm, bd) - this.getDaysInYear(ay, am, ad);
+        } else if (ay > by) {
+          days = this.getDaysOfYear(by) - this.getDaysInYear(by, bm, bd);
+          for (i = by + 1; i < ay; i++) {
+            days += this.getDaysOfYear(i);
+          }
+          days += this.getDaysInYear(ay, am, ad);
+          n = -days;
+        } else {
+          days = this.getDaysOfYear(ay) - this.getDaysInYear(ay, am, ad);
+          for (i = ay + 1; i < by; i++) {
+            days += this.getDaysOfYear(i);
+          }
+          days += this.getDaysInYear(by, bm, bd);
+          n = days;
+        }
+        return n;
+      },
+      getWeek:function(y, m, d){
+        if (1582 == y && 10 == m) {
+          if (d > 4 && d < 15) {
+            throw 'wrong solar year '+y+' month '+m+' day '+d;
+          }
+        }
+        var start = ExactDate.createDay(1582, 10, 15);
+        var current = ExactDate.createDay(y, m, d);
+        // 蔡勒公式
+        if (m < 3) {
+          m += 12;
+          y--;
+        }
+        var c = Math.floor(y/100);
+        y = y - c * 100;
+        var w;
+        if (current.isBefore(start)) {
+          w = (y + Math.floor(y/4) + Math.floor(c/4) - 2*c + Math.floor((13*(m+1))/5) + d + 2) % 7;
+        } else {
+          w = (y + Math.floor(y/4) + Math.floor(c/4) - 2*c + Math.floor((26*(m+1))/10) + d - 1) % 7;
+        }
+        return (w + 7) % 7;
+      },
+      getWeeksOfMonth:function(year, month, start){
+        var days = this.getDaysOfMonth(year, month);
+        var firstDayWeek = this.getWeek(year, month, 1);
+        return Math.ceil((days + firstDayWeek - start)/7);
+      },
+      addDays:function(year, month, day, days){
+        var y = year;
+        var m = month;
+        var d = day;
+        if(days > 0){
+          d = day + days;
+          var daysInMonth = this.getDaysOfMonth(y,m);
+          while(d > daysInMonth){
+            d -= daysInMonth;
+            m++;
+            if(m > 12){
+              m-=12;
+              y++;
+            }
+            daysInMonth = this.getDaysOfMonth(y,m);
+          }
+        }else if(days < 0){
+          var rest = -days;
+          while(d <= rest){
+            rest -= d;
+            m--;
+            if(m < 1){
+              m = 12;
+              y--;
+            }
+            d = this.getDaysOfMonth(y,m);
+          }
+          d -= rest;
+        }
+        if (1582 == y && 10 == m) {
+          if (d > 4) {
+            d += 10;
+          }
+        }
+        return {
+          year:y,
+          month:m,
+          day:d
+        };
       }
     };
   })();
@@ -3530,8 +3620,8 @@
         getTaiYuanNaYin:function(){return LunarUtil.NAYIN[this.getTaiYuan()];},
         getTaiXi:function(){
           var lunar = this._p.lunar;
-          var ganIndex = (2 == sect) ? lunar.getDayGanIndexExact2() : lunar.getDayGanIndexExact();
-          var zhiIndex = (2 == sect) ? lunar.getDayZhiIndexExact2() : lunar.getDayZhiIndexExact();
+          var ganIndex = (2 == this._p.sect) ? lunar.getDayGanIndexExact2() : lunar.getDayGanIndexExact();
+          var zhiIndex = (2 == this._p.sect) ? lunar.getDayZhiIndexExact2() : lunar.getDayZhiIndexExact();
           return LunarUtil.HE_GAN_5[ganIndex]+LunarUtil.HE_ZHI_6[zhiIndex];
         },
         getTaiXiNaYin:function(){return LunarUtil.NAYIN[this.getTaiXi()];},

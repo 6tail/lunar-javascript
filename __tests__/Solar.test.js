@@ -56,3 +56,39 @@ test('15', () => {
   const solar = Solar.fromYmd(1583, 1, 14);
   expect(solar.getLunar().toString()).toBe('一五八二年腊月廿一');
 });
+
+test('16', () => {
+  const solarList = Solar.fromBaZi('丙辰', '丁酉', '丙子', '甲午');
+  const timeList = [];
+  solarList.forEach(solar => {
+    timeList.push(solar.toYmdHms());
+  })
+  expect(timeList).toStrictEqual(['1976-09-21 12:00:00', '1916-10-06 12:00:00']);
+});
+
+test('17', () => {
+  const solarList = Solar.fromBaZi('己卯', '辛未', '甲戌', '壬申');
+  const timeList = [];
+  solarList.forEach(solar => {
+    timeList.push(solar.toYmdHms());
+  })
+  expect(timeList).toStrictEqual(['1999-07-21 16:00:00', '1939-08-05 16:00:00']);
+});
+
+test('18', () => {
+  const solarList = Solar.fromBaZi('庚子', '戊子', '己卯', '庚午');
+  const timeList = [];
+  solarList.forEach(solar => {
+    timeList.push(solar.toYmdHms());
+  })
+  expect(timeList).toStrictEqual(['1960-12-17 12:00:00', '1901-01-01 12:00:00']);
+});
+
+test('19', () => {
+  const solarList = Solar.fromBaZi('庚子', '癸未', '乙丑', '丁亥');
+  const timeList = [];
+  solarList.forEach(solar => {
+    timeList.push(solar.toYmdHms());
+  })
+  expect(timeList).toStrictEqual(['2020-07-21 22:00:00', '1960-08-05 22:00:00']);
+});
