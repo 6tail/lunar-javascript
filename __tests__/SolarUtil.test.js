@@ -1,4 +1,4 @@
-var {SolarUtil} = require('../lunar');
+var {SolarUtil, Solar} = require('../lunar');
 
 test('isLeapYear()', () => {
   expect(SolarUtil.isLeapYear(2020)).toBe(true);
@@ -11,59 +11,59 @@ test('getDaysOfMonth()', () => {
 });
 
 test('addDays', () => {
-  var ymd = SolarUtil.addDays(2022,1,1, 1);
-  expect(ymd.year).toBe(2022);
-  expect(ymd.month).toBe(1);
-  expect(ymd.day).toBe(2);
+  var solar = Solar.fromYmd(2022,1,1).next(1);
+  expect(solar.getYear()).toBe(2022);
+  expect(solar.getMonth()).toBe(1);
+  expect(solar.getDay()).toBe(2);
 });
 
 test('addDays2', () => {
-  var ymd = SolarUtil.addDays(2022,1,31, 1);
-  expect(ymd.year).toBe(2022);
-  expect(ymd.month).toBe(2);
-  expect(ymd.day).toBe(1);
+  var solar = Solar.fromYmd(2022,1,31).next(1);
+  expect(solar.getYear()).toBe(2022);
+  expect(solar.getMonth()).toBe(2);
+  expect(solar.getDay()).toBe(1);
 });
 
 test('addDays3', () => {
-  var ymd = SolarUtil.addDays(2022,1,1, 365);
-  expect(ymd.year).toBe(2023);
-  expect(ymd.month).toBe(1);
-  expect(ymd.day).toBe(1);
+  var solar = Solar.fromYmd(2022,1,1).next(365);
+  expect(solar.getYear()).toBe(2023);
+  expect(solar.getMonth()).toBe(1);
+  expect(solar.getDay()).toBe(1);
 });
 
 test('addDays4', () => {
-  var ymd = SolarUtil.addDays(2023,1,1, -365);
-  expect(ymd.year).toBe(2022);
-  expect(ymd.month).toBe(1);
-  expect(ymd.day).toBe(1);
+  var solar = Solar.fromYmd(2023,1,1).next(-365);
+  expect(solar.getYear()).toBe(2022);
+  expect(solar.getMonth()).toBe(1);
+  expect(solar.getDay()).toBe(1);
 });
 
 test('addDays5', () => {
-  var ymd = SolarUtil.addDays(1582,10,4, 1);
-  expect(ymd.year).toBe(1582);
-  expect(ymd.month).toBe(10);
-  expect(ymd.day).toBe(15);
+  var solar = Solar.fromYmd(1582,10,4).next(1);
+  expect(solar.getYear()).toBe(1582);
+  expect(solar.getMonth()).toBe(10);
+  expect(solar.getDay()).toBe(15);
 });
 
 test('addDays6', () => {
-  var ymd = SolarUtil.addDays(1582,10,4, 18);
-  expect(ymd.year).toBe(1582);
-  expect(ymd.month).toBe(11);
-  expect(ymd.day).toBe(1);
+  var solar = Solar.fromYmd(1582,10,4).next(18);
+  expect(solar.getYear()).toBe(1582);
+  expect(solar.getMonth()).toBe(11);
+  expect(solar.getDay()).toBe(1);
 });
 
 test('addDays7', () => {
-  var ymd = SolarUtil.addDays(1582,11,1, -18);
-  expect(ymd.year).toBe(1582);
-  expect(ymd.month).toBe(10);
-  expect(ymd.day).toBe(4);
+  var solar = Solar.fromYmd(1582,11,1).next(-18);
+  expect(solar.getYear()).toBe(1582);
+  expect(solar.getMonth()).toBe(10);
+  expect(solar.getDay()).toBe(4);
 });
 
 test('addDays8', () => {
-  var ymd = SolarUtil.addDays(1582,11,1, -17);
-  expect(ymd.year).toBe(1582);
-  expect(ymd.month).toBe(10);
-  expect(ymd.day).toBe(15);
+  var solar = Solar.fromYmd(1582,11,1).next(-17);
+  expect(solar.getYear()).toBe(1582);
+  expect(solar.getMonth()).toBe(10);
+  expect(solar.getDay()).toBe(15);
 });
 
 test('getDaysBetween', () => {
@@ -82,11 +82,11 @@ test('getDaysBetween2', () => {
 });
 
 test('getWeek', () => {
-  var week = SolarUtil.getWeek(1582, 10, 1);
+  var week = Solar.fromYmd(1582, 10, 1).getWeek();
   expect(week).toBe(1);
 });
 
 test('getWeek1', () => {
-  var week = SolarUtil.getWeek(1582, 10, 15);
+  var week = Solar.fromYmd(1582, 10, 15).getWeek();
   expect(week).toBe(5);
 });
