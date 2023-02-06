@@ -514,9 +514,13 @@
         offsetYear += 60;
       }
       var startYear = today.getYear() - offsetYear - 1;
-      while (startYear >= baseYear) {
+      while (true) {
         years.push(startYear);
         startYear -= 60;
+        if (startYear < baseYear) {
+          years.push(baseYear);
+          break;
+        }
       }
       var hour = 0;
       var timeZhi = timeGanZhi.substr(1);

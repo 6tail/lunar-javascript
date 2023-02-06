@@ -177,3 +177,7 @@ test('test11', () => {
   expect(eightChar.getDay()).toBe('庚子');
   expect(eightChar.getTime()).toBe('戊子');
 });
+
+test('test12', () => {
+  expect(Solar.fromYmdHms('1999', '06', '07', '09', '11', '00').getLunar().getEightChar().toString()).toBe('己卯 庚午 庚寅 辛巳');
+});
