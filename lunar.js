@@ -128,27 +128,32 @@
         isAfter: function(solar) {
           if (this._p.year > solar.getYear()) {
             return true;
-          } else if (this._p.year < solar.getYear()) {
+          }
+          if (this._p.year < solar.getYear()) {
             return false;
           }
           if (this._p.month > solar.getMonth()) {
             return true;
-          } else if (this._p.month < solar.getMonth()) {
+          }
+          if (this._p.month < solar.getMonth()) {
             return false;
           }
           if (this._p.day > solar.getDay()) {
             return true;
-          } else if (this._p.day < solar.getDay()) {
+          }
+          if (this._p.day < solar.getDay()) {
             return false;
           }
           if (this._p.hour > solar.getHour()) {
             return true;
-          } else if (this._p.hour < solar.getHour()) {
+          }
+          if (this._p.hour < solar.getHour()) {
             return false;
           }
           if (this._p.minute > solar.getMinute()) {
             return true;
-          } else if (this._p.minute < solar.getMinute()) {
+          }
+          if (this._p.minute < solar.getMinute()) {
             return false;
           }
           return this._p.second > solar.getSecond();
@@ -156,27 +161,32 @@
         isBefore: function(solar) {
           if (this._p.year > solar.getYear()) {
             return false;
-          } else if (this._p.year < solar.getYear()) {
+          }
+          if (this._p.year < solar.getYear()) {
             return true;
           }
           if (this._p.month > solar.getMonth()) {
             return false;
-          } else if (this._p.month < solar.getMonth()) {
+          }
+          if (this._p.month < solar.getMonth()) {
             return true;
           }
           if (this._p.day > solar.getDay()) {
             return false;
-          } else if (this._p.day < solar.getDay()) {
+          }
+          if (this._p.day < solar.getDay()) {
             return true;
           }
           if (this._p.hour > solar.getHour()) {
             return false;
-          } else if (this._p.hour < solar.getHour()) {
+          }
+          if (this._p.hour < solar.getHour()) {
             return true;
           }
           if (this._p.minute > solar.getMinute()) {
             return false;
-          } else if (this._p.minute < solar.getMinute()) {
+          }
+          if (this._p.minute < solar.getMinute()) {
             return true;
           }
           return this._p.second < solar.getSecond();
@@ -334,12 +344,7 @@
           if (2 === m) {
             if (d > 28) {
               if (!SolarUtil.isLeapYear(y)) {
-                d -= 28;
-                m++;
-                if (m > 12) {
-                  m = 1;
-                  y++;
-                }
+                d = 28;
               }
             }
           }
@@ -365,12 +370,7 @@
           if (2 === m) {
             if (d > 28) {
               if (!SolarUtil.isLeapYear(y)) {
-                d -= 28;
-                m++;
-                if (m > 12) {
-                  m = 1;
-                  y++;
-                }
+                d = 28;
               }
             }
           }
@@ -390,33 +390,36 @@
           var y = this._p.year;
           var m = this._p.month;
           var d = this._p.day;
+          if (1582 === y && 10 === m) {
+            if (d > 4) {
+              d -= 10
+            }
+          }
           if (days > 0) {
-            d = this._p.day + days;
+            d += days;
             var daysInMonth = SolarUtil.getDaysOfMonth(y, m);
             while (d > daysInMonth) {
               d -= daysInMonth;
               m++;
               if (m > 12) {
-                m -= 12;
+                m = 1;
                 y++;
               }
               daysInMonth = SolarUtil.getDaysOfMonth(y, m);
             }
           } else if (days < 0) {
-            var rest = -days;
-            while (d <= rest) {
-              rest -= d;
+            while (d + days <= 0) {
               m--;
               if (m < 1) {
                 m = 12;
                 y--;
               }
-              d = SolarUtil.getDaysOfMonth(y, m);
+              d += SolarUtil.getDaysOfMonth(y, m);
             }
-            d -= rest;
+            d += days;
           }
           if (1582 === y && 10 === m) {
-            if (d > 4 && d < 15) {
+            if (d > 4) {
               d += 10;
             }
           }

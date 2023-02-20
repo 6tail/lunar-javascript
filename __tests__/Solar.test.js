@@ -92,3 +92,18 @@ test('19', () => {
   })
   expect(timeList).toStrictEqual(['2020-07-21 22:00:00', '1960-08-05 22:00:00']);
 });
+
+test('20', () => {
+  const solar = Solar.fromYmd(1582, 10, 4);
+  expect(solar.nextDay(1).toYmd()).toBe('1582-10-15');
+});
+
+test('21', () => {
+  const solar = Solar.fromYmd(1582, 10, 15);
+  expect(solar.nextDay(-1).toYmd()).toBe('1582-10-04');
+});
+
+test('22', () => {
+  const solar = Solar.fromYmd(1582, 10, 15);
+  expect(solar.nextDay(-5).toYmd()).toBe('1582-09-30');
+});
