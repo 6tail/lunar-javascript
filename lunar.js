@@ -361,8 +361,7 @@
           if (isNaN(months)) {
             throw new Error('wrong months ' + om);
           }
-          var month = SolarMonth.fromYm(this._p.year, this._p.month);
-          month = month.next(months);
+          var month = SolarMonth.fromYm(this._p.year, this._p.month).next(months);
           var y = month.getYear();
           var m = month.getMonth();
           var d = this._p.day;
@@ -505,10 +504,15 @@
     var _fromBaZi=function(yearGanZhi,monthGanZhi,dayGanZhi,timeGanZhi,sect,baseYear){
       sect *= 1;
       if(isNaN(sect)){
-        sect=2;
+        sect = 2;
       }
-      sect = (1===sect)?1:2;
-      baseYear = (undefined===baseYear)?1900:baseYear;
+      if (1 !== sect) {
+        sect = 2;
+      }
+      baseYear *= 1;
+      if(isNaN(baseYear)){
+        baseYear = 1900;
+      }
       var l = [];
       var years = [];
       var today = _fromDate(new Date());
@@ -517,31 +521,42 @@
         offsetYear += 60;
       }
       var startYear = today.getYear() - offsetYear - 1;
-      while (true) {
+      var minYear = baseYear - 2;
+      while (startYear >= minYear) {
         years.push(startYear);
         startYear -= 60;
-        if (startYear < baseYear) {
-          years.push(baseYear);
+      }
+      var hours = [];
+      var timeZhi = timeGanZhi.substr(1);
+      var i = 1;
+      var j = LunarUtil.ZHI.length;
+      for(;i<j;i++){
+        if(LunarUtil.ZHI[i]===timeZhi){
+          hours.push((i-1)*2);
           break;
         }
       }
-      var hour = 0;
-      var timeZhi = timeGanZhi.substr(1);
-      for(var i=0,j=LunarUtil.ZHI.length;i<j;i++){
-        if(LunarUtil.ZHI[i]===timeZhi){
-          hour = (i-1)*2;
-        }
+      if ('子' === timeZhi) {
+        hours.push(23);
       }
-      for (var i = 0, j = years.length; i < j; i++) {
-        inner:for (var x = 0; x < 3; x++) {
-          var year = years[i] + x;
-          var solar = _fromYmdHms(year, 1, 1, hour, 0, 0);
-          while (solar.getYear() === year) {
+      j = years.length;
+      for (var m = 0, n = hours.length; m < n; m++) {
+        for (i = 0;i < j; i++) {
+          var y = years[i];
+          var maxYear = y + 3;
+          var year = y;
+          var month = 11;
+          if (year < baseYear) {
+            year = baseYear;
+            month = 1;
+          }
+          var solar = _fromYmdHms(year, month, 1, hours[m], 0, 0);
+          while (solar.getYear() <= maxYear) {
             var lunar = solar.getLunar();
-            var dgz = (2===sect)?lunar.getDayInGanZhiExact2():lunar.getDayInGanZhiExact();
-            if (lunar.getYearInGanZhiExact()===yearGanZhi && lunar.getMonthInGanZhiExact()===monthGanZhi && dgz===dayGanZhi && lunar.getTimeInGanZhi()===timeGanZhi) {
+            var dgz = (2 === sect) ? lunar.getDayInGanZhiExact2() : lunar.getDayInGanZhiExact();
+            if (lunar.getYearInGanZhiExact() === yearGanZhi && lunar.getMonthInGanZhiExact() === monthGanZhi && dgz === dayGanZhi && lunar.getTimeInGanZhi() === timeGanZhi) {
               l.push(solar);
-              break inner;
+              break;
             }
             solar = solar.next(1);
           }
@@ -723,9 +738,7 @@
       var lms = ly.getMonths();
       for (var i = 0, j = lms.length; i < j; i++) {
         var m = lms[i];
-        // 初一
-        var firstDay = Solar.fromJulianDay(m.getFirstJulianDay());
-        var days = solar.subtract(firstDay);
+        var days = solar.subtract(Solar.fromJulianDay(m.getFirstJulianDay()));
         if (days < m.getDayCount()) {
           lunarYear = m.getYear();
           lunarMonth = m.getMonth();
@@ -1833,8 +1846,7 @@
             start = this._p.jieQi['冬至'];
             startDay = Solar.fromYmd(start.getYear(), start.getMonth(), start.getDay());
           }
-          var endDay = Solar.fromYmd(start.getYear(), start.getMonth(), start.getDay());
-          endDay = endDay.next(81);
+          var endDay = Solar.fromYmd(start.getYear(), start.getMonth(), start.getDay()).next(81);
           if (currentDay.isBefore(startDay) || (!currentDay.isBefore(endDay))) {
             return null;
           }
@@ -1915,8 +1927,7 @@
           var current = Solar.fromYmd(this._p.solar.getYear(),this._p.solar.getMonth(),this._p.solar.getDay());
           var startSolar = jieQi.getSolar();
           var start = Solar.fromYmd(startSolar.getYear(),startSolar.getMonth(),startSolar.getDay());
-          var days = current.subtract(start);
-          var index = Math.floor(days / 5);
+          var index = Math.floor(current.subtract(start) / 5);
           if (index > 2) {
             index = 2;
           }
@@ -2011,8 +2022,7 @@
          * @return number 周序号，从1开始
          */
         getIndex:function(){
-          var firstDayWeek = Solar.fromYmd(this._p.year,this._p.month,1).getWeek();
-          var offset = firstDayWeek - this._p.start;
+          var offset = Solar.fromYmd(this._p.year,this._p.month,1).getWeek() - this._p.start;
           if(offset < 0) {
             offset += 7;
           }
@@ -2023,8 +2033,7 @@
          * @return number 周序号，从1开始
          */
         getIndexInYear:function(){
-          var firstDayWeek = Solar.fromYmd(this._p.year,1,1).getWeek();
-          var offset = firstDayWeek - this._p.start;
+          var offset = Solar.fromYmd(this._p.year,1,1).getWeek() - this._p.start;
           if(offset < 0) {
             offset += 7;
           }
@@ -2068,10 +2077,10 @@
                     week = _fromYmd(solar.getYear(), solar.getMonth(), solar.getDay(), start);
                   }
                 } else {
-                  var size = SolarUtil.getWeeksOfMonth(week.getYear(), week.getMonth(), this._p.start);
+                  var size = SolarUtil.getWeeksOfMonth(week.getYear(), week.getMonth(), start);
                   if (size === index) {
                     var lastDay = week.getFirstDay().next(6);
-                    week = _fromYmd(lastDay.getYear(), lastDay.getMonth(), lastDay.getDay(), this._p.start);
+                    week = _fromYmd(lastDay.getYear(), lastDay.getMonth(), lastDay.getDay(), start);
                     weekMonth = week.getMonth();
                   } else {
                     solar = Solar.fromYmd(week.getYear(), week.getMonth(), SolarUtil.getDaysOfMonth(week.getYear(), week.getMonth()));
@@ -2302,8 +2311,7 @@
           if(isNaN(seasons)){
             throw new Error('wrong seasons ' + os);
           }
-          var month = SolarMonth.fromYm(this._p.year, this._p.month);
-          month = month.next(3 * seasons);
+          var month = SolarMonth.fromYm(this._p.year, this._p.month).next(3 * seasons);
           return _fromYm(month.getYear(), month.getMonth());
         },
         /**
@@ -2376,8 +2384,7 @@
           if(isNaN(halfYears)){
             throw new Error('wong halfYears ' + oh);
           }
-          var month = SolarMonth.fromYm(this._p.year, this._p.month);
-          month = month.next(6 * halfYears);
+          var month = SolarMonth.fromYm(this._p.year, this._p.month).next(6 * halfYears);
           return _fromYm(month.getYear(), month.getMonth());
         },
         /**
@@ -2506,6 +2513,26 @@
         getZhi:function(){return LunarUtil.ZHI[this._p.zhiIndex+1];},
         getGanZhi:function(){return this.getGan()+this.getZhi();},
         getJieQiJulianDays:function(){return this._p.jieQiJulianDays;},
+        getDayCount:function(){
+          var n = 0;
+          for (var i = 0, j = this._p.months.length; i < j; i++) {
+            var m = this._p.months[i];
+            if (m.getYear() === this._p.year) {
+              n += m.getDayCount();
+            }
+          }
+          return n;
+        },
+        getMonthsInYear:function(){
+          var l = [];
+          for (var i = 0, j = this._p.months.length; i < j; i++) {
+            var m = this._p.months[i];
+            if (m.getYear() === this._p.year) {
+              l.push(m);
+            }
+          }
+          return l;
+        },
         getMonths:function(){return this._p.months;},
         getMonth:function(lunarMonth){
           var om = lunarMonth;
@@ -2679,7 +2706,9 @@
           // 冬至前的初一
           var w = ShouXingUtil.calcShuo(jq[0]);
           if (w > jq[0]) {
-            w -= 29.5306;
+            if (currentYear !== 41 && currentYear !== 193 && currentYear !== 288 && currentYear !== 345 && currentYear !== 918 && currentYear !== 1013) {
+              w -= 29.5306;
+            }
           }
           // 递推每月初一
           for (i = 0; i < 16; i++) {
@@ -2690,39 +2719,40 @@
             dayCounts.push(Math.floor(hs[i + 1] - hs[i]));
           }
 
-          var currentYearLeap = _LEAP['_' + currentYear];
-          if (!currentYearLeap) {
-            currentYearLeap = -1;
-            if (hs[13] <= jq[24]) {
-              i = 1;
-              while (hs[i + 1] > jq[2 * i] && i < 13) {
-                i++;
+          var prevYear = currentYear - 1;
+          var leapYear = -1;
+          var leapIndex = -1;
+
+          var leap = _LEAP['_' + currentYear];
+          if (!leap) {
+            leap = _LEAP['_' + prevYear];
+            if (!leap) {
+              if (hs[13] <= jq[24]) {
+                i = 1;
+                while (hs[i + 1] > jq[2 * i] && i < 13) {
+                  i++;
+                }
+                leapYear = currentYear;
+                leapIndex = i;
               }
-              currentYearLeap = i;
+            } else {
+              leapYear = prevYear;
+              leapIndex = leap - 12;
             }
+          } else {
+            leapYear = currentYear;
+            leapIndex = leap;
           }
 
-          var prevYear = currentYear - 1;
-          var prevYearLeap = _LEAP['_' + prevYear];
-          prevYearLeap = prevYearLeap ? prevYearLeap - 12 : -1;
-
-          var y = this._p.year - 1;
+          var y = prevYear;
           var m = 11;
           for (i = 0, j = dayCounts.length; i < j; i++) {
             var cm = m;
-            var isNextLeap = false;
-            if (y === currentYear && i === currentYearLeap) {
+            if (y === leapYear && i === leapIndex) {
               cm = -cm;
-            } else if (y === prevYear && i === prevYearLeap) {
-              cm = -cm;
-            }
-            if (y === currentYear && i + 1 === currentYearLeap) {
-              isNextLeap = true;
-            } else if (y === prevYear && i + 1 === prevYearLeap) {
-              isNextLeap = true;
             }
             this._p.months.push(LunarMonth._(y, cm, dayCounts[i], hs[i] + Solar.J2000));
-            if (!isNextLeap) {
+            if (y !== leapYear || i + 1 !== leapIndex) {
               m++;
             }
             if (m === 13) {
@@ -4392,8 +4422,8 @@
         toString:function(){return this.getGanZhi();}
       };
     };
-    return  {
-      fromYmdHms:function(lunarYear,lunarMonth,lunarDay,hour,minute,second){return _fromYmdHms(lunarYear,lunarMonth,lunarDay,hour,minute,second);},
+    return {
+      fromYmdHms:function(lunarYear,lunarMonth,lunarDay,hour,minute,second){return _fromYmdHms(lunarYear,lunarMonth,lunarDay,hour,minute,second);}
     };
   })();
   var FotoUtil = (function(){

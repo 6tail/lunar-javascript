@@ -107,3 +107,30 @@ test('22', () => {
   const solar = Solar.fromYmd(1582, 10, 15);
   expect(solar.nextDay(-5).toYmd()).toBe('1582-09-30');
 });
+
+test('23', () => {
+  const solarList = Solar.fromBaZi('癸卯', '甲寅', '癸丑', '甲子', 2, 1843);
+  const timeList = [];
+  solarList.forEach(solar => {
+    timeList.push(solar.toYmdHms());
+  })
+  expect(timeList).toStrictEqual(['2023-02-24 23:00:00', '1843-02-08 23:00:00']);
+});
+
+test('24', () => {
+  const solarList = Solar.fromBaZi('己亥', '丁丑', '壬寅', '戊申');
+  const timeList = [];
+  solarList.forEach(solar => {
+    timeList.push(solar.toYmdHms());
+  })
+  expect(timeList).toStrictEqual(['1960-01-15 16:00:00', '1900-01-29 16:00:00']);
+});
+
+test('25', () => {
+  const solarList = Solar.fromBaZi('己亥', '丙子', '癸酉', '庚申');
+  const timeList = [];
+  solarList.forEach(solar => {
+    timeList.push(solar.toYmdHms());
+  })
+  expect(timeList).toStrictEqual(['1959-12-17 16:00:00']);
+});

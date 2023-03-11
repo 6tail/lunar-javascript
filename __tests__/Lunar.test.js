@@ -590,3 +590,53 @@ test('test058', () => {
   const lunar = Lunar.fromYmd(1582, 9, 19);
   expect(lunar.getSolar().toString()).toBe('1582-10-15');
 });
+
+test('test059', () => {
+  const lunar = Lunar.fromYmd(1518, 1, 1);
+  expect(lunar.getSolar().toString()).toBe('1518-02-10');
+});
+
+test('test060', () => {
+  const lunar = Lunar.fromYmd(793, 1, 1);
+  expect(lunar.getSolar().toString()).toBe('0793-02-15');
+});
+
+test('test061', () => {
+  const lunar = Lunar.fromYmd(2025, -6, 1);
+  expect(lunar.getSolar().toString()).toBe('2025-07-25');
+});
+
+test('test062', () => {
+  const lunar = Lunar.fromYmd(2025, 6, 1);
+  expect(lunar.getSolar().toString()).toBe('2025-06-25');
+});
+
+test('test063', () => {
+  const lunar = Lunar.fromYmd(193, 1, 1);
+  expect(lunar.getSolar().toString()).toBe('0193-02-19');
+});
+
+test('test064', () => {
+  const lunar = Lunar.fromYmd(288, 1, 1);
+  expect(lunar.getSolar().toString()).toBe('0288-02-19');
+});
+
+test('test065', () => {
+  const lunar = Lunar.fromYmd(755, 1, 1);
+  expect(lunar.getSolar().toString()).toBe('0755-02-16');
+});
+
+test('test066', () => {
+  const lunar = Lunar.fromYmd(41, 1, 1);
+  expect(lunar.getSolar().toString()).toBe('0041-02-20');
+});
+
+test('test067', () => {
+  const lunar = Lunar.fromYmd(57, 1, 1);
+  expect(lunar.getSolar().toString()).toBe('0057-02-23');
+});
+
+test('test068', () => {
+  const lunar = Lunar.fromYmd(345, 1, 1);
+  expect(lunar.getSolar().toString()).toBe('0345-02-18');
+});
