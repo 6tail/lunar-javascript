@@ -13,3 +13,8 @@ test('test2()', () => {
   expect(foto.getGong()).toBe('东');
   expect(foto.getShou()).toBe('青龙');
 });
+
+test('test3()', () => {
+  const foto = Foto.fromLunar(Lunar.fromYmd(2021, 3, 16));
+  expect(foto.getOtherFestivals()).toStrictEqual(['准提菩萨圣诞']);
+});
