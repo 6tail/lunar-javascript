@@ -181,3 +181,11 @@ test('test11', () => {
 test('test12', () => {
   expect(Solar.fromYmdHms('1999', '06', '07', '09', '11', '00').getLunar().getEightChar().toString()).toBe('己卯 庚午 庚寅 辛巳');
 });
+
+test('流月', () => {
+  const solar = Solar.fromYmdHms(2023, 5, 3, 9, 0, 0);
+  const lunar = solar.getLunar();
+  const eightChar = lunar.getEightChar();
+  const yun = eightChar.getYun(1);
+  expect(yun.getDaYun()[0].getLiuNian()[0].getLiuYue()[0].getGanZhi()).toBe('甲寅');
+});
