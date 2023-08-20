@@ -29,7 +29,7 @@ test('9', () => {
 });
 
 test('10', () => {
-  expect(SolarUtil.isLeapYear(1500)).toBe(false);
+  expect(SolarUtil.isLeapYear(1500)).toBe(true);
 });
 
 test('11', () => {

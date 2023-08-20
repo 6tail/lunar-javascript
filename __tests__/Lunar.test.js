@@ -640,3 +640,18 @@ test('test068', () => {
   const lunar = Lunar.fromYmd(345, 1, 1);
   expect(lunar.getSolar().toString()).toBe('0345-02-18');
 });
+
+test('test069', () => {
+  const solar = Solar.fromYmd(917, 12, 1);
+  expect(solar.getLunar().toString()).toBe('九一七年闰十月十四');
+});
+
+test('test070', () => {
+  const solar = Solar.fromYmd(917, 12, 31);
+  expect(solar.getLunar().toString()).toBe('九一七年冬月十五');
+});
+
+test('test071', () => {
+  const solar = Solar.fromYmd(918, 1, 1);
+  expect(solar.getLunar().toString()).toBe('九一七年冬月十六');
+});
