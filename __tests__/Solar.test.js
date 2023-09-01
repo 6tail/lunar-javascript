@@ -134,3 +134,18 @@ test('25', () => {
   })
   expect(timeList).toStrictEqual(['1959-12-17 16:00:00']);
 });
+
+test('26', () => {
+  const solar = Solar.fromYmd(2023, 8, 31);
+  expect(solar.nextMonth(2).toYmd()).toBe('2023-10-31');
+});
+
+test('27', () => {
+  const solar = Solar.fromYmd(2023, 8, 31);
+  expect(solar.nextYear(2).toYmd()).toBe('2025-08-31');
+});
+
+test('28', () => {
+  const solar = Solar.fromYmd(2023, 8, 31);
+  expect(solar.nextMonth(6).toYmd()).toBe('2024-02-29');
+});
