@@ -1,4 +1,4 @@
-var {SolarWeek,SolarUtil} = require('../lunar');
+var {SolarWeek,SolarUtil,Solar} = require('../lunar');
 
 test('testFromMonday', () => {
   const start = 1;
@@ -36,4 +36,32 @@ test('test3', () => {
   const start = 0;
   const week = SolarWeek.fromYmd(2022, 3, 6, start);
   expect(week.getIndexInYear()).toBe(11);
+});
+
+test('test4', () => {
+  expect(Solar.fromYmd(1129, 11, 17).getWeek()).toBe(0);
+});
+
+test('test5', () => {
+  expect(Solar.fromYmd(1129, 11, 1).getWeek()).toBe(5);
+});
+
+test('test6', () => {
+  expect(Solar.fromYmd(8, 11, 1).getWeek()).toBe(4);
+});
+
+test('test7', () => {
+  expect(Solar.fromYmd(1582, 9, 30).getWeek()).toBe(0);
+});
+
+test('test8', () => {
+  expect(Solar.fromYmd(1582, 1, 1).getWeek()).toBe(1);
+});
+
+test('test9', () => {
+  expect(Solar.fromYmd(1500, 2, 29).getWeek()).toBe(6);
+});
+
+test('test10', () => {
+  expect(Solar.fromYmd(9865, 7, 26).getWeek()).toBe(3);
 });

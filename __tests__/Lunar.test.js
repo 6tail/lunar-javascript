@@ -558,7 +558,7 @@ test('test051', () => {
 
 test('test052', () => {
   const lunar = Solar.fromYmd(2011, 11, 12).getLunar();
-  expect(lunar.getDayPositionTai()).toBe('厕灶厨 外西南');
+  expect(lunar.getDayPositionTai()).toBe('厨灶厕 外西南');
 });
 
 test('test053', () => {

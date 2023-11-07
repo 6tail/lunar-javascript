@@ -220,26 +220,7 @@
           return this._p.second;
         },
         getWeek:function(){
-          var start = _fromYmdHms(1582, 10, 15, 0, 0, 0);
-          var y = this._p.year;
-          var m = this._p.month;
-          var d = this._p.day;
-          var current = _fromYmdHms(y, m, d, 0, 0, 0);
-          // 蔡勒公式
-          if (m < 3) {
-            m += 12;
-            y--;
-          }
-          var c = Math.floor(y/100);
-          y = y - c * 100;
-          var x = y + Math.floor(y/4) + Math.floor(c/4) - 2*c;
-          var w;
-          if (current.isBefore(start)) {
-            w = (x + Math.floor((13*(m+1))/5) + d + 2) % 7;
-          } else {
-            w = (x + Math.floor((26*(m+1))/10) + d - 1) % 7;
-          }
-          return (w + 7) % 7;
+          return (Math.floor(this.getJulianDay()) + 7000002) % 7;
         },
         getWeekInChinese:function(){
           return SolarUtil.WEEK[this.getWeek()];
@@ -1890,11 +1871,7 @@
 
           days = currentDay.subtract(startDay);
           // 末伏
-          if (!liQiuDay.isAfter(startDay)) {
-            if (days < 10) {
-              return this._buildNameAndIndex('末伏', days + 1);
-            }
-          } else {
+          if (liQiuDay.isAfter(startDay)) {
             // 中伏
             if (days < 10) {
               return this._buildNameAndIndex('中伏', days + 11);
@@ -1902,9 +1879,9 @@
             // 末伏第1天
             startDay = startDay.next(10);
             days = currentDay.subtract(startDay);
-            if (days < 10) {
-              return this._buildNameAndIndex('末伏', days + 1);
-            }
+          }
+          if (days < 10) {
+            return this._buildNameAndIndex('末伏', days + 1);
           }
           return null;
         },
@@ -4000,21 +3977,21 @@
         '{ts.fang}{ts.chuang}{ts.xi} {ps.wai}{ps.zhengNan}',
         '{ts.zhan}{ts.men}{ts.chuang} {ps.wai}{ps.zhengNan}',
         '{ts.zhan}{ts.dui}{ts.mo} {ps.wai}{ps.zhengNan}',
-        '{ts.ce}{ts.zao}{ts.chu} {ps.wai}{ps.xiNan}',
+        '{ts.chu}{ts.zao}{ts.ce} {ps.wai}{ps.xiNan}',
         '{ts.cangKu}{ts.lu} {ps.wai}{ps.xiNan}',
         '{ts.fang}{ts.chuang}{ts.men} {ps.wai}{ps.xiNan}',
-        '{ts.men}{ts.dui}{ts.xi} {ps.wai}{ps.xiNan}',
+        '{ts.zhan}{ts.men}{ts.xi} {ps.wai}{ps.xiNan}',
         '{ts.dui}{ts.mo}{ts.chuang} {ps.wai}{ps.xiNan}',
         '{ts.chu}{ts.zao}{ts.dui} {ps.wai}{ps.xiNan}',
         '{ts.cangKu}{ts.ce} {ps.wai}{ps.zhengXi}',
         '{ts.fang}{ts.chuang}{ts.lu} {ps.wai}{ps.zhengXi}',
         '{ts.zhan}{ts.daMen} {ps.wai}{ps.zhengXi}',
         '{ts.dui}{ts.mo}{ts.xi} {ps.wai}{ps.zhengXi}',
-        '{ts.chu}{ts.fang}{ts.chuang} {ps.wai}{ps.zhengXi}',
+        '{ts.chu}{ts.zao}{ts.chuang} {ps.wai}{ps.zhengXi}',
         '{ts.cangKu}{ts.dui} {ps.wai}{ps.xiBei}',
         '{ts.fang}{ts.chuang}{ts.ce} {ps.wai}{ps.xiBei}',
         '{ts.zhan}{ts.men}{ts.lu} {ps.wai}{ps.xiBei}',
-        '{ts.men}{ts.dui}{ts.mo} {ps.wai}{ps.xiBei}',
+        '{ts.dui}{ts.mo}{ts.men} {ps.wai}{ps.xiBei}',
         '{ts.chu}{ts.zao}{ts.xi} {ps.wai}{ps.xiBei}',
         '{ts.cangKu}{ts.chuang} {ps.wai}{ps.xiBei}',
         '{ts.fang}{ts.chuang}{ts.dui} {ps.wai}{ps.zhengBei}',
@@ -4026,14 +4003,14 @@
         '{ts.zhan}{ts.men}{ts.dui} {ps.fangNei}{ps.bei}',
         '{ts.dui}{ts.mo}{ts.ce} {ps.fangNei}{ps.bei}',
         '{ts.chu}{ts.zao}{ts.lu} {ps.fangNei}{ps.bei}',
-        '{ts.men}{ts.cangKu} {ps.fangNei}{ps.bei}',
-        '{ts.chuang}{ts.fang}{ts.xi} {ps.fangNei}{ps.center}',
+        '{ts.cangKu}{ts.men} {ps.fangNei}{ps.bei}',
+        '{ts.fang}{ts.chuang}{ts.xi} {ps.fangNei}{ps.center}',
         '{ts.zhan}{ts.men}{ts.chuang} {ps.fangNei}{ps.center}',
         '{ts.zhan}{ts.dui}{ts.mo} {ps.fangNei}{ps.nan}',
-        '{ts.chu}{ts.mo}{ts.ce} {ps.fangNei}{ps.nan}',
+        '{ts.chu}{ts.zao}{ts.ce} {ps.fangNei}{ps.nan}',
         '{ts.cangKu}{ts.lu} {ps.fangNei}{ps.nan}',
         '{ts.fang}{ts.chuang}{ts.men} {ps.fangNei}{ps.xi}',
-        '{ts.men}{ts.dui}{ts.xi} {ps.fangNei}{ps.dong}',
+        '{ts.zhan}{ts.men}{ts.xi} {ps.fangNei}{ps.dong}',
         '{ts.dui}{ts.mo}{ts.chuang} {ps.fangNei}{ps.dong}',
         '{ts.chu}{ts.zao}{ts.dui} {ps.fangNei}{ps.dong}',
         '{ts.cangKu}{ts.ce} {ps.fangNei}{ps.dong}',
@@ -4044,7 +4021,7 @@
         '{ts.cangKu}{ts.dui} {ps.wai}{ps.dongBei}',
         '{ts.fang}{ts.chuang}{ts.ce} {ps.wai}{ps.dongBei}',
         '{ts.zhan}{ts.men}{ts.lu} {ps.wai}{ps.dongBei}',
-        '{ts.men}{ts.dui}{ts.mo} {ps.wai}{ps.zhengDong}',
+        '{ts.dui}{ts.mo}{ts.men} {ps.wai}{ps.zhengDong}',
         '{ts.chu}{ts.zao}{ts.xi} {ps.wai}{ps.zhengDong}',
         '{ts.cangKu}{ts.chuang} {ps.wai}{ps.zhengDong}',
         '{ts.fang}{ts.chuang}{ts.dui} {ps.wai}{ps.zhengDong}',
