@@ -220,7 +220,7 @@
           return this._p.second;
         },
         getWeek:function(){
-          return (Math.floor(this.getJulianDay()) + 7000002) % 7;
+          return (Math.floor(this.getJulianDay() + 0.5) + 7000001) % 7;
         },
         getWeekInChinese:function(){
           return SolarUtil.WEEK[this.getWeek()];

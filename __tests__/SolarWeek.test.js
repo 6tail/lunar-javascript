@@ -65,3 +65,13 @@ test('test9', () => {
 test('test10', () => {
   expect(Solar.fromYmd(9865, 7, 26).getWeek()).toBe(3);
 });
+
+test('test11', () => {
+  expect(Solar.fromYmd(1961, 9, 30).getWeek()).toBe(6);
+  expect(Solar.fromYmdHms(1961, 9, 30, 23, 59, 59).getWeek()).toBe(6);
+});
+
+test('test12', () => {
+  expect(Solar.fromYmdHms(2021, 9, 15, 0, 0, 0).getWeek()).toBe(3);
+  expect(Solar.fromYmdHms(2021, 9, 15, 23, 59, 59).getWeek()).toBe(3);
+});
