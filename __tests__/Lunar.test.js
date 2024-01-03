@@ -655,3 +655,11 @@ test('test071', () => {
   const solar = Solar.fromYmd(918, 1, 1);
   expect(solar.getLunar().toString()).toBe('九一七年冬月十六');
 });
+
+test('test072', () => {
+  const solar = Solar.fromYmd(1991, 2, 15);
+  const lunar = solar.getLunar();
+  expect(lunar.toString()).toBe('一九九一年正月初一');
+  expect(lunar.getYearInGanZhi()).toBe('辛未');
+  expect(lunar.getYearShengXiao()).toBe('羊');
+});

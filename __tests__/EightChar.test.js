@@ -189,3 +189,12 @@ test('流月', () => {
   const yun = eightChar.getYun(1);
   expect(yun.getDaYun()[0].getLiuNian()[0].getLiuYue()[0].getGanZhi()).toBe('甲寅');
 });
+
+test('test19', () => {
+  const solarList = Solar.fromBaZi('丁丑','癸卯','癸丑','辛酉', 2, 1900);
+  const timeList = [];
+  solarList.forEach(solar => {
+    timeList.push(solar.toYmdHms());
+  })
+  expect(timeList).toStrictEqual(['1997-03-12 18:00:00', '1937-03-27 18:00:00']);
+});
