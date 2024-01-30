@@ -152,7 +152,7 @@ test('身宫1', () => {
   const solar = Solar.fromYmdHms(1994, 12, 6, 2, 0, 0);
   const lunar = solar.getLunar();
   const eightChar = lunar.getEightChar();
-  expect(eightChar.getShenGong()).toBe('丁丑');
+  expect(eightChar.getShenGong()).toBe('乙丑');
 });
 
 test('身宫2', () => {
@@ -197,4 +197,47 @@ test('test19', () => {
     timeList.push(solar.toYmdHms());
   })
   expect(timeList).toStrictEqual(['1997-03-12 18:00:00', '1937-03-27 18:00:00']);
+});
+
+
+test('test20', () => {
+  const lunar = Solar.fromYmdHms(2024, 1, 29, 9, 30, 0).getLunar();
+  const eightChar = lunar.getEightChar();
+  expect(eightChar.getMingGong()).toBe('癸亥');
+  expect(eightChar.getShenGong()).toBe('己未');
+});
+
+
+test('test21', () => {
+  expect(Solar.fromYmdHms(1990, 1, 27, 0, 0, 0).getLunar().getEightChar().getShenGong()).toBe('丙寅');
+});
+
+
+test('test23', () => {
+  expect(Solar.fromYmdHms(2019, 3, 7, 8, 0, 0).getLunar().getEightChar().getMingGong()).toBe('甲戌');
+});
+
+
+test('test24', () => {
+  expect(Solar.fromYmdHms(2019, 3, 27, 2, 0, 0).getLunar().getEightChar().getMingGong()).toBe('丁丑');
+});
+
+
+test('test25', () => {
+  expect(Lunar.fromYmdHms(1994, 5, 20, 18, 0 ,0).getEightChar().getMingGong()).toBe('丙寅');
+});
+
+
+test('test26', () => {
+  const lunar = Solar.fromYmdHms(1986, 2, 16, 8, 0, 0).getLunar();
+  const eightChar = lunar.getEightChar();
+  expect(eightChar.getMingGong()).toBe('己亥');
+  expect(eightChar.getShenGong()).toBe('乙未');
+});
+
+
+test('test27', () => {
+  const lunar = Solar.fromYmdHms(1972, 11, 27, 10, 0, 0).getLunar();
+  const eightChar = lunar.getEightChar();
+  expect(eightChar.getShenGong()).toBe('乙巳');
 });
