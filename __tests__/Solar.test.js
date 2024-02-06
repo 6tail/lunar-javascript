@@ -63,7 +63,7 @@ test('16', () => {
   solarList.forEach(solar => {
     timeList.push(solar.toYmdHms());
   })
-  expect(timeList).toStrictEqual(['1976-09-21 12:00:00', '1916-10-06 12:00:00']);
+  expect(timeList).toStrictEqual(['1916-10-06 12:00:00', '1976-09-21 12:00:00']);
 });
 
 test('17', () => {
@@ -72,7 +72,7 @@ test('17', () => {
   solarList.forEach(solar => {
     timeList.push(solar.toYmdHms());
   })
-  expect(timeList).toStrictEqual(['1999-07-21 16:00:00', '1939-08-05 16:00:00']);
+  expect(timeList).toStrictEqual(['1939-08-05 16:00:00', '1999-07-21 16:00:00']);
 });
 
 test('18', () => {
@@ -81,7 +81,7 @@ test('18', () => {
   solarList.forEach(solar => {
     timeList.push(solar.toYmdHms());
   })
-  expect(timeList).toStrictEqual(['1960-12-17 12:00:00', '1901-01-01 12:00:00']);
+  expect(timeList).toStrictEqual(['1901-01-01 12:00:00', '1960-12-17 12:00:00']);
 });
 
 test('19', () => {
@@ -90,7 +90,7 @@ test('19', () => {
   solarList.forEach(solar => {
     timeList.push(solar.toYmdHms());
   })
-  expect(timeList).toStrictEqual(['2020-07-21 22:00:00', '1960-08-05 22:00:00']);
+  expect(timeList).toStrictEqual(['1960-08-05 22:00:00', '2020-07-21 22:00:00']);
 });
 
 test('20', () => {
@@ -109,12 +109,12 @@ test('22', () => {
 });
 
 test('23', () => {
-  const solarList = Solar.fromBaZi('癸卯', '甲寅', '癸丑', '甲子', 2, 1843);
+  const solarList = Solar.fromBaZi('癸卯', '甲寅', '甲寅', '甲子', 2, 1843);
   const timeList = [];
   solarList.forEach(solar => {
     timeList.push(solar.toYmdHms());
   })
-  expect(timeList).toStrictEqual(['2023-02-24 23:00:00', '1843-02-08 23:00:00']);
+  expect(timeList).toStrictEqual(['1843-02-09 00:00:00', '2023-02-25 00:00:00']);
 });
 
 test('24', () => {
@@ -123,7 +123,7 @@ test('24', () => {
   solarList.forEach(solar => {
     timeList.push(solar.toYmdHms());
   })
-  expect(timeList).toStrictEqual(['1960-01-15 16:00:00', '1900-01-29 16:00:00']);
+  expect(timeList).toStrictEqual(['1900-01-29 16:00:00', '1960-01-15 16:00:00']);
 });
 
 test('25', () => {

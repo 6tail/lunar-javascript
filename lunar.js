@@ -546,46 +546,66 @@
         baseYear = 1900;
       }
       var l = [];
-      var years = [];
-      var today = _fromDate(new Date());
-      var offsetYear = (today.getYear() - 4) % 60 - LunarUtil.getJiaZiIndex(yearGanZhi);
-      if(offsetYear<0){
-        offsetYear += 60;
+      // 月地支距寅月的偏移值
+      var m = LunarUtil.index(monthGanZhi.substring(1), LunarUtil.ZHI, -1) - 2;
+      if (m < 0) {
+        m += 12;
       }
-      var startYear = today.getYear() - offsetYear - 1;
-      var minYear = baseYear - 2;
-      while (startYear >= minYear) {
-        years.push(startYear);
-        startYear -= 60;
+      // 月天干要一致
+      if (((LunarUtil.index(yearGanZhi.substring(0, 1), LunarUtil.GAN, -1) + 1) * 2 + m) % 10 !== LunarUtil.index(monthGanZhi.substring(0,1), LunarUtil.GAN, -1)) {
+        return l;
       }
-      var hours = [];
-      var timeZhi = LunarUtil.find(timeGanZhi, LunarUtil.ZHI);
-      hours.push((timeZhi.index - 1) * 2);
-      if (1 === timeZhi.index) {
-        hours.push(23);
+      // 1年的立春是辛酉，序号57
+      var y = LunarUtil.getJiaZiIndex(yearGanZhi) - 57;
+      if (y < 0) {
+        y += 60;
       }
-      var j = years.length;
-      for (var m = 0, n = hours.length; m < n; m++) {
-        for (var i = 0;i < j; i++) {
-          var y = years[i];
-          var maxYear = y + 3;
-          var year = y;
-          var month = 11;
-          if (year < baseYear) {
-            year = baseYear;
-            month = 1;
-          }
-          var solar = _fromYmdHms(year, month, 1, hours[m], 0, 0);
-          while (solar.getYear() <= maxYear) {
-            var lunar = solar.getLunar();
+      y++;
+      // 节令偏移值
+      m *= 2;
+      // 时辰地支转时刻，子时按零点算
+      var h = LunarUtil.index(timeGanZhi.substring(1), LunarUtil.ZHI, -1) * 2;
+      var startYear = baseYear - 1;
+
+      // 结束年
+      var endYear = new Date().getFullYear();
+
+      while (y <= endYear) {
+        if (y >= startYear) {
+          // 立春为寅月的开始
+          var jieQiLunar = Lunar.fromYmd(y, 1, 1);
+          var jieQiList = jieQiLunar.getJieQiList();
+          var jieQiTable = jieQiLunar.getJieQiTable();
+          // 节令推移，年干支和月干支就都匹配上了
+          var solarTime = jieQiTable[jieQiList[4 + m]];
+          if (solarTime.getYear() >= baseYear) {
+            var mi = 0;
+            var s = 0;
+            // 日干支和节令干支的偏移值
+            var lunar = solarTime.getLunar();
             var dgz = (2 === sect) ? lunar.getDayInGanZhiExact2() : lunar.getDayInGanZhiExact();
+            var d = LunarUtil.getJiaZiIndex(dayGanZhi) - LunarUtil.getJiaZiIndex(dgz);
+            if (d < 0) {
+              d += 60;
+            }
+            if (d > 0) {
+              // 从节令推移天数
+              solarTime = solarTime.next(d);
+            } else if (h === solarTime.getHour()) {
+              // 如果正好是节令当天，且小时和节令的小时数相等的极端情况，把分钟和秒钟带上
+              mi = solarTime.getMinute();
+              s = solarTime.getSecond();
+            }
+            // 验证一下
+            var solar = Solar.fromYmdHms(solarTime.getYear(), solarTime.getMonth(), solarTime.getDay(), h, mi, s);
+            lunar = solar.getLunar();
+            dgz = (2 === sect) ? lunar.getDayInGanZhiExact2() : lunar.getDayInGanZhiExact();
             if (lunar.getYearInGanZhiExact() === yearGanZhi && lunar.getMonthInGanZhiExact() === monthGanZhi && dgz === dayGanZhi && lunar.getTimeInGanZhi() === timeGanZhi) {
               l.push(solar);
-              break;
             }
-            solar = solar.next(1);
           }
         }
+        y += 60;
       }
       return l;
     };
@@ -3490,7 +3510,7 @@
         } else if (jd >= f2 && jd < f3) {
           d = Math.floor(this.shuoLow(Math.floor((jd + pc - 2451551) / 29.5306) * Math.PI * 2) + 0.5);
           var from = Math.floor((jd - f2) / 29.5306);
-          var n = this.SB.substr(from, 1);
+          var n = this.SB.substring(from, from+1);
           if ('1' === n) {
             d += 1;
           } else if ('2' === n) {
@@ -5066,7 +5086,7 @@
           return 0;
         }
         if(hm.length>5){
-          hm = hm.substr(0,5);
+          hm = hm.substring(0,5);
         }
         var x = 1;
         for(var i=1;i<22;i+=2){
@@ -5081,12 +5101,7 @@
         return this.ZHI[this.getTimeZhiIndex(hm)+1];
       },
       getJiaZiIndex:function(ganZhi){
-        for(var i=0,j=this.JIA_ZI.length;i<j;i++){
-          if(this.JIA_ZI[i]===ganZhi){
-            return i;
-          }
-        }
-        return -1;
+        return this.index(ganZhi, this.JIA_ZI, 0);
       },
       hex:function(n){
         var hex = n.toString(16);
@@ -5102,29 +5117,26 @@
         var right = this.DAY_YI_JI;
         var index = right.indexOf(day+'=');
         while(index>-1) {
-          right = right.substr(index+3);
+          right = right.substring(index+3);
           var left = right;
           if (left.indexOf('=')>-1) {
-            left = left.substr(0, left.indexOf('=') - 2);
+            left = left.substring(0, left.indexOf('=') - 2);
           }
           var matched = false;
-          var months = left.substr(0, left.indexOf(':'));
+          var months = left.substring(0, left.indexOf(':'));
           var i;
-          var m;
           var j;
           for (i = 0, j = months.length; i < j; i += 2) {
-            m = months.substr(i, 2);
-            if (m===month) {
+            if (months.substring(i, i+2)===month) {
               matched = true;
               break;
             }
           }
           if(matched) {
-            var ys = left.substr(left.indexOf(':') + 1);
-            ys = ys.substr(0, ys.indexOf(','));
+            var ys = left.substring(left.indexOf(':') + 1);
+            ys = ys.substring(0, ys.indexOf(','));
             for (i = 0, j = ys.length; i < j; i += 2) {
-              m = ys.substr(i, 2);
-              l.push(this.YI_JI[parseInt(m,16)]);
+              l.push(this.YI_JI[parseInt(ys.substring(i, i+2),16)]);
             }
             break;
           }
@@ -5142,28 +5154,25 @@
         var right = this.DAY_YI_JI;
         var index = right.indexOf(day+'=');
         while(index>-1) {
-          right = right.substr(index+3);
+          right = right.substring(index+3);
           var left = right;
           if (left.indexOf('=')>-1) {
-            left = left.substr(0, left.indexOf('=') - 2);
+            left = left.substring(0, left.indexOf('=') - 2);
           }
           var matched = false;
-          var months = left.substr(0, left.indexOf(':'));
+          var months = left.substring(0, left.indexOf(':'));
           var i;
-          var m;
           var j;
           for (i = 0, j = months.length; i < j; i += 2) {
-            m = months.substr(i, 2);
-            if (m===month) {
+            if (months.substring(i, i+2)===month) {
               matched = true;
               break;
             }
           }
           if(matched) {
-            var js = left.substr(left.indexOf(',')+1);
+            var js = left.substring(left.indexOf(',')+1);
             for (i = 0, j = js.length; i < j; i += 2) {
-              m = js.substr(i, 2);
-              l.push(this.YI_JI[parseInt(m,16)]);
+              l.push(this.YI_JI[parseInt(js.substring(i, i+2),16)]);
             }
             break;
           }
@@ -5180,14 +5189,13 @@
         var month = Math.abs(lunarMonth).toString(16).toUpperCase();
         var index = this.DAY_SHEN_SHA.indexOf(month+day+'=');
         if(index>-1) {
-          var left = this.DAY_SHEN_SHA.substr(index + 4);
+          var left = this.DAY_SHEN_SHA.substring(index + 4);
           if (left.indexOf('=')>-1) {
-            left = left.substr(0, left.indexOf('=') - 3);
+            left = left.substring(0, left.indexOf('=') - 3);
           }
-          var js = left.substr(0, left.indexOf(','));
+          var js = left.substring(0, left.indexOf(','));
           for (var i = 0, j = js.length; i < j; i += 2) {
-            var m = js.substr(i, 2);
-            l.push(this.SHEN_SHA[parseInt(m, 16)]);
+            l.push(this.SHEN_SHA[parseInt(js.substring(i, i+2), 16)]);
           }
         }
         if(l.length<1){
@@ -5201,14 +5209,13 @@
         var month = Math.abs(lunarMonth).toString(16).toUpperCase();
         var index = this.DAY_SHEN_SHA.indexOf(month+day+'=');
         if(index>-1) {
-          var left = this.DAY_SHEN_SHA.substr(index + 4);
+          var left = this.DAY_SHEN_SHA.substring(index + 4);
           if (left.indexOf('=')>-1) {
-            left = left.substr(0, left.indexOf('=') - 3);
+            left = left.substring(0, left.indexOf('=') - 3);
           }
-          var xs = left.substr(left.indexOf(',')+1);
+          var xs = left.substring(left.indexOf(',')+1);
           for (var i = 0, j = xs.length; i < j; i += 2) {
-            var m = xs.substr(i, 2);
-            l.push(this.SHEN_SHA[parseInt(m, 16)]);
+            l.push(this.SHEN_SHA[parseInt(m = xs.substring(i, i+2), 16)]);
           }
         }
         if(l.length<1){
@@ -5222,14 +5229,13 @@
         var time = this.hex(this.getJiaZiIndex(timeGanZhi));
         var index = this.TIME_YI_JI.indexOf(day+time+'=');
         if(index>-1) {
-          var left = this.TIME_YI_JI.substr(index + 5);
+          var left = this.TIME_YI_JI.substring(index + 5);
           if (left.indexOf('=')>-1) {
-            left = left.substr(0, left.indexOf('=') - 4);
+            left = left.substring(0, left.indexOf('=') - 4);
           }
-          var ys = left.substr(0, left.indexOf(','));
+          var ys = left.substring(0, left.indexOf(','));
           for (var i = 0, j = ys.length; i < j; i += 2) {
-            var m = ys.substr(i, 2);
-            l.push(this.YI_JI[parseInt(m, 16)]);
+            l.push(this.YI_JI[parseInt(ys.substring(i, i+2), 16)]);
           }
         }
         if(l.length<1){
@@ -5243,14 +5249,13 @@
         var time = this.hex(this.getJiaZiIndex(timeGanZhi));
         var index = this.TIME_YI_JI.indexOf(day+time+'=');
         if(index>-1) {
-          var left = this.TIME_YI_JI.substr(index + 5);
+          var left = this.TIME_YI_JI.substring(index + 5);
           if (left.indexOf('=')>-1) {
-            left = left.substr(0, left.indexOf('=') - 4);
+            left = left.substring(0, left.indexOf('=') - 4);
           }
-          var js = left.substr(left.indexOf(',')+1);
+          var js = left.substring(left.indexOf(',')+1);
           for (var i = 0, j = js.length; i < j; i += 2) {
-            var m = js.substr(i, 2);
-            l.push(this.YI_JI[parseInt(m, 16)]);
+            l.push(this.YI_JI[parseInt(js.substring(i, i+2), 16)]);
           }
         }
         if(l.length<1){
@@ -5259,35 +5264,25 @@
         return l;
       },
       getXunIndex:function(ganZhi){
-        var gan = ganZhi.substr(0,1);
-        var zhi = ganZhi.substr(1);
-        var ganIndex = 0;
-        var zhiIndex = 0;
-        var i;
-        var j;
-        for(i=0,j=this.GAN.length;i<j;i++){
-          if(this.GAN[i]===gan){
-            ganIndex = i;
-            break;
-          }
-        }
-        for(i=0,j=this.ZHI.length;i<j;i++){
-          if(this.ZHI[i]===zhi){
-            zhiIndex = i;
-            break;
-          }
-        }
-        var diff = ganIndex - zhiIndex;
-        if(diff<0){
+        var diff = this.index(ganZhi.substring(0,1), this.GAN, 0) - this.index(ganZhi.substring(1), this.ZHI, 0);
+        if (diff < 0) {
           diff += 12;
         }
-        return diff/2;
+        return Math.floor(diff/2);
       },
       getXun:function(ganZhi){
         return this.XUN[this.getXunIndex(ganZhi)];
       },
       getXunKong:function(ganZhi){
         return this.XUN_KONG[this.getXunIndex(ganZhi)];
+      },
+      index:function(name, names, offset) {
+        for (var i = 0, j = names.length; i < j; i++) {
+          if (names[i] === name) {
+            return i + offset;
+          }
+        }
+        return -1;
       },
       find:function(s, arr){
         for (var i = 0, j = arr.length; i < j; i++) {
@@ -5316,7 +5311,7 @@
       return (n<10?'0':'')+n;
     };
     var _ymd = function(s){
-      return s.indexOf('-')<0?(s.substr(0,4)+'-'+s.substr(4,2)+'-'+s.substr(6)):s;
+      return s.indexOf('-')<0?(s.substring(0,4)+'-'+s.substring(4,6)+'-'+s.substring(6)):s;
     };
     var _buildHoliday = function(day,name,work,target){
       return {
@@ -5356,18 +5351,18 @@
       };
     };
     var _buildHolidayForward = function(s){
-      var day = s.substr(0,8);
+      var day = s.substring(0,8);
       var name = _NAMES_IN_USE[s.charCodeAt(8)-_ZERO];
       var work = s.charCodeAt(9)===_ZERO;
-      var target = s.substr(10,8);
+      var target = s.substring(10, 18);
       return _buildHoliday(day,name,work,target);
     };
     var _buildHolidayBackward = function(s){
       var size = s.length;
-      var day = s.substr(size-18,8);
+      var day = s.substring(size-18,size-10);
       var name = _NAMES_IN_USE[s.charCodeAt(size-10)-_ZERO];
       var work = s.charCodeAt(size-9)===_ZERO;
-      var target = s.substr(size-8);
+      var target = s.substring(size-8);
       return _buildHoliday(day,name,work,target);
     };
     var _findForward = function(key){
@@ -5375,13 +5370,13 @@
       if(start<0) {
         return null;
       }
-      var right = _DATA_IN_USE.substr(start);
+      var right = _DATA_IN_USE.substring(start);
       var n = right.length%_SIZE;
       if(n>0){
-        right = right.substr(n);
+        right = right.substring(n);
       }
       while((0!==right.indexOf(key))&&right.length>=_SIZE){
-        right = right.substr(_SIZE);
+        right = right.substring(_SIZE);
       }
       return right;
     };
@@ -5391,15 +5386,15 @@
         return null;
       }
       var keySize = key.length;
-      var left = _DATA_IN_USE.substr(0,start+keySize);
+      var left = _DATA_IN_USE.substring(0,start+keySize);
       var size = left.length;
       var n = size%_SIZE;
       if(n>0){
-        left = left.substr(0,size-n);
+        left = left.substring(0,size-n);
       }
       size = left.length;
       while((size-keySize!==left.lastIndexOf(key))&&size>=_SIZE){
-        left = left.substr(0,size-_SIZE);
+        left = left.substring(0,size-_SIZE);
         size = left.length;
       }
       return left;
@@ -5412,7 +5407,7 @@
       }
       while(0===s.indexOf(key)){
         l.push(_buildHolidayForward(s));
-        s = s.substr(_SIZE);
+        s = s.substring(_SIZE);
       }
       return l;
     };
@@ -5426,7 +5421,7 @@
       var keySize = key.length;
       while(size-keySize===s.lastIndexOf(key)){
         l.push(_buildHolidayBackward(s));
-        s = s.substr(0,size-_SIZE);
+        s = s.substring(0,size-_SIZE);
         size = s.length;
       }
       l.reverse();
@@ -5479,9 +5474,9 @@
       }
       var append = [];
       while(data.length>=_SIZE){
-        var segment = data.substr(0,_SIZE);
-        var day = segment.substr(0,8);
-        var remove = _TAG_REMOVE === segment.substr(8, 1);
+        var segment = data.substring(0,_SIZE);
+        var day = segment.substring(0,8);
+        var remove = _TAG_REMOVE === segment.substring(8, 9);
         var holiday = _getHoliday([day]);
         if(!holiday){
           if (!remove) {
@@ -5500,7 +5495,7 @@
             _DATA_IN_USE = _DATA_IN_USE.replace(new RegExp(old, 'g'), remove ? '' : segment);
           }
         }
-        data = data.substr(_SIZE);
+        data = data.substring(_SIZE);
       }
       if(append.length>0){
         _DATA_IN_USE += append.join('');
@@ -5710,23 +5705,8 @@
         },
         getTaiXiNaYin:function(){return LunarUtil.NAYIN[this.getTaiXi()];},
         getMingGong:function(){
-          var monthZhiIndex = 0;
-          var timeZhiIndex = 0;
-          var monthZhi = this.getMonthZhi();
-          var timeZhi = this.getTimeZhi();
-          var i,j;
-          for(i=0,j=LunarUtil.MONTH_ZHI.length;i<j;i++){
-            if(monthZhi===LunarUtil.MONTH_ZHI[i]){
-              monthZhiIndex = i;
-              break;
-            }
-          }
-          for(i=0,j=LunarUtil.MONTH_ZHI.length;i<j;i++){
-            if(timeZhi===LunarUtil.MONTH_ZHI[i]){
-              timeZhiIndex = i;
-              break;
-            }
-          }
+          var monthZhiIndex = LunarUtil.index(this.getMonthZhi(), LunarUtil.MONTH_ZHI, 0);
+          var timeZhiIndex = LunarUtil.index(this.getTimeZhi(), LunarUtil.MONTH_ZHI, 0);
           var offset = monthZhiIndex + timeZhiIndex;
           offset = (offset >= 14 ? 26 : 14) - offset;
           var ganIndex = (this._p.lunar.getYearGanIndexExact() + 1) * 2 + offset;
@@ -5737,21 +5717,8 @@
         },
         getMingGongNaYin:function(){return LunarUtil.NAYIN[this.getMingGong()];},
         getShenGong:function(){
-          var monthZhi = this.getMonthZhi();
-          var timeZhi = this.getTimeZhi();
-          var i,j;
-          for(i=0,j=LunarUtil.MONTH_ZHI.length;i<j;i++){
-            if(monthZhi===LunarUtil.MONTH_ZHI[i]){
-              monthZhiIndex = i;
-              break;
-            }
-          }
-          for(i=0,j=LunarUtil.ZHI.length;i<j;i++){
-            if(timeZhi===LunarUtil.ZHI[i]){
-              timeZhiIndex = i;
-              break;
-            }
-          }
+          var monthZhiIndex = LunarUtil.index(this.getMonthZhi(), LunarUtil.MONTH_ZHI, 0);
+          var timeZhiIndex = LunarUtil.index(this.getTimeZhi(), LunarUtil.ZHI, 0);
           var offset = monthZhiIndex + timeZhiIndex;
           while (offset > 12) {
             offset -= 12;
@@ -5793,8 +5760,8 @@
               minutes -= day * 12;
               hour = minutes * 2;
             } else {
-              var endTimeZhiIndex = (end.getHour() === 23) ? 11 : LunarUtil.getTimeZhiIndex(end.toYmdHms().substr(11, 5));
-              var startTimeZhiIndex = (start.getHour() === 23) ? 11 : LunarUtil.getTimeZhiIndex(start.toYmdHms().substr(11, 5));
+              var endTimeZhiIndex = (end.getHour() === 23) ? 11 : LunarUtil.getTimeZhiIndex(end.toYmdHms().substring(11, 16));
+              var startTimeZhiIndex = (start.getHour() === 23) ? 11 : LunarUtil.getTimeZhiIndex(start.toYmdHms().substring(11, 16));
               // 时辰差
               var hourDiff = endTimeZhiIndex - startTimeZhiIndex;
               // 天数差

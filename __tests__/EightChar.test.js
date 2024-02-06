@@ -196,7 +196,7 @@ test('test19', () => {
   solarList.forEach(solar => {
     timeList.push(solar.toYmdHms());
   })
-  expect(timeList).toStrictEqual(['1997-03-12 18:00:00', '1937-03-27 18:00:00']);
+  expect(timeList).toStrictEqual(['1937-03-27 18:00:00', '1997-03-12 18:00:00']);
 });
 
 
