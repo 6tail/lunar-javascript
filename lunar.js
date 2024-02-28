@@ -5215,7 +5215,7 @@
           }
           var xs = left.substring(left.indexOf(',')+1);
           for (var i = 0, j = xs.length; i < j; i += 2) {
-            l.push(this.SHEN_SHA[parseInt(m = xs.substring(i, i+2), 16)]);
+            l.push(this.SHEN_SHA[parseInt(xs.substring(i, i+2), 16)]);
           }
         }
         if(l.length<1){
