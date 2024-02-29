@@ -108,3 +108,9 @@ test('test10', () => {
   const lunar = Lunar.fromYmd(2023, 6, 1);
   expect(lunar.getJieQiTable()['冬至'].toYmdHms()).toBe('2022-12-22 05:48:11');
 });
+
+test('test11', () => {
+  const lunar = Solar.fromYmd(2024, 2, 4).getLunar();
+  expect(lunar.getPrevJie(true).getName()).toBe('立春');
+  expect(lunar.getNextJie(true).getName()).toBe('惊蛰');
+});
