@@ -199,7 +199,6 @@ test('test19', () => {
   expect(timeList).toStrictEqual(['1937-03-27 18:00:00', '1997-03-12 18:00:00']);
 });
 
-
 test('test20', () => {
   const lunar = Solar.fromYmdHms(2024, 1, 29, 9, 30, 0).getLunar();
   const eightChar = lunar.getEightChar();
@@ -240,4 +239,13 @@ test('test27', () => {
   const lunar = Solar.fromYmdHms(1972, 11, 27, 10, 0, 0).getLunar();
   const eightChar = lunar.getEightChar();
   expect(eightChar.getShenGong()).toBe('乙巳');
+});
+
+test('test28', () => {
+  const solarList = Solar.fromBaZi('丁卯','丁未','甲申','乙丑', 1, 1900);
+  const timeList = [];
+  solarList.forEach(solar => {
+    timeList.push(solar.toYmdHms());
+  })
+  expect(timeList).toStrictEqual(['1987-08-03 02:00:00']);
 });

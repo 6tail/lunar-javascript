@@ -584,9 +584,7 @@
           var solarTime = jieQiTable[jieQiList[4 + m]];
           if (solarTime.getYear() >= baseYear) {
             // 日干支和节令干支的偏移值
-            var lunar = solarTime.getLunar();
-            var dgz = (2 === sect) ? lunar.getDayInGanZhiExact2() : lunar.getDayInGanZhiExact();
-            var d = LunarUtil.getJiaZiIndex(dayGanZhi) - LunarUtil.getJiaZiIndex(dgz);
+            var d = LunarUtil.getJiaZiIndex(dayGanZhi) - LunarUtil.getJiaZiIndex(solarTime.getLunar().getDayInGanZhiExact2());
             if (d < 0) {
               d += 60;
             }
@@ -605,8 +603,8 @@
               }
               // 验证一下
               var solar = Solar.fromYmdHms(solarTime.getYear(), solarTime.getMonth(), solarTime.getDay(), hour, mi, s);
-              lunar = solar.getLunar();
-              dgz = (2 === sect) ? lunar.getDayInGanZhiExact2() : lunar.getDayInGanZhiExact();
+              var lunar = solar.getLunar();
+              var dgz = (2 === sect) ? lunar.getDayInGanZhiExact2() : lunar.getDayInGanZhiExact();
               if (lunar.getYearInGanZhiExact() === yearGanZhi && lunar.getMonthInGanZhiExact() === monthGanZhi && dgz === dayGanZhi && lunar.getTimeInGanZhi() === timeGanZhi) {
                 l.push(solar);
               }
