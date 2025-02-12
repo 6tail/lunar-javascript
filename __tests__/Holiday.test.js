@@ -51,3 +51,12 @@ test('testRemove', () => {
   holiday = HolidayUtil.getHoliday('2010-01-01');
   expect(holiday).toBe(null);
 });
+
+test('test2025', () => {
+  let names =   HolidayUtil.NAMES;
+  names[0] = '元旦节';
+
+  HolidayUtil.fix(names, '');
+  const holiday = HolidayUtil.getHoliday(2025, 1, 1);
+  expect(holiday.getName()).toBe('元旦节');
+});

@@ -663,3 +663,8 @@ test('test072', () => {
   expect(lunar.getYearInGanZhi()).toBe('辛未');
   expect(lunar.getYearShengXiao()).toBe('羊');
 });
+
+test('test073', () => {
+  const solar = Lunar.fromYmd(2024, 10, 10).getSolar();
+  expect(solar.toString()).toBe('2024-11-10');
+});
