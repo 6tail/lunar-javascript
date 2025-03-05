@@ -1455,14 +1455,14 @@
         getDayYi:function(sect){
           sect *= 1;
           if(isNaN(sect)){
-            sect = 2;
+            sect = 1;
           }
           return LunarUtil.getDayYi(2 === sect ? this.getMonthInGanZhiExact() : this.getMonthInGanZhi(), this.getDayInGanZhi());
         },
         getDayJi:function(sect){
           sect *= 1;
           if(isNaN(sect)){
-            sect = 2;
+            sect = 1;
           }
           return LunarUtil.getDayJi(2 === sect ? this.getMonthInGanZhiExact() : this.getMonthInGanZhi(), this.getDayInGanZhi());
         },
@@ -3039,8 +3039,10 @@
         2000, 63.87, 0.1, 0, 0,
         2005, 64.7, 0.21, 0, 0,
         2012, 66.8, 0.22, 0, 0,
-        2018, 69.0, 0.36, 0, 0,
-        2028, 72.6
+        2018, 73.6, 0.40, 0, 0,
+        2021, 78.1, 0.44, 0, 0,
+        2024, 83.1, 0.55, 0, 0,
+        2028, 98.6
       ],
       XL0:[
         10000000000,
