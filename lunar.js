@@ -5727,15 +5727,12 @@
         getShenGong:function(){
           var monthZhiIndex = LunarUtil.index(this.getMonthZhi(), LunarUtil.MONTH_ZHI, 0);
           var timeZhiIndex = LunarUtil.index(this.getTimeZhi(), LunarUtil.ZHI, 0);
-          var offset = monthZhiIndex + timeZhiIndex;
-          while (offset > 12) {
-            offset -= 12;
-          }
-          var ganIndex = (this._p.lunar.getYearGanIndexExact() + 1) * 2 + (offset % 12);
+          var offset = (monthZhiIndex + timeZhiIndex - 1) % 12;
+          var ganIndex = (this._p.lunar.getYearGanIndexExact() + 1) * 2 + offset;
           while (ganIndex > 10) {
             ganIndex -= 10;
           }
-          return LunarUtil.GAN[ganIndex] + LunarUtil.MONTH_ZHI[offset];
+          return LunarUtil.GAN[ganIndex + 1] + LunarUtil.MONTH_ZHI[offset + 1];
         },
         getShenGongNaYin:function(){return LunarUtil.NAYIN[this.getShenGong()];},
         getLunar:function(){return this._p.lunar;},

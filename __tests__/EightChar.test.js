@@ -152,7 +152,7 @@ test('身宫1', () => {
   const solar = Solar.fromYmdHms(1994, 12, 6, 2, 0, 0);
   const lunar = solar.getLunar();
   const eightChar = lunar.getEightChar();
-  expect(eightChar.getShenGong()).toBe('乙丑');
+  expect(eightChar.getShenGong()).toBe('丁丑');
 });
 
 test('身宫2', () => {
