@@ -668,3 +668,9 @@ test('test073', () => {
   const solar = Lunar.fromYmd(2024, 10, 10).getSolar();
   expect(solar.toString()).toBe('2024-11-10');
 });
+
+test('test100', () => {
+  const lunar = Solar.fromYmd(2025, 9, 16).getLunar();
+  expect(lunar.getDayJiShen().toString()).toBe('时德,阳德,民日,玉宇,司命');
+  expect(lunar.getDayXiongSha().toString()).toBe('河魁,死神,天吏,致死,往亡');
+});

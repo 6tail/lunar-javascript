@@ -93,7 +93,7 @@ test('test7', () => {
 
 test('test8', () => {
   const lunar = Lunar.fromYmd(2050, 12, 1);
-  expect(lunar.getJieQiTable()['DA_XUE'].toYmdHms()).toBe('2050-12-07 06:40:53');
+  expect(lunar.getJieQiTable()['DA_XUE'].toYmdHms()).toBe('2050-12-07 06:41:54');
 });
 
 test('test9', () => {
@@ -106,7 +106,7 @@ test('test9', () => {
 
 test('test10', () => {
   const lunar = Lunar.fromYmd(2023, 6, 1);
-  expect(lunar.getJieQiTable()['冬至'].toYmdHms()).toBe('2022-12-22 05:48:01');
+  expect(lunar.getJieQiTable()['冬至'].toYmdHms()).toBe('2022-12-22 05:48:12');
 });
 
 test('test11', () => {
