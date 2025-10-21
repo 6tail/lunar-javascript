@@ -674,3 +674,11 @@ test('test100', () => {
   expect(lunar.getDayJiShen().toString()).toBe('时德,阳德,民日,玉宇,司命');
   expect(lunar.getDayXiongSha().toString()).toBe('河魁,死神,天吏,致死,往亡');
 });
+
+test('test101', () => {
+  const lunar = Solar.fromYmd(2025, 12, 15).getLunar();
+  expect(lunar.getMonthZhiIndex()).toBe(0);
+  expect(lunar.getDayInGanZhi().toString()).toBe('戊午');
+  expect(lunar.getDayJiShen().toString()).toBe('阳德,六仪,续世,解神,司命');
+  expect(lunar.getDayXiongSha().toString()).toBe('月破,大耗,灾煞,天火,厌对,招摇,五虚,血忌');
+});

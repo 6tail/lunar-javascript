@@ -9,13 +9,13 @@ test('test1', () => {
 test('test2', () => {
   const month = LunarMonth.fromYm(2023, -2);
   expect(month.getIndex()).toBe(3);
-  expect(month.getGanZhi()).toBe('丙辰');
+  expect(month.getGanZhi()).toBe('乙卯');
 });
 
 test('test3', () => {
   const month = LunarMonth.fromYm(2023, 3);
   expect(month.getIndex()).toBe(4);
-  expect(month.getGanZhi()).toBe('丁巳');
+  expect(month.getGanZhi()).toBe('丙辰');
 });
 
 test('test4', () => {
@@ -27,7 +27,7 @@ test('test4', () => {
 test('test5', () => {
   const month = LunarMonth.fromYm(2023, 12);
   expect(month.getIndex()).toBe(13);
-  expect(month.getGanZhi()).toBe('丙寅');
+  expect(month.getGanZhi()).toBe('乙丑');
 });
 
 test('test6', () => {

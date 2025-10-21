@@ -2808,12 +2808,12 @@
           dayCount: dayCount,
           firstJulianDay: firstJulianDay,
           index: index,
-          zhiIndex: (index - 1 + LunarUtil.BASE_MONTH_ZHI_INDEX) % 12
+          zhiIndex: (Math.abs(lunarMonth) - 1 + LunarUtil.BASE_MONTH_ZHI_INDEX) % 12
         },
         getIndex:function(){return this._p.index;},
         getGanIndex:function(){
           var offset = (LunarYear.fromYear(this._p.year).getGanIndex() + 1) % 5 * 2;
-          return (this._p.index - 1 + offset) % 10;
+          return (Math.abs(this._p.month) - 1 + offset) % 10;
         },
         getZhiIndex:function(){return this._p.zhiIndex;},
         getGan:function(){return LunarUtil.GAN[this.getGanIndex() + 1];},
@@ -5223,7 +5223,7 @@
         var l = [];
         var m = monthZhiIndex - 2;
         if (m < 0) {
-          m += 10;
+          m += 12;
         }
         var index = this.getJiaZiIndex(dayGanZhi).toString(16).toUpperCase();
         if (index.length < 2) {
@@ -5248,7 +5248,7 @@
         var l = [];
         var m = monthZhiIndex - 2;
         if (m < 0) {
-          m += 10;
+          m += 12;
         }
         var index = this.getJiaZiIndex(dayGanZhi).toString(16).toUpperCase();
         if (index.length < 2) {
